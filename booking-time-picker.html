@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>预约时间选择器</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{background:#f5f5f5;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:20px 0;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;}
+.modal{background:#fff;border-radius:16px;overflow:hidden;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.12);}
+.mhead{display:flex;align-items:center;justify-content:center;padding:14px 16px 12px;border-bottom:1px solid #f0f0f0;position:relative;}
+.mhead-title{font-size:17px;font-weight:600;color:#1a1a1a;}
+.mclose{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:20px;color:#999;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.mclose:active{background:#f5f5f5;}
+.date-strip{display:flex;padding:12px 16px 0;border-bottom:1px solid #f0f0f0;overflow-x:auto;}
+.date-strip::-webkit-scrollbar{display:none;}
+.di{flex-shrink:0;padding:4px 14px 10px;cursor:pointer;text-align:center;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.di.on{border-bottom-color:#1677ff;}
+.di-top{font-size:14px;font-weight:500;color:#999;}
+.di.on .di-top{color:#1677ff;}
+.di-bot{font-size:12px;color:#999;margin-top:2px;}
+.di.on .di-bot{color:#1677ff;}
+.dur-section{padding:12px 16px;border-bottom:1px solid #f0f0f0;}
+.dur-block{margin-bottom:10px;}
+.dur-block:last-child{margin-bottom:0;}
+.dur-top{display:flex;align-items:baseline;gap:6px;margin-bottom:7px;}
+.dur-label{font-size:13px;font-weight:500;color:#1a1a1a;}
+.dur-hint{font-size:11px;color:#999;}
+.dur-chips{display:flex;gap:6px;overflow-x:auto;}
+.dur-chips::-webkit-scrollbar{display:none;}
+.dc{flex-shrink:0;padding:6px 14px;border-radius:8px;border:1px solid #e0e0e0;font-size:13px;color:#666;cursor:pointer;background:#fff;transition:all .15s;}
+.dc.on{background:#1677ff;color:#fff;border-color:#1677ff;font-weight:500;}
+.dc:active{opacity:.8;}
+.sel-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #f0f0f0;}
+.sel-label{font-size:14px;font-weight:500;color:#1a1a1a;}
+.sel-req{color:#ff4d4f;margin-left:2px;}
+.sel-val{font-size:14px;color:#1677ff;font-weight:500;}
+.tgrid-wrap{padding:8px 12px 12px;max-height:340px;overflow-y:auto;}
+.tgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;}
+.tslot{padding:11px 0;text-align:center;cursor:pointer;border-radius:6px;transition:background .1s;}
+.tslot:active:not(.na){background:#e6f0ff;}
+.tslot.on{background:#1677ff;border-radius:8px;}
+.tslot.on .ts-t{color:#fff;font-weight:500;}
+.tslot.na{cursor:default;}
+.ts-t{font-size:13px;color:#1a1a1a;line-height:1.3;}
+.tslot.na .ts-t{color:#c0c0c0;}
+.ts-sub{font-size:10px;color:#ff4d4f;line-height:1.3;margin-top:1px;}
+.confirm-wrap{padding:12px 16px 24px;}
+.confirm-btn{width:100%;padding:14px;border-radius:50px;background:#1677ff;border:none;color:#fff;font-size:16px;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.confirm-btn:active{opacity:.88;}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;z-index:999;pointer-events:none;opacity:0;transition:opacity .2s;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="modal">
+  <div class="mhead">
+    <div class="mhead-title">选择预约时间</div>
+    <div class="mclose" onclick="showToast('已关闭')">✕</div>
+  </div>
+
+  <div class="date-strip" id="dateStrip"></div>
+
+  <div class="dur-section">
+    <div class="dur-block">
+      <div class="dur-top">
+        <div class="dur-label">预计服务时长（分钟）</div>
+        <div class="dur-hint">服务时长可在开始服务后调整</div>
+      </div>
+      <div class="dur-chips" id="svcChips"></div>
+    </div>
+    <div class="dur-block">
+      <div class="dur-top">
+        <div class="dur-label">预计赶路时长（分钟）</div>
+        <div class="dur-hint" id="travelHint"></div>
+      </div>
+      <div class="dur-chips" id="travelChips"></div>
+    </div>
+    <div class="dur-block">
+      <div class="dur-top">
+        <div class="dur-label">预计返程时长（分钟）</div>
+        <div class="dur-hint" id="returnHint"></div>
+      </div>
+      <div class="dur-chips" id="returnChips"></div>
+    </div>
+  </div>
+
+  <div class="sel-bar">
+    <div class="sel-label">预约上门时间<span class="sel-req">*</span></div>
+    <div class="sel-val" id="selDisplay">请选择 ›</div>
+  </div>
+
+  <div class="tgrid-wrap"><div class="tgrid" id="timeGrid"></div></div>
+
+  <div class="confirm-wrap">
+    <button class="confirm-btn" onclick="doConfirm()">确定</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SVC_OPTS=[30,60,90,120];
+const TRAVEL_OPTS=[15,30,40,60,90,120];
+const RETURN_OPTS=[15,25,30,60,90,120];
+const TRAVEL_EST=40,RETURN_EST=25;
+
+// 模拟已有确认任务（15分钟slot，从00:00算起）
+const EXISTING={
+  0:[{start:52,len:4},{start:56,len:2}], // 今天 13:00-14:30
+  1:[{start:44,len:6}],                   // 明天 11:00-12:30
+  2:[],3:[]
+};
+
+const DAYS=['日','一','二','三','四','五','六'];
+const today=new Date();today.setHours(0,0,0,0);
+const dates=Array.from({length:4},(_,i)=>{const d=new Date(today);d.setDate(today.getDate()+i);return d;});
+
+let selIdx=0,svcDur=30,travelDur=TRAVEL_EST,returnDur=RETURN_EST,selSlot=null;
+
+function pad(n){return String(n).padStart(2,'0');}
+function s30toT(s){return`${pad(Math.floor(s/2))}:${s%2?'30':'00'}`;}
+function min2s15(m){return Math.round(m/15);}
+
+function renderDates(){
+  document.getElementById('dateStrip').innerHTML=dates.map((d,i)=>{
+    const mm=pad(d.getMonth()+1),dd=pad(d.getDate());
+    const lbl=i===0?'今天':i===1?'明天':`周${DAYS[d.getDay()]}`;
+    return`<div class="di${selIdx===i?' on':''}" onclick="pickDate(${i})">
+      <div class="di-top">${lbl}</div><div class="di-bot">${mm}-${dd}</div>
+    </div>`;
+  }).join('');
+}
+function pickDate(i){selIdx=i;selSlot=null;renderDates();renderGrid();updateSel();}
+
+function renderChips(id,opts,cur,fn){
+  document.getElementById(id).innerHTML=opts.map(v=>
+    `<div class="dc${cur===v?' on':''}" onclick="${fn}(${v})">${v}</div>`).join('');
+}
+function setSvc(v){svcDur=v;renderChips('svcChips',SVC_OPTS,svcDur,'setSvc');selSlot=null;renderGrid();updateSel();}
+function setTravel(v){travelDur=v;renderChips('travelChips',TRAVEL_OPTS,travelDur,'setTravel');selSlot=null;renderGrid();updateSel();}
+function setReturn(v){returnDur=v;renderChips('returnChips',RETURN_OPTS,returnDur,'setReturn');selSlot=null;renderGrid();updateSel();}
+
+function isNA(slot30){
+  const appt=slot30*2;
+  const ws=appt-min2s15(travelDur),we=appt+min2s15(svcDur)+min2s15(returnDur);
+  return(EXISTING[selIdx]||[]).some(b=>ws<b.start+b.len&&we>b.start);
+}
+
+function renderGrid(){
+  document.getElementById('timeGrid').innerHTML=Array.from({length:48},(_,s)=>{
+    const na=isNA(s),on=selSlot===s;
+    return`<div class="tslot${na?' na':''}${on?' on':''}" onclick="${na?'':'pickSlot('+s+')'}">
+      <div class="ts-t">${s30toT(s)}</div>${na?'<div class="ts-sub">不可约</div>':''}
+    </div>`;
+  }).join('');
+}
+function pickSlot(s){selSlot=s;renderGrid();updateSel();}
+function updateSel(){document.getElementById('selDisplay').textContent=selSlot!=null?s30toT(selSlot)+' ›':'请选择 ›';}
+
+function doConfirm(){
+  if(selSlot==null){showToast('请选择预约上门时间');return;}
+  showToast(`已确认 ${s30toT(selSlot)}，服务${svcDur}分·赶路${travelDur}分·返程${returnDur}分`);
+}
+
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+function init(){
+  renderDates();
+  renderChips('svcChips',SVC_OPTS,svcDur,'setSvc');
+  document.getElementById('travelHint').textContent=`居住→客户，系统预估${TRAVEL_EST}分钟`;
+  document.getElementById('returnHint').textContent=`客户→门店，系统预估${RETURN_EST}分钟`;
+  renderChips('travelChips',TRAVEL_OPTS,travelDur,'setTravel');
+  renderChips('returnChips',RETURN_OPTS,returnDur,'setReturn');
+  renderGrid();updateSel();
+}
+init();
+</script>
+</body>
+</html>
