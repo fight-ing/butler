@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>派单时间选择器</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #181c27; --surface2: #1e2436;
+    --border: #2a3148; --blue: #3b82f6; --blue-dim: #1d3a6e;
+    --blue-glow: rgba(59,130,246,0.18); --range-bg: rgba(59,130,246,0.10);
+    --range-border: rgba(59,130,246,0.30); --unavail-bg: #13141a;
+    --unavail-text: #333344; --text: #e2e8f0; --text-dim: #64748b;
+    --text-mid: #94a3b8; --green: #22c55e;
+  }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans SC',sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .container { width:100%; max-width:720px; }
+  .header { margin-bottom:28px; }
+  .header-label { font-size:11px; font-family:'DM Mono',monospace; color:var(--blue);
+    letter-spacing:.15em; text-transform:uppercase; margin-bottom:8px; }
+  .header-title { font-size:22px; font-weight:500; }
+  .header-sub { font-size:13px; color:var(--text-dim); margin-top:4px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:28px; margin-bottom:16px; }
+  .status-bar { display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border);
+    gap:12px; flex-wrap:wrap; }
+  .status-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .mode-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
+    border-radius:20px; font-size:12px; font-weight:500; }
+  .pill-none  { background:var(--surface2); color:var(--text-dim); border:1px solid var(--border); }
+  .pill-fixed { background:rgba(59,130,246,.12); color:#93c5fd; border:1px solid var(--blue-dim); }
+  .pill-open  { background:rgba(34,197,94,.10); color:#86efac; border:1px solid rgba(34,197,94,.25); }
+  .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .result-box { background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    padding:7px 14px; font-size:13px; color:var(--text-mid); font-family:'DM Mono',monospace; }
+  .result-box.active { border-color:var(--blue); color:var(--text); }
+  .result-label { font-size:10px; color:var(--text-dim); margin-bottom:2px; font-family:'Noto Sans SC',sans-serif; }
+  .reset-btn { background:transparent; border:1px solid var(--border); color:var(--text-dim);
+    padding:6px 14px; border-radius:8px; font-size:12px; font-family:'Noto Sans SC',sans-serif;
+    cursor:pointer; transition:all .15s; }
+  .reset-btn:hover { border-color:var(--blue); color:var(--blue); }
+
+  /* Grid */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:6px; }
+  .slot { position:relative; height:52px; border-radius:8px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; border:1px solid transparent;
+    transition:background .1s,border-color .1s,transform .1s,box-shadow .1s; user-select:none; }
+  .slot-time { font-size:13px; font-family:'DM Mono',monospace; font-weight:500; line-height:1; }
+  .slot-cap  { font-size:10px; margin-top:4px; line-height:1; }
+
+  /* Use data-state for styling — zero specificity conflicts */
+  .slot[data-state="available"] {
+    background:var(--surface2); border-color:var(--border); color:var(--text-mid); cursor:pointer; }
+  .slot[data-state="available"] .slot-cap { color:var(--green); }
+  .slot[data-state="available"]:hover {
+    border-color:var(--blue); color:var(--text); background:var(--blue-glow); transform:translateY(-1px); }
+
+  .slot[data-state="unavailable"] {
+    background:var(--unavail-bg);
+    background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.015) 3px,rgba(255,255,255,.015) 6px);
+    border-color:transparent; color:var(--unavail-text); cursor:not-allowed; }
+  .slot[data-state="unavailable"] .slot-cap { color:var(--unavail-text); }
+
+  .slot[data-state="selected"] {
+    background:var(--blue); border-color:var(--blue); color:#fff; cursor:pointer;
+    box-shadow:0 0 14px rgba(59,130,246,.45); transform:translateY(-1px); }
+  .slot[data-state="selected"] .slot-cap { color:rgba(255,255,255,.75); }
+
+  .slot[data-state="range-start"],
+  .slot[data-state="range-end"] {
+    background:var(--blue); border-color:var(--blue); color:#fff; cursor:pointer;
+    box-shadow:0 0 14px rgba(59,130,246,.45); transform:translateY(-1px); }
+  .slot[data-state="range-start"] .slot-cap,
+  .slot[data-state="range-end"] .slot-cap { color:rgba(255,255,255,.75); }
+
+  .slot[data-state="in-range"] {
+    background:var(--blue); border-color:var(--blue); color:#fff; cursor:pointer;
+    opacity:0.55; }
+  .slot[data-state="in-range"] .slot-cap { color:rgba(255,255,255,.75); }
+
+  .slot[data-state="range-start"]::after,
+  .slot[data-state="range-end"]::after {
+    position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+    font-size:9px; padding:1px 5px; border-radius:3px; color:#fff; font-family:'Noto Sans SC',sans-serif; }
+  .slot[data-state="range-start"]::after { content:'起'; background:#2563eb; }
+  .slot[data-state="range-end"]::after   { content:'止'; background:#1d4ed8; }
+
+  .legend { display:flex; gap:20px; flex-wrap:wrap; padding-top:20px; border-top:1px solid var(--border); margin-top:12px; }
+  .legend-item { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--text-dim); }
+  .lb { width:22px; height:14px; border-radius:3px; border:1px solid transparent; flex-shrink:0; }
+
+  .hint-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; }
+  .hint-title { font-size:11px; color:var(--text-dim); font-family:'DM Mono',monospace; margin-bottom:10px; }
+  .hints { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  @media(max-width:500px){ .hints{grid-template-columns:1fr} }
+  .hint { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--text-dim); line-height:1.5; }
+  .hint-n { width:18px; height:18px; border-radius:4px; background:var(--surface2);
+    display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; margin-top:1px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-label">客服操作台 · 预约时间设置</div>
+    <div class="header-title">派单时间选择</div>
+    <div class="header-sub">选1个 = 定点任务（指定时间上门）；选2个 = 开放任务（时间范围内上门）</div>
+  </div>
+  <div class="card">
+    <div class="status-bar">
+      <div class="status-left">
+        <div class="mode-pill pill-none" id="modePill">
+          <span class="dot"></span><span id="modeText">未选择</span>
+        </div>
+        <div class="result-box" id="resultBox">
+          <div class="result-label" id="resultLabel">—</div>
+          <div id="resultTime">点击时间块开始选择</div>
+        </div>
+      </div>
+      <button class="reset-btn" onclick="resetAll()">重置</button>
+    </div>
+    <div class="grid" id="mainGrid"></div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="lb" style="background:var(--surface2);border-color:var(--border)"></div>可约
+      </div>
+      <div class="legend-item">
+        <div class="lb" style="background:var(--unavail-bg);background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.015) 3px,rgba(255,255,255,.015) 6px)"></div>不可约
+      </div>
+      <div class="legend-item">
+        <div class="lb" style="background:var(--blue)"></div>已选端点
+      </div>
+      <div class="legend-item">
+        <div class="lb" style="width:38px;background:var(--range-bg);border-color:var(--range-border)"></div>时间范围
+      </div>
+    </div>
+  </div>
+  <div class="hint-card">
+    <div class="hint-title">// 交互规则</div>
+    <div class="hints">
+      <div class="hint"><div class="hint-n">①</div>点击可约块选中；再次点击同一块取消</div>
+      <div class="hint"><div class="hint-n">②</div>选中两个端点，中间所有块自动高亮为范围（不可约块保持原样）</div>
+      <div class="hint"><div class="hint-n">③</div>已有两端点：点起点之后 → 终点更新；点起点之前 → 新点成为起点</div>
+      <div class="hint"><div class="hint-n">④</div>开放任务范围内允许包含不可约时间块</div>
+    </div>
+  </div>
+</div>
+<script>
+const SLOTS = [
+  {id:0,  time:'09:00', avail:true },
+  {id:1,  time:'09:30', avail:true },
+  {id:2,  time:'10:00', avail:false, cap:'2人可约'},
+  {id:3,  time:'10:30', avail:false, cap:'2人可约'},
+  {id:4,  time:'11:00', avail:true },
+  {id:5,  time:'11:30', avail:false, cap:'1人可约'},
+  {id:6,  time:'12:00', avail:false, cap:'3人可约'},
+  {id:7,  time:'12:30', avail:false, cap:'3人可约'},
+  {id:8,  time:'13:00', avail:true },
+  {id:9,  time:'13:30', avail:false, cap:'2人可约'},
+  {id:10, time:'14:00', avail:false, cap:'2人可约'},
+  {id:11, time:'14:30', avail:true },
+  {id:12, time:'15:00', avail:false, cap:'3人可约'},
+  {id:13, time:'15:30', avail:false, cap:'3人可约'},
+  {id:14, time:'16:00', avail:false, cap:'1人可约'},
+  {id:15, time:'16:30', avail:false, cap:'1人可约'},
+  {id:16, time:'17:00', avail:false, cap:'3人可约'},
+  {id:17, time:'17:30', avail:false, cap:'3人可约'},
+  {id:18, time:'18:00', avail:false, cap:'2人可约'},
+  {id:19, time:'18:30', avail:false, cap:'2人可约'},
+  {id:20, time:'19:00', avail:false, cap:'1人可约'},
+  {id:21, time:'19:30', avail:false, cap:'1人可约'},
+];
+
+let anchor = null, second = null;
+
+function build() {
+  const grid = document.getElementById('mainGrid');
+  SLOTS.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'slot';
+    el.dataset.id = s.id;
+    el.dataset.state = s.avail ? 'unavailable' : 'available';
+    el.innerHTML = '<div class="slot-time">'+s.time+'</div>'
+                 + '<div class="slot-cap">'+(s.avail ? '不可约' : s.cap)+'</div>';
+    if (!s.avail) el.addEventListener('click', () => onClick(s.id));
+    grid.appendChild(el);
+  });
+}
+
+function onClick(id) {
+  if (anchor === null) {
+    anchor = id; second = null;
+  } else if (second === null) {
+    if (id === anchor) { anchor = null; }   // toggle off anchor
+    else { second = id; }
+  } else {
+    const start = Math.min(anchor, second);
+    const end   = Math.max(anchor, second);
+    if (id === start) {
+      // clicking start: remove start, keep end as new single anchor
+      anchor = end; second = null;
+    } else if (id === end) {
+      // clicking end: remove end, keep start as single anchor
+      anchor = start; second = null;
+    } else if (id > start) {
+      anchor = start; second = id;
+    } else {
+      second = start; anchor = id;
+    }
+  }
+  render();
+}
+
+function render() {
+  const rs = (anchor !== null && second !== null) ? Math.min(anchor, second) : null;
+  const re = (anchor !== null && second !== null) ? Math.max(anchor, second) : null;
+
+  document.querySelectorAll('.slot').forEach(el => {
+    const id = parseInt(el.dataset.id);
+    if (SLOTS[id].avail) return;
+
+    let state = 'available';
+    if (rs !== null) {
+      if      (id === rs)          state = 'range-start';
+      else if (id === re)          state = 'range-end';
+      else if (id > rs && id < re) state = 'in-range';
+    } else if (anchor !== null && id === anchor) {
+      state = 'selected';
+    }
+    el.dataset.state = state;
+  });
+
+  updateStatus();
+}
+
+function updateStatus() {
+  const pill    = document.getElementById('modePill');
+  const modeT   = document.getElementById('modeText');
+  const box     = document.getElementById('resultBox');
+  const label   = document.getElementById('resultLabel');
+  const timeEl  = document.getElementById('resultTime');
+
+  if (anchor === null) {
+    pill.className = 'mode-pill pill-none'; modeT.textContent = '未选择';
+    box.className = 'result-box'; label.textContent = '—';
+    timeEl.textContent = '点击时间块开始选择'; return;
+  }
+  if (second === null) {
+    pill.className = 'mode-pill pill-fixed'; modeT.textContent = '定点任务';
+    box.className = 'result-box active'; label.textContent = '指定时间上门';
+    timeEl.textContent = SLOTS[anchor].time;
+  } else {
+    const s = Math.min(anchor,second), e = Math.max(anchor,second);
+    pill.className = 'mode-pill pill-open'; modeT.textContent = '开放任务';
+    box.className = 'result-box active'; label.textContent = '时间范围内上门';
+    timeEl.textContent = SLOTS[s].time + ' – ' + SLOTS[e].time;
+  }
+}
+
+function resetAll() { anchor = null; second = null; render(); }
+
+build(); render();
+</script>
+</body>
+</html>
