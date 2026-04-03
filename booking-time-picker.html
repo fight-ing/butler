@@ -98,10 +98,9 @@ body{background:#f5f5f5;display:flex;align-items:flex-start;justify-content:cent
     <button class="confirm-btn" onclick="doConfirm()">确定</button>
   </div>
   <div class="note safe-bottom">
-    <p>使用说明：</p>
-    <p>1. 选择预约日期，设置服务、赶路、返程时长</p>
-    <p>2. 系统会自动计算时段冲突，已被占用的时间会标记为不可约</p>
-    <p>3. 点击空白时间格即可选中，点击确定完成预约</p>
+    <p>示例中「今天」13:00–14:30 有已确认任务，默认赶路40分钟+服务30分钟+返程25分钟，所以 12:00–13:30 附近的时段会被判为不可约（窗口与现有任务重叠）。</p>
+    <p>调整时长 → 重新计算所有格子的可用性，不可约格子实时更新。</p>
+    <p>不参与判定：开放任务、当前任务自身不计入，鉴定师自主选择不限制上班时间。</p>
   </div>
 </div>
 
