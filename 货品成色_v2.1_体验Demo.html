@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>货品成色 · 体验 Demo v2.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f4ef;
+  --card:#ffffff;
+  --ink:#1a1a1a;
+  --ink-2:#555;
+  --ink-3:#8a8a8a;
+  --line:#e8e6df;
+  --line-strong:#1a1a1a;
+  --accent-soft:#f0ede4;
+  --warn:#c4511a;
+  --warn-soft:#fdf1e8;
+  --ok:#2a6b4a;
+  --ok-soft:#e8f0ea;
+  --must:#c4511a;
+  --must-soft:#fdf1e8;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0;}
+body{
+  font-family:'Inter','Noto Serif SC',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:24px 12px;
+}
+
+.demo-wrap{
+  width:100%;
+  max-width:960px;
+  display:grid;
+  grid-template-columns:1fr 390px 1fr;
+  gap:24px;
+  align-items:start;
+}
+.demo-side{
+  position:sticky;
+  top:24px;
+  padding:18px 20px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:4px;
+  font-size:12px;
+  color:var(--ink-2);
+  line-height:1.7;
+}
+.demo-side h3{
+  font-family:'Noto Serif SC',serif;
+  margin:0 0 10px;
+  font-size:14px;
+  font-weight:700;
+  color:var(--ink);
+  padding-bottom:8px;
+  border-bottom:1px solid var(--line);
+}
+.demo-side h4{
+  margin:16px 0 6px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink);
+}
+.demo-side .badge{
+  display:inline-block;
+  background:var(--ink);
+  color:#fff;
+  font-size:10px;
+  padding:2px 6px;
+  letter-spacing:1px;
+  margin-right:4px;
+}
+.demo-side ul{margin:6px 0 0; padding-left:18px;}
+.demo-side li{margin-bottom:4px;}
+.demo-side .tip{
+  padding:8px 10px;
+  background:var(--accent-soft);
+  border-left:2px solid var(--ink);
+  margin-top:10px;
+  font-size:11px;
+}
+.reset-btn{
+  width:100%;
+  margin-top:12px;
+  padding:8px 12px;
+  background:#fff;
+  border:1px solid var(--line-strong);
+  font-size:12px;
+  cursor:pointer;
+  font-family:inherit;
+  color:var(--ink);
+  letter-spacing:1px;
+  transition:all .15s;
+}
+.reset-btn:hover{background:var(--ink); color:#fff;}
+
+.stats{
+  margin-top:14px;
+  padding:10px;
+  background:var(--accent-soft);
+  font-size:11px;
+}
+.stats-row{
+  display:flex; justify-content:space-between;
+  padding:3px 0;
+}
+.stats-row strong{color:var(--ink);}
+
+/* ============ 手机容器 ============ */
+.phone{
+  width:390px;
+  height:812px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,0.12),0 4px 16px rgba(0,0,0,0.06);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+.status-bar{
+  height:36px; flex-shrink:0;
+  background:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px;
+  font-size:13px; font-weight:600;
+}
+.nav{
+  height:48px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--line);
+}
+.nav .back{font-size:18px; color:var(--ink); cursor:pointer;}
+.nav .title{font-family:'Noto Serif SC',serif; font-size:15px; font-weight:700;}
+.nav .meta{font-size:11px; color:var(--ink-3);}
+
+.save-toast{
+  position:absolute;
+  top:88px; left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  background:rgba(26,26,26,0.9);
+  color:#fff;
+  font-size:11px;
+  padding:6px 14px;
+  border-radius:40px;
+  opacity:0;
+  transition:all .3s;
+  pointer-events:none;
+  z-index:20;
+  letter-spacing:1px;
+}
+.save-toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+/* ============ 双维进度 ============ */
+.progress-bar{
+  padding:12px 16px;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  flex-shrink:0;
+}
+.dual-progress{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.prog-item{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.prog-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.prog-label{font-size:11px; color:var(--ink-3); letter-spacing:1px;}
+.prog-val{font-size:12px; font-weight:700; color:var(--ink);}
+.prog-val.must{color:var(--must);}
+.prog-val.ok{color:var(--ok);}
+.prog-track{
+  height:3px; background:var(--line); border-radius:2px; overflow:hidden;
+}
+.prog-fill{
+  height:100%; background:var(--must); width:0;
+  transition:width .35s cubic-bezier(.4,0,.2,1), background .3s;
+}
+.prog-fill.done{background:var(--ok);}
+
+/* ============ 品类提示 ============ */
+.category-hint{
+  margin:12px 16px 0;
+  padding:10px 12px;
+  background:var(--ok-soft);
+  border-left:3px solid var(--ok);
+  font-size:11px;
+  color:var(--ink-2);
+  line-height:1.5;
+  flex-shrink:0;
+}
+.category-hint strong{color:var(--ok); font-weight:700;}
+
+/* ============ 滚动区 ============ */
+.scroll-area{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.scroll-area::-webkit-scrollbar{width:0;}
+
+/* ============ 模块列表 ============ */
+.module-list{
+  padding:12px 16px;
+  display:flex; flex-direction:column;
+  gap:10px;
+}
+.module{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:4px;
+  overflow:hidden;
+  transition:all .2s;
+  border-left:3px solid var(--line);
+}
+.module.must:not(.done){border-left-color:var(--must);}
+.module.done{border-left-color:var(--ok); background:#fafaf8;}
+.module.active{
+  border-color:var(--ink);
+  border-left-color:var(--ink);
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+}
+.module.warn{border-left-color:var(--warn);}
+
+.module-head{
+  padding:12px 14px;
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer; user-select:none;
+}
+.module-name{
+  font-weight:600; font-size:14px;
+  display:flex; align-items:center; gap:6px;
+}
+.module-name .req{color:var(--must); font-weight:700;}
+.module-name .opt-tag{
+  font-size:10px; color:var(--ink-3);
+  background:var(--accent-soft);
+  padding:1px 6px; border-radius:2px;
+  font-weight:400; letter-spacing:1px;
+}
+.module-status{
+  margin-left:auto;
+  display:flex; align-items:center; gap:8px;
+  font-size:11px; color:var(--ink-3);
+}
+.module-status .sub{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+}
+.module-status .sub.ok{color:var(--ok); font-weight:600;}
+.module-status .sub.warn{color:var(--warn); font-weight:600;}
+.module-status .sub.must{color:var(--must); font-weight:600;}
+.module-status .dot{
+  color:var(--ink-3);
+  opacity:.5;
+}
+.module-status .check{
+  width:16px; height:16px; border-radius:50%;
+  background:var(--ok); color:#fff;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700;
+}
+.module-status .check.warn{background:var(--warn);}
+.module-status .chevron{
+  font-size:10px; color:var(--ink-3);
+  transition:transform .2s;
+}
+.module.active .module-status .chevron{transform:rotate(180deg);}
+
+.module-body{
+  padding:0 14px 16px;
+  border-top:1px solid var(--line);
+  animation:slideDown .25s ease;
+}
+@keyframes slideDown{
+  from{opacity:0; transform:translateY(-4px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* ============ 小节标题 ============ */
+.section-label{
+  display:flex; align-items:center; gap:8px;
+  margin:14px 0 10px;
+  font-size:11px;
+  color:var(--ink-3);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.section-label::before{
+  content:'';
+  width:3px; height:12px;
+  background:var(--ink);
+}
+.section-label .sec-count{
+  margin-left:auto;
+  letter-spacing:1px;
+  color:var(--ink-2);
+  text-transform:none;
+  font-weight:400;
+}
+.section-label .sec-count .mini-ok{color:var(--ok); font-weight:600;}
+.section-label .sec-count .mini-must{color:var(--must); font-weight:600;}
+
+/* ============ 拍摄区 ============ */
+.shoot-area{
+  display:flex; gap:10px;
+}
+.guide-img{
+  width:96px; height:96px;
+  background:linear-gradient(135deg,#ebe8dd 0%,#d9d4c3 100%);
+  border-radius:4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  flex-shrink:0; position:relative;
+  font-size:10px; color:var(--ink-3);
+  letter-spacing:1px;
+}
+.guide-img .illustration{font-size:32px; opacity:0.5; margin-bottom:4px;}
+.guide-img .guide-label{font-size:9px;}
+.shoot-tips{flex:1; font-size:11px; color:var(--ink-2); line-height:1.6;}
+.shoot-tips .tip-title{font-weight:600; color:var(--ink); margin-bottom:4px; font-size:12px;}
+.shoot-tips .tip-item{padding-left:10px; position:relative;}
+.shoot-tips .tip-item::before{content:'·'; position:absolute; left:0; color:var(--ink-3);}
+
+.shot-grid{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+.shot{
+  aspect-ratio:1;
+  border-radius:4px;
+  position:relative;
+  overflow:hidden;
+  animation:popIn .25s ease;
+}
+@keyframes popIn{
+  from{opacity:0; transform:scale(.85);}
+  to{opacity:1; transform:scale(1);}
+}
+.shot.photo{background:linear-gradient(135deg,#2a6b8a 0%,#5a94b5 50%,#3a7a9a 100%);}
+.shot.photo:nth-child(even){background:linear-gradient(135deg,#8a6b3a 0%,#b59a5a 50%,#9a7a3a 100%);}
+.shot.photo:nth-child(3n){background:linear-gradient(135deg,#6b3a5a 0%,#9a5a7a 50%,#7a3a5a 100%);}
+.shot .shot-label{
+  position:absolute; bottom:4px; left:4px;
+  background:rgba(0,0,0,0.5); color:#fff;
+  font-size:9px; padding:1px 4px; border-radius:2px;
+  letter-spacing:1px;
+}
+.shot .shot-remove{
+  position:absolute; top:4px; right:4px;
+  width:18px; height:18px;
+  background:rgba(0,0,0,0.65); color:#fff;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; cursor:pointer;
+  transition:all .15s;
+}
+.shot .shot-remove:hover{background:var(--warn);}
+.shot.add{
+  border:1px dashed var(--line-strong);
+  background:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:var(--ink-3);
+  font-size:20px;
+  cursor:pointer;
+  transition:all .15s;
+  gap:2px;
+}
+.shot.add:hover{background:var(--accent-soft); border-color:var(--ink);}
+.shot.add:hover .plus{color:var(--ink);}
+.shot.add .plus{font-weight:200; line-height:1;}
+.shot.add .add-label{font-size:9px; color:var(--ink-3); letter-spacing:1px;}
+.shot.add.required{
+  border-color:var(--must);
+  background:var(--must-soft);
+}
+.shot.add.required .plus{color:var(--must);}
+.shot.add.required .add-label{color:var(--must);}
+
+/* ============ 瑕疵区 ============ */
+.flaw-head{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:8px;
+}
+.no-flaw-toggle{
+  display:flex; align-items:center; gap:6px;
+  font-size:11px; color:var(--ink-2);
+  cursor:pointer; user-select:none;
+  padding:4px 10px; border-radius:2px;
+  border:1px solid var(--line);
+  transition:all .15s;
+  background:#fff;
+}
+.no-flaw-toggle:hover{border-color:var(--ink-3);}
+.no-flaw-toggle .cb{
+  width:14px; height:14px;
+  border:1px solid var(--line-strong);
+  border-radius:2px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#fff; font-size:10px;
+}
+.no-flaw-toggle.on{
+  color:var(--ok); font-weight:600;
+  border-color:var(--ok);
+  background:var(--ok-soft);
+}
+.no-flaw-toggle.on .cb{background:var(--ok); border-color:var(--ok); color:#fff;}
+
+.flaw-collapsed{
+  padding:10px 12px;
+  background:var(--ok-soft);
+  border-radius:4px;
+  font-size:11px;
+  color:var(--ok);
+  display:flex; align-items:center; gap:6px;
+  font-weight:600;
+}
+
+.flaw-row{
+  display:grid;
+  grid-template-columns:56px 1fr;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid var(--line);
+}
+.flaw-row:last-child{border-bottom:none;}
+.flaw-label{font-size:12px; color:var(--ink-2);}
+.flaw-opts{display:grid; grid-template-columns:repeat(3,1fr); gap:6px;}
+.flaw-opt{
+  padding:6px 8px;
+  text-align:center;
+  font-size:11px;
+  border:1px solid var(--line);
+  border-radius:2px;
+  cursor:pointer;
+  background:#fff;
+  color:var(--ink-2);
+  transition:all .15s;
+  user-select:none;
+}
+.flaw-opt:hover{border-color:var(--ink-3);}
+.flaw-opt.selected{
+  background:var(--ink); color:#fff; border-color:var(--ink); font-weight:600;
+}
+.flaw-opt.selected.warn{background:var(--warn); border-color:var(--warn);}
+
+.flaw-desc{margin-top:12px;}
+.flaw-desc .desc-label{font-size:12px; color:var(--ink-2); margin-bottom:6px;}
+.flaw-desc textarea{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:2px;
+  padding:8px 10px;
+  font-size:12px;
+  font-family:inherit;
+  resize:none;
+  min-height:56px;
+  background:#fff;
+  color:var(--ink);
+}
+.flaw-desc textarea:focus{outline:none; border-color:var(--ink);}
+
+/* ============ 底部 ============ */
+.foot-hint{
+  text-align:center;
+  font-size:10px;
+  color:var(--ink-3);
+  padding:8px 16px 4px;
+  background:#fff;
+}
+.foot-hint.warn{color:var(--must);}
+.foot-hint.ok{color:var(--ok);}
+.foot{
+  background:#fff;
+  border-top:1px solid var(--line);
+  padding:10px 16px 14px;
+  display:flex; gap:10px;
+  flex-shrink:0;
+}
+.btn{
+  flex:1;
+  height:44px;
+  border-radius:2px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  border:1px solid var(--ink);
+  transition:all .15s;
+  letter-spacing:1px;
+  font-family:inherit;
+}
+.btn-ghost{background:#fff; color:var(--ink);}
+.btn-ghost:hover{background:var(--accent-soft);}
+.btn-primary{background:var(--ink); color:#fff;}
+.btn-primary:hover:not(:disabled){background:#000;}
+.btn-primary:disabled{
+  background:var(--ink-3);
+  border-color:var(--ink-3);
+  cursor:not-allowed;
+}
+
+/* ============ 相机 ============ */
+.camera-overlay{
+  position:absolute;
+  inset:0;
+  background:#000;
+  z-index:50;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+}
+.camera-overlay.show{display:flex;}
+.camera-frame{
+  width:82%; aspect-ratio:3/4;
+  border:2px solid rgba(255,255,255,0.3);
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+.camera-frame::before,
+.camera-frame::after{
+  content:''; position:absolute;
+  width:20px; height:20px;
+  border:2px solid #fff;
+}
+.camera-frame::before{top:-2px; left:-2px; border-right:none; border-bottom:none;}
+.camera-frame::after{bottom:-2px; right:-2px; border-left:none; border-top:none;}
+.camera-hint{
+  position:absolute;
+  top:60px; left:0; right:0;
+  text-align:center;
+  font-size:13px;
+  letter-spacing:1px;
+}
+.camera-guide-emoji{font-size:80px; opacity:.4;}
+.camera-shutter{
+  position:absolute; bottom:60px;
+  width:64px; height:64px;
+  border-radius:50%;
+  background:#fff;
+  border:3px solid rgba(255,255,255,0.3);
+  cursor:pointer;
+  transition:all .15s;
+}
+.camera-shutter:active{transform:scale(.9);}
+.camera-close{
+  position:absolute;
+  top:20px; right:20px;
+  width:32px; height:32px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:16px;
+}
+
+/* ============ 成功页 ============ */
+.success-screen{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 24px;
+  text-align:center;
+}
+.success-icon{
+  width:80px; height:80px;
+  border-radius:50%;
+  background:var(--ok);
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:40px;
+  margin-bottom:20px;
+  animation:popIn .4s ease;
+}
+.success-title{
+  font-family:'Noto Serif SC',serif;
+  font-size:20px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.success-desc{
+  font-size:13px;
+  color:var(--ink-2);
+  line-height:1.7;
+  margin-bottom:24px;
+}
+.success-summary{
+  width:100%;
+  background:var(--accent-soft);
+  padding:14px 16px;
+  font-size:12px;
+  color:var(--ink-2);
+  text-align:left;
+  line-height:1.8;
+  border-radius:4px;
+}
+.success-summary strong{color:var(--ink);}
+
+@media (max-width: 900px){
+  .demo-wrap{grid-template-columns:1fr; max-width:390px;}
+  .demo-side{position:static;}
+  .demo-side.right{order:3;}
+}
+</style>
+</head>
+<body>
+
+<div class="demo-wrap">
+
+  <!-- ============ 左侧说明 ============ -->
+  <div class="demo-side">
+    <h3>体验 Demo · 货品成色 v2.1</h3>
+    <div style="font-size:11px; color:var(--ink-3);">
+      SPU 示例:Hermès Birkin 25
+    </div>
+
+    <h4>本版变化(vs v2.0)</h4>
+    <ul style="font-size:11px;">
+      <li><strong>去掉两步式</strong>,改回一屏流</li>
+      <li>照片和瑕疵<strong>同属一个模块</strong></li>
+      <li>上下分区:照片区 / 瑕疵区</li>
+      <li>进度拆成双维度展示</li>
+    </ul>
+
+    <h4>怎么玩</h4>
+    <ul style="font-size:11px;">
+      <li>点模块展开,上半拍照+下半标瑕疵</li>
+      <li>可先拍后标,也可先标后拍</li>
+      <li>"无瑕疵"一键勾选折叠</li>
+      <li>必拍 4 项全完成 → 提交解锁</li>
+    </ul>
+
+    <div class="tip">
+      <strong>模块完成 = 照片满足 min + 瑕疵已标注(勾无瑕疵或每项有等级)</strong>
+    </div>
+
+    <div class="stats">
+      <div class="stats-row"><span>已拍张数</span><strong id="stats-photos">0 / 10</strong></div>
+      <div class="stats-row"><span>模块完成</span><strong id="stats-modules">0 / 4</strong></div>
+      <div class="stats-row"><span>交互次数</span><strong id="stats-clicks">0</strong></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetDemo()">↻ 重置 Demo</button>
+  </div>
+
+  <!-- ============ 手机 ============ -->
+  <div class="phone" id="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span style="font-size:10px;">●●● ▰▰</span>
+    </div>
+    <div class="nav">
+      <span class="back" onclick="handleBack()">‹</span>
+      <span class="title" id="nav-title">货品成色</span>
+      <span class="meta">RC-2604160087</span>
+    </div>
+    <div class="save-toast" id="save-toast">✓ 已自动保存</div>
+    <div id="page-container" style="flex:1; display:flex; flex-direction:column; overflow:hidden;"></div>
+
+    <!-- 相机浮层 -->
+    <div class="camera-overlay" id="camera-overlay">
+      <div class="camera-close" onclick="closeCamera()">✕</div>
+      <div class="camera-hint" id="camera-hint">请按示意图拍摄</div>
+      <div class="camera-frame">
+        <div class="camera-guide-emoji" id="camera-guide">👜</div>
+      </div>
+      <div class="camera-shutter" onclick="takePhoto()"></div>
+    </div>
+  </div>
+
+  <!-- ============ 右侧对比 ============ -->
+  <div class="demo-side right">
+    <h3>v2.1 关键点</h3>
+    <h4>单模块结构</h4>
+    <div style="font-size:10px; font-family:'SF Mono',Monaco,monospace; background:#2a2a2a; color:#e0e0e0; padding:10px; border-radius:2px; line-height:1.6;">
+┌─ 正面 * ─────── ▼<br>
+│ <span style="color:#b59a5a">拍照</span> · 2/1 ✓<br>
+│ <span style="color:#5a94b5">瑕疵</span> · 1 项 !<br>
+├─────────────<br>
+│ ◆ 拍照<br>
+│ [img] [img] [+]<br>
+│<br>
+│ ◆ 瑕疵    [☐无瑕疵]<br>
+│ 划痕  [无][轻][明]<br>
+│ 褪色  [无][轻][明]<br>
+│ ...<br>
+└─────────────
+    </div>
+
+    <h4>模块头状态</h4>
+    <ul style="font-size:11px;">
+      <li><strong style="color:var(--must)">橙色边</strong>:必拍未完</li>
+      <li><strong style="color:var(--ok)">绿色边 ✓</strong>:已完成(无瑕疵)</li>
+      <li><strong style="color:var(--warn)">橙色边 !</strong>:已完成(有瑕疵)</li>
+      <li><strong style="color:var(--ink-3)">灰色边</strong>:补拍未动</li>
+    </ul>
+
+    <h4>双进度</h4>
+    <ul style="font-size:11px;">
+      <li><strong>拍照进度</strong>:所有图片张数</li>
+      <li><strong>模块进度</strong>:必拍模块完成数</li>
+      <li>模块完成 = 拍够 + 标完</li>
+    </ul>
+
+    <h4>待确认</h4>
+    <ul style="font-size:11px;">
+      <li>模板配置前端还是后端?</li>
+      <li>补拍模块的瑕疵要不要必填?</li>
+      <li>瑕疵数计入轻微吗?</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+// ============ 数据模型 ============
+const PHOTO_TEMPLATE = {
+  categoryId: 'bag-handbag',
+  categoryName: '手袋',
+  mustShoot: [
+    { key:'front',  name:'正面', partType:'leather',  emoji:'👜', min:1, max:3, tips:['整包置于浅色纯色背景','居中构图,上下留白 10%','自然光,避免反光'] },
+    { key:'back',   name:'背面', partType:'leather',  emoji:'👜', min:1, max:3, tips:['翻转包体,展示背面整体','保持与正面相同光线','检查是否有遮挡'] },
+    { key:'logo',   name:'标识', partType:'label',    emoji:'🏷️', min:3, max:6, tips:['Logo / 钢印 / 日期码各拍 1 张','特写清晰,不要虚焦','保证字迹可辨识'] },
+    { key:'inside', name:'内部', partType:'interior', emoji:'🎒', min:2, max:4, tips:['打开拉链展示内里','内标 + 内衬分别拍','打开所有夹层'] }
+  ],
+  optionalShoot: [
+    { key:'bottom', name:'底部', partType:'leather',  emoji:'📐', min:1, max:2, tips:['展示四角和底部保护钉','注意磨损程度'] },
+    { key:'side',   name:'侧面', partType:'leather',  emoji:'📏', min:1, max:3, tips:['左右两侧分别拍','展示侧面形变情况'] },
+    { key:'handle', name:'提手', partType:'hardware', emoji:'🔗', min:1, max:2, tips:['提手根部和弯折处特写'] },
+    { key:'strap',  name:'肩带', partType:'hardware', emoji:'⛓️', min:1, max:2, tips:['含肩带才需拍'] },
+    { key:'metal',  name:'五金', partType:'hardware', emoji:'⚙️', min:1, max:3, tips:['拉链头、铭牌、金属装饰'] },
+    { key:'extra',  name:'附件', partType:'other',    emoji:'📦', min:1, max:4, tips:['防尘袋 / 保卡 / 购买凭证'] }
+  ]
+};
+
+const FLAW_CONFIG = {
+  leather:  ['划痕', '褪色', '磨损', '污渍'],
+  hardware: ['划痕', '氧化', '掉漆'],
+  label:    ['模糊', '磨损'],
+  interior: ['污渍', '磨损', '异味'],
+  other:    ['破损']
+};
+
+const PART_TYPE_NAME = {leather:'皮面', hardware:'五金', label:'标识', interior:'内部', other:'其他'};
+
+// ============ 状态 ============
+let state = {
+  activeModule: null,
+  modules: {},
+  clickCount: 0,
+  submitted: false
+};
+
+function initState(){
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  all.forEach(m => {
+    state.modules[m.key] = { photos:[], flaws:{}, noFlaw:false, desc:'' };
+  });
+}
+
+// ============ 工具函数 ============
+function isPhotoOk(m){
+  return state.modules[m.key].photos.length >= m.min;
+}
+function isFlawOk(m){
+  const d = state.modules[m.key];
+  if(d.noFlaw) return true;
+  const items = FLAW_CONFIG[m.partType] || [];
+  return items.length > 0 && items.every(f => d.flaws[f]);
+}
+function hasFlaw(m){
+  const d = state.modules[m.key];
+  if(d.noFlaw) return false;
+  const items = FLAW_CONFIG[m.partType] || [];
+  return items.some(f => d.flaws[f] && d.flaws[f] !== '无');
+}
+function countFlaws(m){
+  const d = state.modules[m.key];
+  const items = FLAW_CONFIG[m.partType] || [];
+  return items.filter(f => d.flaws[f] && d.flaws[f] !== '无').length;
+}
+function isModuleDone(m){
+  // 完成 = 照片够 且 瑕疵标完
+  return isPhotoOk(m) && isFlawOk(m);
+}
+function isModuleTouched(m){
+  const d = state.modules[m.key];
+  return d.photos.length > 0 || d.noFlaw || Object.keys(d.flaws).length > 0;
+}
+
+// ============ 渲染主入口 ============
+function render(){
+  updateStats();
+  if(state.submitted){
+    renderSuccess();
+  } else {
+    renderMain();
+  }
+}
+
+function renderMain(){
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  const mustList = PHOTO_TEMPLATE.mustShoot;
+  const optList = PHOTO_TEMPLATE.optionalShoot;
+
+  const totalPhotos = all.reduce((s,m) => s + state.modules[m.key].photos.length, 0);
+  const maxPhotosTarget = all.reduce((s,m) => s + m.min, 0);
+
+  const mustDone = mustList.filter(isModuleDone).length;
+  const mustTotal = mustList.length;
+
+  const canSubmit = mustDone === mustTotal;
+  const pendingMust = mustList.filter(m => !isModuleDone(m));
+
+  document.getElementById('nav-title').textContent = '货品成色';
+
+  const html = `
+    <!-- 双维进度 -->
+    <div class="progress-bar">
+      <div class="dual-progress">
+        <div class="prog-item">
+          <div class="prog-head">
+            <span class="prog-label">拍照</span>
+            <span class="prog-val">${totalPhotos}<span style="color:var(--ink-3); font-weight:400;"> / ${maxPhotosTarget}</span></span>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill ${totalPhotos>=maxPhotosTarget?'done':''}" style="width:${Math.min((totalPhotos/maxPhotosTarget)*100, 100)}%"></div>
+          </div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-head">
+            <span class="prog-label">必拍模块</span>
+            <span class="prog-val ${mustDone===mustTotal?'ok':'must'}">${mustDone}<span style="color:var(--ink-3); font-weight:400;"> / ${mustTotal}</span></span>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill ${mustDone===mustTotal?'done':''}" style="width:${(mustDone/mustTotal)*100}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-hint">
+      <strong>${PHOTO_TEMPLATE.categoryName}品类 · 必拍 ${mustTotal} 项</strong>(${mustList.map(m=>m.name).join(' · ')})<br>
+      每个模块需完成「拍照 + 瑕疵标注」。补拍 ${optList.length} 项可选,建议有瑕疵时补充。
+    </div>
+
+    <div class="scroll-area">
+      <div class="module-list">
+        ${all.map(renderModule).join('')}
+      </div>
+    </div>
+
+    <div class="foot-hint ${canSubmit?'ok':'warn'}">
+      ${canSubmit
+        ? `✓ 必拍全部完成 · 已拍 ${totalPhotos} 张`
+        : `还有 ${pendingMust.length} 项必拍待完成(${pendingMust.map(m=>m.name).join(' · ')})`}
+    </div>
+    <div class="foot">
+      <button class="btn btn-ghost" onclick="incClick();alert('将跳转自己定价流程(Demo)')">自己定价</button>
+      <button class="btn btn-primary" ${canSubmit?'':'disabled'} onclick="submit()">提交竞价</button>
+    </div>
+  `;
+  document.getElementById('page-container').innerHTML = html;
+}
+
+// ============ 模块渲染 ============
+function renderModule(m){
+  const d = state.modules[m.key];
+  const isMust = PHOTO_TEMPLATE.mustShoot.some(x => x.key === m.key);
+  const isActive = state.activeModule === m.key;
+  const photoOk = isPhotoOk(m);
+  const flawOk = isFlawOk(m);
+  const done = isModuleDone(m);
+  const withFlaw = hasFlaw(m);
+
+  let moduleClass = 'module';
+  if(isMust && !done) moduleClass += ' must';
+  if(done && !withFlaw) moduleClass += ' done';
+  if(done && withFlaw) moduleClass += ' warn';
+  if(isActive) moduleClass += ' active';
+
+  // 状态头:两个小维度
+  const photoStatus = photoOk
+    ? `<span class="sub ok">拍照 ${d.photos.length}/${m.min} ✓</span>`
+    : `<span class="sub ${isMust?'must':''}">拍照 ${d.photos.length}/${m.min}</span>`;
+
+  let flawStatus = '';
+  if(d.noFlaw){
+    flawStatus = `<span class="sub ok">无瑕疵 ✓</span>`;
+  } else if(withFlaw){
+    flawStatus = `<span class="sub warn">${countFlaws(m)} 项瑕疵</span>`;
+  } else if(flawOk){
+    flawStatus = `<span class="sub ok">瑕疵 ✓</span>`;
+  } else {
+    flawStatus = `<span class="sub ${isMust?'must':''}">瑕疵待标</span>`;
+  }
+
+  let tailIcon = '';
+  if(done && !withFlaw) tailIcon = '<span class="check">✓</span>';
+  else if(done && withFlaw) tailIcon = '<span class="check warn">!</span>';
+
+  return `
+    <div class="${moduleClass}" data-module="${m.key}">
+      <div class="module-head" onclick="toggleModule('${m.key}')">
+        <span class="module-name">
+          ${m.name}
+          ${isMust ? '<span class="req">*</span>' : '<span class="opt-tag">补拍</span>'}
+        </span>
+        <span class="module-status">
+          ${photoStatus}
+          <span class="dot">·</span>
+          ${flawStatus}
+          ${tailIcon}
+          <span class="chevron">▼</span>
+        </span>
+      </div>
+      ${isActive ? renderModuleBody(m) : ''}
+    </div>
+  `;
+}
+
+function renderModuleBody(m){
+  const d = state.modules[m.key];
+  const flawItems = FLAW_CONFIG[m.partType] || [];
+  const photoOk = isPhotoOk(m);
+
+  return `
+    <div class="module-body">
+
+      <!-- 拍照区 -->
+      <div class="section-label">
+        拍照
+        <span class="sec-count">
+          ${photoOk
+            ? `<span class="mini-ok">${d.photos.length}/${m.min} ✓</span>`
+            : `<span class="mini-must">${d.photos.length}/${m.min}</span>`}
+        </span>
+      </div>
+
+      <div class="shoot-area">
+        <div class="guide-img">
+          <span class="illustration">${m.emoji}</span>
+          <span class="guide-label">示意图</span>
+        </div>
+        <div class="shoot-tips">
+          <div class="tip-title">${m.name} · 拍摄要点</div>
+          ${m.tips.map(t => `<div class="tip-item">${t}</div>`).join('')}
+        </div>
+      </div>
+
+      <div class="shot-grid">
+        ${d.photos.map((p,i) => `
+          <div class="shot photo">
+            <span class="shot-remove" onclick="removePhoto('${m.key}',${i});event.stopPropagation();">✕</span>
+            <span class="shot-label">${m.name}${i+1}</span>
+          </div>
+        `).join('')}
+        ${d.photos.length < m.max ? `
+          <div class="shot add ${d.photos.length < m.min ? 'required' : ''}" onclick="openCamera('${m.key}')">
+            <span class="plus">+</span>
+            <span class="add-label">${d.photos.length < m.min ? `需 ${m.min-d.photos.length} 张` : '可加图'}</span>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- 瑕疵区 -->
+      <div class="section-label" style="margin-top:18px;">
+        瑕疵 · ${PART_TYPE_NAME[m.partType]}部位
+        <span class="sec-count">
+          ${d.noFlaw ? '<span class="mini-ok">无瑕疵 ✓</span>' : (hasFlaw(m) ? `<span style="color:var(--warn); font-weight:600">${countFlaws(m)} 项</span>` : `<span>${flawItems.length} 项待标</span>`)}
+        </span>
+      </div>
+
+      <div class="flaw-head">
+        <span style="font-size:11px; color:var(--ink-3);">${d.noFlaw?'已快速标记无瑕疵':'逐项选择等级,或勾选"无瑕疵"'}</span>
+        <div class="no-flaw-toggle ${d.noFlaw?'on':''}" onclick="toggleNoFlaw('${m.key}');event.stopPropagation();">
+          <span class="cb">${d.noFlaw?'✓':''}</span>
+          <span>无瑕疵</span>
+        </div>
+      </div>
+
+      ${d.noFlaw ? `
+        <div class="flaw-collapsed">
+          <span>✓</span>
+          <span>此部位已标记为"无瑕疵",再次点击上方按钮可展开</span>
+        </div>
+      ` : `
+        ${flawItems.map(f => `
+          <div class="flaw-row">
+            <span class="flaw-label">${f}</span>
+            <div class="flaw-opts">
+              ${['无','轻微','明显'].map(lv => `
+                <div class="flaw-opt ${d.flaws[f]===lv?'selected':''} ${d.flaws[f]==='明显' && lv==='明显'?'warn':''}"
+                     onclick="setFlaw('${m.key}','${f}','${lv}');event.stopPropagation();">
+                  ${lv}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+        <div class="flaw-desc">
+          <div class="desc-label">其他瑕疵描述(选填)</div>
+          <textarea placeholder="如:右下角有 5cm 长划痕" oninput="setDesc('${m.key}',this.value)" onclick="event.stopPropagation()">${d.desc||''}</textarea>
+        </div>
+      `}
+
+    </div>
+  `;
+}
+
+// ============ 成功页 ============
+function renderSuccess(){
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  const totalPhotos = all.reduce((s,m) => s + state.modules[m.key].photos.length, 0);
+  const withFlaws = all.filter(m => state.modules[m.key].photos.length > 0 && hasFlaw(m));
+  const cleanCount = all.filter(m => state.modules[m.key].photos.length > 0 && !hasFlaw(m)).length;
+
+  document.getElementById('nav-title').textContent = '提交成功';
+
+  const html = `
+    <div class="success-screen">
+      <div class="success-icon">✓</div>
+      <div class="success-title">提交成功</div>
+      <div class="success-desc">
+        我们已收到你的货品信息,<br>
+        鉴定师将在 <strong style="color:var(--ink)">4 小时内</strong>出价。
+      </div>
+      <div class="success-summary">
+        <div>单号:<strong>RC-2604160087</strong></div>
+        <div>品类:<strong>${PHOTO_TEMPLATE.categoryName} · Hermès Birkin 25</strong></div>
+        <div>拍照:<strong>${totalPhotos}</strong> 张 · <strong>${all.filter(m=>state.modules[m.key].photos.length>0).length}</strong> 个部位</div>
+        <div>成色:<strong>${withFlaws.length}</strong> 个部位有瑕疵 · <strong>${cleanCount}</strong> 个无瑕疵</div>
+        <div style="margin-top:8px; color:var(--ok);">✓ 数据结构符合 photoSubmission 规范</div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn btn-ghost" onclick="resetDemo()">再来一次</button>
+      <button class="btn btn-primary" onclick="showSubmissionData()">查看提交数据</button>
+    </div>
+  `;
+  document.getElementById('page-container').innerHTML = html;
+}
+
+// ============ 交互 ============
+function toggleModule(key){
+  incClick();
+  state.activeModule = state.activeModule === key ? null : key;
+  render();
+}
+function openCamera(key){
+  incClick();
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  const m = all.find(x => x.key === key);
+  state.cameraTarget = key;
+  document.getElementById('camera-guide').textContent = m.emoji;
+  document.getElementById('camera-hint').textContent = `拍摄:${m.name}`;
+  document.getElementById('camera-overlay').classList.add('show');
+}
+function closeCamera(){
+  document.getElementById('camera-overlay').classList.remove('show');
+  state.cameraTarget = null;
+}
+function takePhoto(){
+  incClick();
+  const key = state.cameraTarget;
+  if(!key) return;
+  state.modules[key].photos.push({id:Date.now()});
+  closeCamera();
+  showSaveToast();
+  render();
+}
+function removePhoto(key, idx){
+  incClick();
+  state.modules[key].photos.splice(idx, 1);
+  showSaveToast();
+  render();
+}
+function toggleNoFlaw(key){
+  incClick();
+  const d = state.modules[key];
+  d.noFlaw = !d.noFlaw;
+  if(d.noFlaw){
+    const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+    const m = all.find(x => x.key === key);
+    FLAW_CONFIG[m.partType].forEach(f => d.flaws[f] = '无');
+  } else {
+    d.flaws = {};
+  }
+  showSaveToast();
+  render();
+}
+function setFlaw(key, flaw, level){
+  incClick();
+  state.modules[key].flaws[flaw] = level;
+  state.modules[key].noFlaw = false;
+  showSaveToast();
+  render();
+}
+function setDesc(key, val){
+  state.modules[key].desc = val;
+}
+function submit(){
+  incClick();
+  state.submitted = true;
+  render();
+}
+function handleBack(){
+  if(state.submitted) resetDemo();
+}
+function resetDemo(){
+  state = { activeModule:null, modules:{}, clickCount:0, submitted:false };
+  initState();
+  render();
+}
+function showSubmissionData(){
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  const submission = {
+    orderId: 'RC-2604160087',
+    categoryId: PHOTO_TEMPLATE.categoryId,
+    modules: all
+      .filter(m => state.modules[m.key].photos.length > 0)
+      .map(m => ({
+        key: m.key,
+        name: m.name,
+        photos: state.modules[m.key].photos.map((p,i) => `oss://photos/${m.key}-${i+1}.jpg`),
+        flaws: {
+          noFlaw: state.modules[m.key].noFlaw,
+          items: state.modules[m.key].flaws
+        },
+        description: state.modules[m.key].desc || null
+      })),
+    submittedAt: new Date().toISOString()
+  };
+  alert('提交给后端的数据结构:\n\n' + JSON.stringify(submission, null, 2));
+}
+
+// ============ 统计 ============
+function incClick(){
+  state.clickCount++;
+  updateStats();
+}
+function updateStats(){
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  const totalPhotos = all.reduce((s,m) => s + state.modules[m.key].photos.length, 0);
+  const maxPhotosTarget = all.reduce((s,m) => s + m.min, 0);
+  const mustDone = PHOTO_TEMPLATE.mustShoot.filter(isModuleDone).length;
+  document.getElementById('stats-photos').textContent = `${totalPhotos} / ${maxPhotosTarget}`;
+  document.getElementById('stats-modules').textContent = `${mustDone} / ${PHOTO_TEMPLATE.mustShoot.length}`;
+  document.getElementById('stats-clicks').textContent = state.clickCount;
+}
+function showSaveToast(){
+  const toast = document.getElementById('save-toast');
+  toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1200);
+}
+
+initState();
+render();
+</script>
+
+</body>
+</html>
