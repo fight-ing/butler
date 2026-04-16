@@ -718,11 +718,14 @@ body{
 
     <h4>模块头状态</h4>
     <ul style="font-size:11px;">
-      <li><strong style="color:var(--must)">橙色边</strong>:必拍未完</li>
-      <li><strong style="color:var(--ok)">绿色边 ✓</strong>:已完成(无瑕疵)</li>
-      <li><strong style="color:var(--warn)">橙色边 !</strong>:已完成(有瑕疵)</li>
+      <li><strong style="color:var(--must)">橙色边</strong>:必拍未完成</li>
+      <li><strong style="color:var(--ok)">绿色边 ✓</strong>:已完成(拍够+标完)</li>
       <li><strong style="color:var(--ink-3)">灰色边</strong>:补拍未动</li>
     </ul>
+    <div class="tip" style="margin-top:8px;">
+      模块头<strong>只统计进度,不区分有/无瑕疵</strong>。<br>
+      瑕疵严重程度由鉴定师判断,不在用户侧做价值提示。
+    </div>
 
     <h4>双进度</h4>
     <ul style="font-size:11px;">
@@ -783,7 +786,8 @@ let state = {
 function initState(){
   const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
   all.forEach(m => {
-    state.modules[m.key] = { photos:[], flaws:{}, noFlaw:false, desc:'' };
+    // noFlawByToggle:用户主动点击"无瑕疵"开关触发,为 true 时瑕疵区折叠
+    state.modules[m.key] = { photos:[], flaws:{}, noFlaw:false, noFlawByToggle:false, desc:'' };
   });
 }
 
@@ -828,6 +832,10 @@ function render(){
 }
 
 function renderMain(){
+  // 保存当前滚动位置(页面重渲染后恢复)
+  const oldScroll = document.querySelector('.scroll-area');
+  const savedScrollTop = oldScroll ? oldScroll.scrollTop : 0;
+
   const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
   const mustList = PHOTO_TEMPLATE.mustShoot;
   const optList = PHOTO_TEMPLATE.optionalShoot;
@@ -890,6 +898,12 @@ function renderMain(){
     </div>
   `;
   document.getElementById('page-container').innerHTML = html;
+
+  // 恢复滚动位置
+  const newScroll = document.querySelector('.scroll-area');
+  if(newScroll && savedScrollTop > 0){
+    newScroll.scrollTop = savedScrollTop;
+  }
 }
 
 // ============ 模块渲染 ============
@@ -900,33 +914,28 @@ function renderModule(m){
   const photoOk = isPhotoOk(m);
   const flawOk = isFlawOk(m);
   const done = isModuleDone(m);
-  const withFlaw = hasFlaw(m);
 
   let moduleClass = 'module';
   if(isMust && !done) moduleClass += ' must';
-  if(done && !withFlaw) moduleClass += ' done';
-  if(done && withFlaw) moduleClass += ' warn';
+  if(done) moduleClass += ' done';
   if(isActive) moduleClass += ' active';
 
-  // 状态头:两个小维度
+  // 拍照进度:当前/最小数
   const photoStatus = photoOk
-    ? `<span class="sub ok">拍照 ${d.photos.length}/${m.min} ✓</span>`
+    ? `<span class="sub ok">拍照 ${d.photos.length}/${m.min}</span>`
     : `<span class="sub ${isMust?'must':''}">拍照 ${d.photos.length}/${m.min}</span>`;
 
-  let flawStatus = '';
-  if(d.noFlaw){
-    flawStatus = `<span class="sub ok">无瑕疵 ✓</span>`;
-  } else if(withFlaw){
-    flawStatus = `<span class="sub warn">${countFlaws(m)} 项瑕疵</span>`;
-  } else if(flawOk){
-    flawStatus = `<span class="sub ok">瑕疵 ✓</span>`;
-  } else {
-    flawStatus = `<span class="sub ${isMust?'must':''}">瑕疵待标</span>`;
-  }
+  // 瑕疵进度:按实际瑕疵项数量统计
+  // 已选项数 = 已经选择等级的项(无/轻微/明显 任一)
+  const flawItems = FLAW_CONFIG[m.partType] || [];
+  const flawTotal = flawItems.length;
+  const flawSelected = flawItems.filter(f => d.flaws[f]).length;
+  const flawStatus = flawOk
+    ? `<span class="sub ok">瑕疵 ${flawSelected}/${flawTotal}</span>`
+    : `<span class="sub ${isMust?'must':''}">瑕疵 ${flawSelected}/${flawTotal}</span>`;
 
-  let tailIcon = '';
-  if(done && !withFlaw) tailIcon = '<span class="check">✓</span>';
-  else if(done && withFlaw) tailIcon = '<span class="check warn">!</span>';
+  // 尾部图标:只在两者都完成时显示绿色对勾,不再区分有无瑕疵
+  const tailIcon = done ? '<span class="check">✓</span>' : '';
 
   return `
     <div class="${moduleClass}" data-module="${m.key}">
@@ -996,19 +1005,21 @@ function renderModuleBody(m){
       <div class="section-label" style="margin-top:18px;">
         瑕疵 · ${PART_TYPE_NAME[m.partType]}部位
         <span class="sec-count">
-          ${d.noFlaw ? '<span class="mini-ok">无瑕疵 ✓</span>' : (hasFlaw(m) ? `<span style="color:var(--warn); font-weight:600">${countFlaws(m)} 项</span>` : `<span>${flawItems.length} 项待标</span>`)}
+          ${isFlawOk(m)
+            ? `<span class="mini-ok">${flawItems.filter(f => d.flaws[f]).length}/${flawItems.length} ✓</span>`
+            : `<span class="mini-must">${flawItems.filter(f => d.flaws[f]).length}/${flawItems.length}</span>`}
         </span>
       </div>
 
       <div class="flaw-head">
-        <span style="font-size:11px; color:var(--ink-3);">${d.noFlaw?'已快速标记无瑕疵':'逐项选择等级,或勾选"无瑕疵"'}</span>
+        <span style="font-size:11px; color:var(--ink-3);">${d.noFlawByToggle?'已快速标记无瑕疵':'逐项选择等级,或勾选"无瑕疵"'}</span>
         <div class="no-flaw-toggle ${d.noFlaw?'on':''}" onclick="toggleNoFlaw('${m.key}');event.stopPropagation();">
           <span class="cb">${d.noFlaw?'✓':''}</span>
           <span>无瑕疵</span>
         </div>
       </div>
 
-      ${d.noFlaw ? `
+      ${d.noFlawByToggle ? `
         <div class="flaw-collapsed">
           <span>✓</span>
           <span>此部位已标记为"无瑕疵",再次点击上方按钮可展开</span>
@@ -1108,6 +1119,7 @@ function toggleNoFlaw(key){
   incClick();
   const d = state.modules[key];
   d.noFlaw = !d.noFlaw;
+  d.noFlawByToggle = d.noFlaw;  // 主动点击开关触发
   if(d.noFlaw){
     const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
     const m = all.find(x => x.key === key);
@@ -1120,8 +1132,25 @@ function toggleNoFlaw(key){
 }
 function setFlaw(key, flaw, level){
   incClick();
-  state.modules[key].flaws[flaw] = level;
-  state.modules[key].noFlaw = false;
+  const d = state.modules[key];
+  d.flaws[flaw] = level;
+  d.noFlawByToggle = false;  // 通过选项操作触发,不是主动点开关
+
+  // 同步 noFlaw 状态
+  const all = [...PHOTO_TEMPLATE.mustShoot, ...PHOTO_TEMPLATE.optionalShoot];
+  const m = all.find(x => x.key === key);
+  const items = FLAW_CONFIG[m.partType] || [];
+  const allSelected = items.every(f => d.flaws[f]);
+  const allNone = allSelected && items.every(f => d.flaws[f] === '无');
+
+  if(allNone){
+    // 全部选"无" → 等同"无瑕疵"(但不折叠,因为用户是逐项操作的)
+    d.noFlaw = true;
+  } else {
+    // 任一项非"无" → 取消"无瑕疵"
+    d.noFlaw = false;
+  }
+
   showSaveToast();
   render();
 }
