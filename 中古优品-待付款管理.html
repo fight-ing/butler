@@ -1,0 +1,2840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中古优品 ERP · 支付真实姓名校验 综合演示</title>
+<style>
+:root {
+  --brand: #1677FF; --brand-hover: #4096FF;
+  --brand-bg: #E6F4FF; --brand-bg-active: #BAE0FF;
+  --orange: #FF4400; --orange-bg: #FFF1E8;
+  --text-1: #262626; --text-2: #595959; --text-3: #8C8C8C; --text-4: #BFBFBF;
+  --border: #F0F0F0; --border-2: #D9D9D9;
+  --bg-page: #F5F5F5; --bg-card: #FFFFFF; --bg-hover: #FAFAFA;
+  --bg-table-head: #FAFAFA; --bg-secondary: #F7F8FA;
+  --error: #FF4D4F; --error-bg: #FFF1F0;
+  --warning: #FAAD14; --warning-bg: #FFFBE6;
+  --success: #52C41A; --success-bg: #F6FFED;
+  --gold: #D4B106; --gold-bg: #FFFBE6;
+  --purple: #722ED1; --purple-bg: #F9F0FF;
+  --radius-sm: 2px; --radius-md: 4px; --radius-lg: 6px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px; color: var(--text-1); background: var(--bg-page); line-height: 1.5715;
+}
+
+/* ========= 顶栏 ========= */
+.topbar {
+  height: 56px; background: var(--bg-card);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-logo { font-weight: 600; font-size: 16px; margin-right: 32px; display: flex; align-items: center; gap: 8px; }
+.topbar-logo-icon {
+  width: 28px; height: 28px;
+  background: var(--brand); color: white;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+}
+.topbar-divider { color: var(--border-2); margin: 0 12px; }
+.topbar-shop { color: var(--text-2); font-size: 13px; }
+.topbar-spacer { flex: 1; }
+.topbar-user { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: var(--radius-md); cursor: pointer; }
+.topbar-user:hover { background: var(--bg-hover); }
+.topbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), #4096FF);
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+}
+.topbar-username { font-size: 13px; color: var(--text-2); }
+
+/* ========= 主体两栏 ========= */
+.layout { display: flex; min-height: calc(100vh - 56px); }
+
+/* 侧栏 */
+.sidebar { width: 208px; background: var(--bg-card); border-right: 1px solid var(--border); flex-shrink: 0; padding: 16px 0; }
+.menu-section { margin-bottom: 4px; }
+.menu-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 24px; color: var(--text-1); font-size: 13px; font-weight: 600;
+  cursor: pointer; user-select: none;
+}
+.menu-header:hover { background: var(--bg-hover); }
+.menu-header-icon { width: 16px; height: 16px; color: var(--brand); display: flex; align-items: center; justify-content: center; }
+.menu-header-text { flex: 1; }
+.menu-header-arrow { font-size: 9px; color: var(--text-3); transition: transform 0.2s; }
+.menu-section.collapsed .menu-header-arrow { transform: rotate(-90deg); }
+.menu-children { display: flex; flex-direction: column; padding: 2px 0 6px; }
+.menu-section.collapsed .menu-children { display: none; }
+.menu-child {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 24px 8px 50px;
+  color: var(--text-2); cursor: pointer; font-size: 13px;
+  position: relative; transition: all 0.15s;
+}
+.menu-child:hover { color: var(--text-1); background: var(--bg-hover); }
+.menu-child.active { color: var(--brand); background: var(--brand-bg); font-weight: 500; }
+.menu-child.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--brand); }
+.menu-child-icon { width: 14px; height: 14px; opacity: 0.7; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.menu-child.active .menu-child-icon { opacity: 1; }
+.menu-child-text { flex: 1; }
+.menu-child-badge {
+  background: var(--error); color: white;
+  font-size: 11px; font-weight: 500;
+  padding: 0 6px; border-radius: 10px; min-width: 18px;
+  text-align: center; line-height: 16px; height: 16px;
+}
+
+/* 主内容 */
+.content { flex: 1; padding: 16px 24px; overflow-x: auto; }
+
+/* 面包屑 */
+.breadcrumb { font-size: 13px; color: var(--text-3); margin-bottom: 12px; }
+.breadcrumb a { color: var(--text-3); cursor: pointer; }
+.breadcrumb a:hover { color: var(--brand); }
+.breadcrumb .sep { margin: 0 6px; color: var(--text-4); }
+.breadcrumb .current { color: var(--text-1); }
+
+/* 页面标题区 */
+.page-header {
+  background: var(--bg-card); padding: 16px 24px;
+  border-radius: var(--radius-md); margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.page-title { font-size: 18px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px; }
+.page-subtitle { color: var(--text-3); font-size: 13px; margin-top: 4px; }
+
+/* ========= 数据汇总卡片(渐变背景图 1 风格)========= */
+.summary-cards {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 16px;
+}
+.summary-cards.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.summary-cards.cols-5 { grid-template-columns: repeat(5, 1fr); }
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex; align-items: flex-start; gap: 12px;
+  position: relative;
+  transition: all 0.2s;
+}
+.summary-card.active {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.08);
+}
+.summary-card-icon-lg {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.summary-card-icon-lg.blue { background: var(--brand-bg); color: var(--brand); }
+.summary-card-icon-lg.pink { background: #FFF0F6; color: #EB2F96; }
+.summary-card-icon-lg.green { background: var(--success-bg); color: var(--success); }
+.summary-card-icon-lg.orange { background: var(--orange-bg); color: var(--orange); }
+.summary-card-icon-lg.brand { background: var(--brand-bg); color: var(--brand); }
+.summary-card-icon-lg.purple { background: var(--purple-bg); color: var(--purple); }
+.summary-card-icon-lg.red { background: var(--error-bg); color: var(--error); }
+.summary-card-body { flex: 1; min-width: 0; }
+.summary-card-value {
+  font-size: 22px; font-weight: 600;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  color: var(--text-1); line-height: 1.2;
+}
+.summary-card-label { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+.summary-card-extra { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+.summary-card-extra .up { color: var(--error); }
+.summary-card-extra .down { color: var(--success); }
+
+/* 卡片 */
+.card { background: var(--bg-card); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 16px; }
+.card-title {
+  font-size: 14px; font-weight: 600; margin: 0 0 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* 标签 */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 8px; border-radius: var(--radius-sm);
+  font-size: 12px; line-height: 18px;
+  border: 1px solid transparent;
+}
+.tag-warning { background: var(--warning-bg); color: var(--warning); border-color: #FFE58F; }
+.tag-error { background: var(--error-bg); color: var(--error); border-color: #FFCCC7; }
+.tag-success { background: var(--success-bg); color: var(--success); border-color: #B7EB8F; }
+.tag-brand { background: var(--brand-bg); color: var(--brand); border-color: #91CAFF; }
+.tag-default { background: var(--bg-hover); color: var(--text-2); border-color: var(--border); }
+.tag-gold { background: #FFFBE6; color: var(--gold); border-color: #FFE58F; }
+.tag-purple { background: var(--purple-bg); color: var(--purple); border-color: #D3ADF7; }
+
+/* 高级筛选区 */
+.filter-bar {
+  background: var(--bg-card); padding: 16px 20px;
+  border-radius: var(--radius-md); margin-bottom: 16px;
+}
+.filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 16px; }
+.filter-item { display: flex; align-items: center; gap: 8px; }
+.filter-item-label { font-size: 13px; color: var(--text-2); flex-shrink: 0; width: 80px; text-align: right; }
+.filter-item input, .filter-item select {
+  flex: 1; padding: 5px 11px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  font-size: 13px; outline: none; font-family: inherit;
+}
+.filter-item input:focus, .filter-item select:focus {
+  border-color: var(--brand); box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+.filter-actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* 列表 toolbar(状态 Tab 横排,带蓝色下划线)*/
+.list-toolbar-tabs {
+  display: flex; gap: 0; align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.tab-item {
+  padding: 8px 16px;
+  cursor: pointer; font-size: 14px;
+  color: var(--text-2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.tab-item:hover { color: var(--text-1); }
+.tab-item.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 500; }
+.tab-item .num {
+  display: inline-block; padding: 0 6px;
+  font-size: 11px; font-weight: 500;
+  background: var(--bg-hover); color: var(--text-3);
+  border-radius: 10px; line-height: 16px;
+}
+.tab-item.active .num { background: var(--brand-bg); color: var(--brand); }
+
+/* 已挂起 tab 特殊样式 - 红色突出(紧跟在"已取消"后面)*/
+.tab-item.tab-held { color: var(--error); }
+.tab-item.tab-held:hover { color: var(--error); }
+.tab-item.tab-held.active { color: var(--error); border-bottom-color: var(--error); }
+.tab-item.tab-held .num { background: var(--error-bg); color: var(--error); }
+.tab-item.tab-held.active .num { background: var(--error); color: white; }
+
+/* 列表统计条(冷色渐变,贴近图 1 蓝色总览)*/
+.list-summary-strip {
+  background: linear-gradient(90deg, #F0F7FF, #E6F4FF);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  font-size: 13px; color: var(--text-2);
+  display: flex; align-items: center; gap: 24px;
+}
+.list-summary-strip strong { color: var(--brand); font-weight: 600; font-family: -apple-system; font-size: 14px; }
+
+/* 表格 */
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  background: var(--bg-table-head);
+  color: var(--text-2); font-weight: 500; font-size: 13px;
+  padding: 10px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 14px 12px; border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.data-table tr:hover td { background: #FAFCFF; }
+
+/* 订单号列(蓝字 + 拷贝图标 + 子项展开)*/
+.order-no-cell { display: flex; align-items: center; gap: 4px; }
+.order-no-link { color: var(--brand); cursor: pointer; font-family: 'SF Mono', Consolas, monospace; }
+.order-no-link:hover { text-decoration: underline; }
+.copy-icon { color: var(--text-3); cursor: pointer; font-size: 12px; }
+.copy-icon:hover { color: var(--brand); }
+
+/* 商品信息列 */
+.product-info-cell { display: flex; align-items: flex-start; gap: 10px; min-width: 220px; }
+.product-img-sm {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-sm); flex-shrink: 0;
+  background: linear-gradient(135deg, #F0F1F2, #DCDFE3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: var(--text-3);
+  border: 1px solid var(--border);
+}
+.product-info-text { flex: 1; min-width: 0; font-size: 12px; line-height: 1.6; }
+.product-info-text .label { color: var(--text-3); }
+.product-info-text .value { color: var(--text-1); }
+.product-name-line { display: flex; gap: 6px; margin-bottom: 2px; }
+.expand-products {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 4px;
+  color: var(--brand); font-size: 12px; cursor: pointer;
+}
+.expand-products:hover { text-decoration: underline; }
+.multi-products-count {
+  display: inline-block; padding: 0 6px;
+  background: var(--brand); color: white;
+  border-radius: 8px; font-size: 11px; line-height: 16px;
+  margin-left: 4px;
+}
+
+/* 金额信息列 */
+.amount-info-cell { font-size: 12px; line-height: 1.7; min-width: 130px; }
+.amount-info-cell .label { color: var(--text-3); }
+.amount-info-cell .value { color: var(--text-1); font-family: 'SF Mono', Consolas, monospace; }
+
+/* 操作列 */
+.btn-link {
+  color: var(--brand); cursor: pointer; font-size: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+}
+.btn-link:hover { color: var(--brand-hover); }
+.btn-link.error { color: var(--error); font-weight: 500; }
+.btn-link.danger { color: var(--error); }
+.op-actions { display: flex; flex-direction: column; gap: 4px; min-width: 80px; }
+
+/* 挂起标识(订单状态格内的小徽章)*/
+.held-mark {
+  display: inline-flex; align-items: center; gap: 2px;
+  margin-top: 4px;
+  padding: 0 6px;
+  background: var(--error-bg); color: var(--error);
+  border: 1px solid #FFCCC7;
+  border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 500;
+  line-height: 16px;
+}
+
+/* 订单状态格(状态 tag + 挂起标识 垂直排列)*/
+.status-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+
+/* 子表格(展开商品/多件商品)*/
+.sub-table-row { background: var(--bg-secondary); }
+.sub-table-row > td { padding: 12px 16px 16px; border-top: 1px dashed var(--border); }
+.sub-table {
+  width: 100%; border-collapse: collapse; font-size: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.sub-table th {
+  background: #F5F8FB; color: var(--text-2);
+  padding: 8px 10px; font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+.sub-table td {
+  padding: 10px; border-bottom: 1px solid var(--border);
+}
+.sub-table tr:last-child td { border-bottom: none; }
+
+/* 列表底部分页 */
+.list-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 12px; margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.batch-actions { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3); }
+.pagination { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+.page-btn {
+  padding: 4px 10px; border: 1px solid var(--border-2);
+  border-radius: var(--radius-md); cursor: pointer; background: var(--bg-card);
+  color: var(--text-2); font-size: 13px; min-width: 32px; text-align: center;
+}
+.page-btn:hover { border-color: var(--brand); color: var(--brand); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); }
+
+/* mono */
+.mono { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; }
+
+/* 按钮 */
+.btn {
+  padding: 5px 16px; border-radius: var(--radius-md);
+  font-size: 13px; cursor: pointer;
+  border: 1px solid var(--border-2);
+  background: var(--bg-card); color: var(--text-1);
+  font-family: inherit; transition: all 0.2s; height: 32px;
+}
+.btn:hover { border-color: var(--brand); color: var(--brand); }
+.btn.primary { background: var(--brand); color: white; border-color: var(--brand); }
+.btn.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); color: white; }
+.btn.danger { background: var(--error); color: white; border-color: var(--error); }
+.btn.danger:hover { background: #FF7875; border-color: #FF7875; color: white; }
+.btn.sm { padding: 2px 10px; height: 26px; font-size: 12px; }
+
+.btn-text-row { display: flex; gap: 8px; align-items: center; }
+.btn-text-row > .op-divider { width: 1px; height: 12px; background: var(--border-2); }
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  font-size: 13px; width: 240px; outline: none;
+}
+.search-input:focus { border-color: var(--brand); }
+
+/* Modal */
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center;
+  z-index: 200;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: var(--bg-card); border-radius: var(--radius-md);
+  width: 480px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05);
+}
+.modal-header {
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { cursor: pointer; color: var(--text-3); font-size: 16px; padding: 4px; background: none; border: none; }
+.modal-close:hover { color: var(--text-1); }
+.modal-body { padding: 20px 24px; }
+.modal-footer {
+  padding: 12px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+.fund-meta { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; }
+.fund-meta-row { display: flex; padding: 4px 0; font-size: 13px; }
+.fund-meta-label { color: var(--text-3); width: 80px; }
+.fund-meta-value { flex: 1; color: var(--text-1); }
+.fund-meta-amount { font-size: 18px; font-weight: 600; color: var(--orange); font-family: -apple-system, sans-serif; }
+.form-row { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; font-weight: 400; }
+.form-label .required { color: var(--error); margin-right: 4px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 5px 11px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  font-size: 13px; color: var(--text-1);
+  font-family: inherit; outline: none; transition: all 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--brand); box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+.form-textarea { resize: vertical; min-height: 80px; padding: 8px 11px; }
+.alert {
+  padding: 10px 14px; border-radius: var(--radius-md);
+  margin-bottom: 16px; font-size: 13px; line-height: 1.6;
+  border: 1px solid;
+}
+.alert.error { background: var(--error-bg); color: var(--text-1); border-color: #FFCCC7; }
+.alert.error strong { color: var(--error); }
+.alert.warning { background: var(--warning-bg); color: var(--text-1); border-color: #FFE58F; }
+.alert.brand { background: var(--brand-bg); color: var(--text-1); border-color: #91CAFF; }
+.alert.brand strong { color: var(--brand); }
+
+/* Toast */
+.toast {
+  position: fixed; top: 80px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-1); color: white;
+  padding: 8px 16px; border-radius: var(--radius-md);
+  font-size: 13px; z-index: 300; display: none;
+  box-shadow: var(--shadow-md);
+}
+.toast.show { display: block; animation: fadein 0.3s; }
+@keyframes fadein {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--error); }
+
+.demo-page { display: none; }
+.demo-page.active { display: block; }
+
+.back-link {
+  font-size: 13px; color: var(--brand); cursor: pointer;
+  margin-bottom: 12px; display: inline-flex; align-items: center; gap: 4px;
+}
+.back-link:hover { color: var(--brand-hover); }
+
+/* 详情通用 */
+.detail-status-bar {
+  background: var(--bg-card); padding: 16px 20px;
+  border-radius: var(--radius-md);
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.detail-status-info { display: flex; align-items: center; gap: 12px; }
+.detail-status-text { font-size: 18px; font-weight: 600; color: var(--text-1); }
+.detail-status-time { color: var(--text-3); font-size: 13px; }
+.detail-amount {
+  font-family: -apple-system, sans-serif;
+  font-weight: 600; font-size: 22px; color: var(--orange);
+}
+
+.held-banner {
+  background: var(--error-bg); border: 1px solid #FFCCC7;
+  border-left: 3px solid var(--error);
+  border-radius: var(--radius-md);
+  padding: 14px 18px; margin-bottom: 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.held-banner-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--error); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; margin-top: 1px;
+}
+.held-banner-body { flex: 1; }
+.held-banner-title { font-weight: 600; color: var(--error); margin-bottom: 6px; font-size: 14px; }
+.held-banner-text { color: var(--text-2); font-size: 13px; line-height: 1.6; }
+.held-banner-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.info-row { display: flex; padding: 6px 0; font-size: 13px; }
+.info-label { color: var(--text-3); width: 100px; flex-shrink: 0; }
+.info-value { color: var(--text-1); flex: 1; }
+
+.shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+.user-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; line-height: 18px;
+  background: var(--brand-bg); color: var(--brand);
+  border: 1px solid #91CAFF;
+  border-radius: var(--radius-sm); font-size: 12px;
+}
+
+/* 时间线 */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+.timeline-item { position: relative; padding-bottom: 18px; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute; left: -22px; top: 6px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--bg-card); border: 2px solid var(--border-2);
+}
+.timeline-dot.success { border-color: var(--success); background: var(--success); }
+.timeline-dot.warning { border-color: var(--warning); background: var(--warning); }
+.timeline-dot.error { border-color: var(--error); background: var(--error); }
+.timeline-dot.brand { border-color: var(--brand); background: var(--brand); }
+.timeline-time { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--text-3); }
+.timeline-title { font-size: 13px; color: var(--text-1); font-weight: 500; margin-top: 2px; }
+.timeline-desc { font-size: 13px; color: var(--text-2); margin-top: 4px; line-height: 1.6; }
+
+/* 客户列表的用户头像 */
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.user-avatar-sm {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), #B37FEB);
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; flex-shrink: 0;
+}
+.user-info-text { flex: 1; min-width: 0; }
+.user-name { font-weight: 500; color: var(--brand); cursor: pointer; }
+.user-name:hover { text-decoration: underline; }
+.user-id-line { color: var(--text-3); font-size: 11px; margin-top: 2px; }
+
+/* 付款单详情表格 */
+.payment-detail-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.payment-detail-table th {
+  background: var(--bg-table-head); color: var(--text-2);
+  font-weight: 500; font-size: 12px;
+  padding: 8px 10px; text-align: left;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.payment-detail-table td { padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 12px; }
+.payment-detail-table tr.cancelled td { color: var(--text-3); background: #FAFAFA; }
+
+/* Tab 内嵌 */
+.detail-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 0 -20px 16px; padding: 0 20px; }
+.detail-tab { padding: 10px 16px; cursor: pointer; color: var(--text-2); font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 6px; }
+.detail-tab:hover { color: var(--text-1); }
+.detail-tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 500; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Modal 校验对比 */
+.verify-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: stretch; }
+.verify-card { border: 1px solid var(--border-2); border-radius: var(--radius-md); padding: 14px 16px; }
+.verify-card-title { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+.verify-card-title .icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.verify-card-title .icon.brand { background: var(--brand-bg); color: var(--brand); }
+.verify-card-title .icon.warning { background: var(--warning-bg); color: var(--warning); }
+.verify-row { display: flex; padding: 6px 0; font-size: 13px; }
+.verify-row .label { width: 70px; color: var(--text-3); flex-shrink: 0; }
+.verify-row .value { color: var(--text-1); flex: 1; }
+.verify-row.mismatch .value { color: var(--error); font-weight: 500; }
+.verify-vs { display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-3); font-weight: 600; }
+.verify-result { background: var(--error-bg); border: 1px solid #FFCCC7; border-radius: var(--radius-md); padding: 10px 14px; margin-top: 16px; font-size: 13px; color: var(--text-1); }
+.verify-result strong { color: var(--error); }
+
+/* 待确认款项处理 Modal 选项 */
+.method-options { display: flex; flex-direction: column; gap: 8px; }
+.method-option { border: 1px solid var(--border-2); border-radius: var(--radius-md); padding: 12px 14px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: all 0.2s; }
+.method-option:hover { border-color: var(--brand); background: var(--brand-bg); }
+.method-option.selected { border-color: var(--brand); background: var(--brand-bg); box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.08); }
+.method-option-radio { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border-2); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; }
+.method-option.selected .method-option-radio { border-color: var(--brand); }
+.method-option.selected .method-option-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+.method-option-body { flex: 1; }
+.method-option-title { font-weight: 500; color: var(--text-1); display: flex; align-items: center; gap: 6px; }
+.method-option-desc { color: var(--text-3); font-size: 12px; margin-top: 4px; line-height: 1.6; }
+.real-fund-warn { display: inline-block; padding: 0 6px; background: var(--error-bg); color: var(--error); border: 1px solid #FFCCC7; border-radius: var(--radius-sm); font-size: 11px; margin-left: 6px; line-height: 18px; }
+
+/* 客户主页紫色渐变卡片(截图风格)*/
+.purple-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+.purple-card {
+  background: linear-gradient(135deg, #7B68DC, #9B7FE8);
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.purple-card-value {
+  font-size: 22px; font-weight: 600;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  line-height: 1.2;
+}
+.purple-card-value .pct { font-size: 14px; margin-left: 2px; opacity: 0.9; }
+.purple-card-label { font-size: 12px; margin-top: 6px; opacity: 0.92; }
+
+/* 数据详情(三栏)*/
+.data-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.data-col { display: flex; flex-direction: column; gap: 4px; }
+.data-row { display: flex; padding: 4px 0; font-size: 13px; align-items: baseline; gap: 8px; }
+.data-label { color: var(--text-3); flex-shrink: 0; }
+.data-value { color: var(--text-1); flex: 1; }
+
+/* 偏好 grid */
+.prefs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.prefs-grid .card { margin-bottom: 0; }
+.prefs-content { font-size: 13px; padding: 4px 0; }
+
+/* 客户主页付款人卡片 */
+.payer-card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.payer-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.payer-card.payer-card-invalid {
+  background: #FAFAFA;
+  border-style: dashed;
+  opacity: 0.85;
+}
+.payer-card.payer-card-invalid .payer-card-name { color: var(--text-3); }
+.payer-card.payer-card-invalid .payer-bank-item { background: #F0F0F0; opacity: 0.9; }
+.payer-card.payer-card-invalid .payer-bank-item .bank-name { color: var(--text-3); }
+.payer-card.payer-card-invalid .payer-bank-item .card-no { color: var(--text-3); }
+.payer-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+.payer-card-name { font-weight: 600; font-size: 14px; }
+.payer-card-actions { display: flex; gap: 8px; }
+.payer-card-info { font-size: 12px; color: var(--text-2); line-height: 1.9; }
+.payer-card-info .row { display: flex; gap: 8px; align-items: flex-start; }
+.payer-card-info .label { color: var(--text-3); flex-shrink: 0; min-width: 56px; }
+.payer-card-info .value { flex: 1; word-break: break-all; }
+
+/* 卡内的银行卡列表 */
+.payer-bank-list { margin-top: 4px; display: flex; flex-direction: column; gap: 4px; }
+.payer-bank-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  width: fit-content;
+}
+.payer-bank-item .bank-name { color: var(--brand); font-weight: 500; }
+.payer-bank-item .card-no { font-family: 'SF Mono', Consolas, monospace; color: var(--text-2); }
+
+/* 附件缩略图 */
+.payer-attachments { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; }
+.attachment-thumb {
+  width: 56px; height: 56px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; gap: 2px;
+  background: var(--bg-secondary);
+  transition: all 0.15s;
+}
+.attachment-thumb:hover { border-color: var(--brand); }
+.attachment-thumb .icon { font-size: 18px; }
+.attachment-thumb .name { font-size: 10px; color: var(--text-3); line-height: 1; padding: 0 2px; text-align: center; max-width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 附件预览 Modal */
+.attachment-preview-img {
+  width: 100%; max-height: 60vh; object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="topbar-logo-icon">中</div>
+    <span>中古优品 ERP</span>
+  </div>
+  <span class="topbar-divider">|</span>
+  <span class="topbar-shop">中古优品·上海店</span>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-user">
+    <div class="topbar-avatar">王</div>
+    <div class="topbar-username">王梅 · 管理员</div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- 侧栏 -->
+  <div class="sidebar">
+    <div class="menu-section">
+      <div class="menu-header">
+        <div class="menu-header-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="2.5" width="10" height="9" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M4 5.5H10M4 7.5H10M4 9.5H7" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <div class="menu-header-text">订单管理</div>
+        <div class="menu-header-arrow">▾</div>
+      </div>
+      <div class="menu-children">
+        <div class="menu-child active" id="menu-orders" onclick="goPage('orders-list')">
+          <div class="menu-child-icon">📋</div>
+          <div class="menu-child-text">订单列表</div>
+          <span class="menu-child-badge">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-header">
+        <div class="menu-header-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L12 3.5V7C12 9.76 9.76 12 7 12C4.24 12 2 9.76 2 7V3.5L7 1Z" stroke="currentColor" stroke-width="1.4"/></svg>
+        </div>
+        <div class="menu-header-text">财务管理</div>
+        <div class="menu-header-arrow">▾</div>
+      </div>
+      <div class="menu-children">
+        <div class="menu-child" id="menu-funds" onclick="goPage('funds-list')">
+          <div class="menu-child-icon">⏳</div>
+          <div class="menu-child-text">待确认款项</div>
+          <span class="menu-child-badge">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-header">
+        <div class="menu-header-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 12C2.5 9.5 4.5 8 7 8C9.5 8 11.5 9.5 11.5 12" stroke="currentColor" stroke-width="1.4"/></svg>
+        </div>
+        <div class="menu-header-text">客户管理</div>
+        <div class="menu-header-arrow">▾</div>
+      </div>
+      <div class="menu-children">
+        <div class="menu-child" id="menu-customers" onclick="goPage('customers-list')">
+          <div class="menu-child-icon">👥</div>
+          <div class="menu-child-text">客户列表</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主内容(各模块页面)-->
+  <div class="content" id="content"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ 全局工具 ============
+let toastTimer;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + (type || '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
+}
+
+function setActiveMenu(menuId) {
+  document.querySelectorAll('.menu-child').forEach(m => m.classList.remove('active'));
+  if (menuId) document.getElementById(menuId)?.classList.add('active');
+}
+
+function goPage(page) {
+  const content = document.getElementById('content');
+  if (PAGES[page]) {
+    content.innerHTML = PAGES[page]();
+    if (page.startsWith('orders')) setActiveMenu('menu-orders');
+    else if (page.startsWith('funds')) setActiveMenu('menu-funds');
+    else if (page.startsWith('customers')) setActiveMenu('menu-customers');
+    window.scrollTo(0, 0);
+    if (window.afterPageRender) window.afterPageRender(page);
+  }
+}
+
+// ============ 页面工厂 ============
+const PAGES = {};
+
+// 占位:模块各自填充
+
+// ============ 银行选项(支付真实姓名校验·支持的银行)============
+const BANK_OPTIONS = [
+  '中国银行', '交通银行', '华夏银行', '招商银行', '建设银行',
+  '农业银行', '江苏银行', '兴业银行', '平安银行', '其他',
+];
+function bankOptionsHtml(selected) {
+  return BANK_OPTIONS.map(b => `<option ${selected === b ? 'selected' : ''}>${b}</option>`).join('');
+}
+
+// ============ Modal 控制 ============
+function showModal(id) { document.getElementById(id)?.classList.add('show'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('show'); }
+// ============ 下载授权委托书 PDF 模板 ============
+const AUTH_FORM_PDF_BASE64 = "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IDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAxMDAwIDEwMDAgMjM5LjI1NzggMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAyOTkuODA0NyAyOTkuODA0NyA0NTkuOTYwOSA1OTkuNjA5NCA1OTkuNjA5NCA2OTkuMjE4OCA2NzkuNjg3NSAyOTkuODA0NyAKICAyOTkuODA0NyAyOTkuODA0NyA1OTkuNjA5NCA1OTkuNjA5NCAyOTkuODA0NyAyOTkuODA0NyAyOTkuODA0NyA1MTkuNTMxMiA1OTkuNjA5NCA1OTkuNjA5NCAKICA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCAyOTkuODA0NyAyOTkuODA0NyAKICA1OTkuNjA5NCA1OTkuNjA5NCA1OTkuNjA5NCA1MzkuMDYyNSA3OTkuODA0NyA1NTkuNTcwMyA2MTkuMTQwNiA2MTkuMTQwNiA2NTkuMTc5NyA1NTkuNTcwMyAKICA0NzkuNDkyMiA2NTkuMTc5NyA2NTkuMTc5NyAyNTkuNzY1NiAzOTkuNDE0MSA2MTkuMTQwNiA1MDAgODE5LjMzNTkgNjU5LjE3OTcgNjU5LjE3OTcgCiAgNTU5LjU3MDMgNjU5LjE3OTcgNjE5LjE0MDYgNjE5LjE0MDYgNTAwIDYzOS42NDg0IDU1OS41NzAzIDgxOS4zMzU5IDUzOS4wNjI1IDU1OS41NzAzIAogIDUzOS4wNjI1IDI5OS44MDQ3IDUxOS41MzEyIDI5OS44MDQ3IDU5OS42MDk0IDUwMCAzNzkuODgyOCA1MzkuMDYyNSA1MzkuMDYyNSA0NzkuNDkyMiAKICA1MzkuMDYyNSA1MzkuMDYyNSAyOTkuODA0NyA1MDAgNTM5LjA2MjUgMjM5LjI1NzggMjE5LjcyNjYgNTAwIDIzOS4yNTc4IDgxOS4zMzU5IAogIDUzOS4wNjI1IDUzOS4wNjI1IDUzOS4wNjI1IDUzOS4wNjI1IDMxOS4zMzU5IDUxOS41MzEyIDMxOS4zMzU5IDUzOS4wNjI1IDQzOS40NTMxIDY1OS4xNzk3IAogIDQzOS40NTMxIDQxOS45MjE5IDQxOS45MjE5IDI5OS44MDQ3IDI1OS43NjU2IDI5OS44MDQ3IDU5OS42MDk0IDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgCiAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAKICAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgCiAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAKICAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgCiAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAKICAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgCiAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAKICAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIAogIDEwMDAgMTAwMCAxMDAwIDEwMDAgMTAwMCAxMDAwIF0KPj4KZW5kb2JqCjggMCBvYmoKPDwKL0ZpbHRlciBbIC9GbGF0ZURlY29kZSBdIC9MZW5ndGggMjQ4Cj4+CnN0cmVhbQp4nH1QTUvEMBC951fM0UUk/dDuHkphVcQe/Kwgessm0xqwk5Cmh/57k+y6gqADCW+Y9yYvj1+11y1pD/zRGdmhh16TcjiZ2UmEHQ6a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c2VGb250IC9BQUFBQUIrV2VuUXVhbllpWmVuSGVpLTAgL0ZpcnN0Q2hhciAwIC9Gb250RGVzY3JpcHRvciAxMCAwIFIgL0xhc3RDaGFyIDMgL05hbWUgL0YyKzEgL1N1YnR5cGUgL1RydWVUeXBlIAogIC9Ub1VuaWNvZGUgOCAwIFIgL1R5cGUgL0ZvbnQgL1dpZHRocyBbIDAgMTAwMCAxMDAwIDEwMDAgXQo+PgplbmRvYmoKMTIgMCBvYmoKPDwKL1BhZ2VNb2RlIC9Vc2VOb25lIC9QYWdlcyAxNCAwIFIgL1R5cGUgL0NhdGFsb2cKPj4KZW5kb2JqCjEzIDAgb2JqCjw8Ci9BdXRob3IgKGFub255bW91cykgL0NyZWF0aW9uRGF0ZSAoRDoyMDI2MDUwODAxMDkyMyswMCcwMCcpIC9DcmVhdG9yIChhbm9ueW1vdXMpIC9LZXl3b3JkcyAoKSAvTW9kRGF0ZSAoRDoyMDI2MDUwODAxMDkyMyswMCcwMCcpIC9Qcm9kdWNlciAoUmVwb3J0TGFiIFBERiBMaWJyYXJ5IC0gXChvcGVuc291cmNlXCkpIAogIC9TdWJqZWN0ICh1bnNwZWNpZmllZCkgL1RpdGxlICh1bnRpdGxlZCkgL1RyYXBwZWQgL0ZhbHNlCj4+CmVuZG9iagoxNCAwIG9iago8PAovQ291bnQgMSAvS2lkcyBbIDMgMCBSIF0gL1R5cGUgL1BhZ2VzCj4+CmVuZG9iagoxNSAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAxOTA1Cj4+CnN0cmVhbQpHYXUwRGJEbVEiJ10lKTpHYVNrJGBrRHNqZjw/SE4iPSwwZkJUUEtjNk5kXU09XyxHPUYwO1JUKnJXJGQsZz0+MGgvOFNKXGFTUyQrbFBZcGxRPUZyXVw4KW4/ZyFNIkN1OiIhOzhXJF5uRW9wJVZIViV0Nm4ubWU0UnFzRl0rOS5iMTwzUzEpUlJ0TCdkX0Ihbl4kXyhqbWJqRklpXyFtTTU/dCIjST8kND1VRWhxI2NCP0ZAckM5ZFApRmhbUFojTEQlKiJEK1lsLVkiP1QpLj0/KSJSOVNXWm8uWjNqQkpcZ0FjQ1xlQ2hVImlIcDA6K2NsdExzP1ImK1pmTEVYTj4jYCtdSHQ/S3BeT2FUbDJSKldwSEUlbENwaDM/bicncllmaGlTUl4mamFgV2hCPGlALlhwOUQvYmhMJCdZaj0qSlo9UDokXC08J2k8dDtVXD4qUz04L2FEJz10NSgtc08obEsidSIrSi48ayMlLzl1QC91VWtxYDBcOiQqSVhsaFMiSkFfUzpuZWRJTys2TjAvZVZUTm42bVo+JmEhbkZOKFgwL04mQjhmLlJWQ1Zkc2NcMCJSYyJidV9lOlInOiphJU89WzVRbVRdOkozIz8sbzkyLF4iU0c0Wl0kJUVNR1omLV9QN1hWaFcjOUBhYE1bPE5OZmNXSm5lVGQrOSNzZCZCZUlFKSdJJzNWYFpSV3AyUk9OXFhRNjVGM1pXZT5tUjBGNyViPSpSNEA+cShUK2AhREVcRWAiPDRERDVwdF89MlQ6NC5aPFtQbz1rIVoxRW0sOURINEhIJUcsUSMlZ2IjYTFAUSgpYGZScVg5Wlosc0RTI2JtbVckImYyTm0rbz9bbWFjLGUoY09qPW4kNjJbbDVUQWAkRTNSTGk5UlhrOXNWVUhQOzojW1A2Q1oyOyI3bVMwaihyVFxySCpkJEFfJUM+PiVvUW1FaGNYRXBLXmVZR2YqNz9fbGthbGMyUFdPWnJaWlclbixESyVhMi1EJks8cy4haCUtbWhwbEgpY2pGXCVpYz1NN1lQWltxMS1OKDtcVjxWYE1VME1UQWg2T2RkTyRnPUo9SW5FMTg1VEhAKSkmclwhLGNSKEpRNkYudDtOcSJWJCI/aSsoOFZcOVxcJ1VcQ1RxJW9TTGdTU3RdPFdJXG9DcyZuJ2RULjhbL24sIiZCQDIkJGFrTG0mPSIiQl09RCxJLDQwSGEsOlxOQSU5TWEjYUlQP05YOlJbUkw5OlxHWXAmZGBGJyJWWzdZa2BFPGsmS24vZjRacztHWlkmKFVJajVXTjUxLzFtSCstZXQ+LFRdV0hoTFEyVVJhUVRiZ15pJHVOVzNUKnI2ZiheTyssW1NUcGlfZ3BePmQta2A4XDx1P2F1bVtVUk4+SDZEIjtEcS5iOygzOlFJZk5gajczSixQVk9kVm9FN207U2QmI19zaVcsaiNNcE9qcks6XT5EQnBeYUhiOipPXmhLP0AiVUFRRVUwK15ONElXTDFKQmotZUJKRTMyLlB1dElrcShKQFBELzRNSkBgKUk8QSI2bWxPS088dFduJmlxWl5aMGBYNG0rWD1HU1tnYVssWy8uLz5AK1ouVTF1SXBWOmlKRHErXjUsbSE2VDE2TzdGTkcpNCJoKkNJU3RKMXIxITwhWSgvXjlXOk1kX28oLkU9UU9PZHIlanBkb14rSGNVQSpHMTNTcz9INE1ePDkyczZEK1xIS3JXLEY/N0hxUjFVME00VWo2WE1JX2k5M2xiQ1w3OGZ1cmlrJiMyTjQ2R0JOPDhxVEhAWzJxa0ZRbUskcV50KDdNY1BGcVNadDlMX1YxI0tzJm9tLkpaZlFLKSpASnQ2XzMpbVdUNyhsJk1yNlVLWzo+VmsjSzAiVDFwanUlOG1JJWwzOClQYG9pMCVrQGdZdCZ0I2I6Om8hJlFCPCEqISFYWlYuZUNpUmUsLCghQmszWGdzIj5hIzFeTm9iSSdobGpKTllhR3RqV3IzdUZDLDknPDtJQmZsJURlNnEwcSJZQSFxI0YkJFM9XT1XQzJeZjM6PXFRdGlbR3ItOFlyN0JpPEMqbio0XzZrMStEKjs2SDREUEVuM2RZW2FUblN0XGNSO11kdHVBJlBwcU49cEBpPSo/SmBaMCJsKjUoLSVxWl5xX0JRbVVOL29iOzg2JUpdYm5GJllUTCZxXlhSNitjJT1SVXA9RW0qQ0tcWlg+LClUOkg4J1NZMVYnVV4mJy5VRSJVN3Q3Ol10cyFkLWNaKGNJXHVcclBRN1pqZipdVVg3VjovJWFIWlJsJTBeUzFWXEovZjJEMiEqUyo0JUJcc1EuLC4ybkwxOTlFYk5SaihoQF1Ackg8U1VEZC1ZcjpocW1nY2FWIjthI2pIU1MnUzswJU9oUENcZjs/LUwhJWlRK2paU3FAL24xOigrSjlUSk83azxXOmlNPW5PW2hDJTVOcl5Aa0ckcUQhZy9yM2lVTyhtRG8pInA2SVg6ZWNRZ0p1LVlDQ3JvcD5LKGg0LUxaUHJXPmE9alBLfj5lbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCAxNgowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwNjEgMDAwMDAgbiAKMDAwMDAwMDExNyAwMDAwMCBuIAowMDAwMDAwMjI0IDAwMDAwIG4gCjAwMDAwMDA0MjkgMDAwMDAgbiAKMDAwMDAwMTk0MCAwMDAwMCBuIAowMDAwMDMzNzEzIDAwMDAwIG4gCjAwMDAwMzM5NzcgMDAwMDAgbiAKMDAwMDAzNTg2NiAwMDAwMCBuIAowMDAwMDM2MTg5IDAwMDAwIG4gCjAwMDAwMzg0MjAgMDAwMDAgbiAKMDAwMDAzODY4NSAwMDAwMCBuIAowMDAwMDM4ODgzIDAwMDAwIG4gCjAwMDAwMzg5NTMgMDAwMDAgbiAKMDAwMDAzOTIxNSAwMDAwMCBuIAowMDAwMDM5Mjc1IDAwMDAwIG4gCnRyYWlsZXIKPDwKL0lEIApbPDU1ODRiYTYzNjE3NGYxODc3ZjZhNTE1ZDMyN2RhZWVlPjw1NTg0YmE2MzYxNzRmMTg3N2Y2YTUxNWQzMjdkYWVlZT5dCiUgUmVwb3J0TGFiIGdlbmVyYXRlZCBQREYgZG9jdW1lbnQgLS0gZGlnZXN0IChvcGVuc291cmNlKQoKL0luZm8gMTMgMCBSCi9Sb290IDEyIDAgUgovU2l6ZSAxNgo+PgpzdGFydHhyZWYKNDEyNzIKJSVFT0YK";
+function downloadAuthFormPdf() {
+  try {
+    const byteChars = atob(AUTH_FORM_PDF_BASE64);
+    const bytes = new Uint8Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '中古优品_授权委托书_通用模板.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('✓ 已开始下载授权委托书模板', 'success');
+  } catch (e) {
+    showToast('下载失败:' + e.message, 'error');
+  }
+}
+
+</script>
+
+<!-- 后续模块脚本会注入到这里 -->
+<script>
+// ====================================================================
+// 订单模块
+// ====================================================================
+
+// Mock 订单数据
+const ORDERS = [
+  {
+    orderNo: '202605072338029061',
+    shop: '奢侈多普货箱包店', shopNo: '20325003',
+    sales: '王梅',
+    status: 'pending_ship',  // 主状态
+    held: false,             // 挂起标识(独立)
+    products: [{ name: '缪缪羊皮斜挎包底长 28 粉色', sku: '260503JCLXY05', price: 1200, icon: '👜', sales: 1200, cost: 800, optimized: 0, finalPrice: 1200 }],
+    multiCount: 0,
+    amounts: { order: 1200, optimized: 0, paid: 1180 },
+    user: { id: '3486', nick: '9888', phone: '150****7332' },
+    orderTime: '2026-05-07 23:38:02',
+    payTime: '2026-05-07 23:42:11',
+  },
+  {
+    orderNo: '202605072232295331',
+    shop: '麦殿鞋服店', shopNo: '21124001',
+    sales: '李冰',
+    status: 'pending_ship',
+    held: false,
+    products: [{ name: '盟可睐白色长裤', sku: '260416BKWTT90', price: 50, icon: '👖', sales: 50, cost: 30, optimized: 0, finalPrice: 50 }],
+    multiCount: 12,
+    amounts: { order: 600, optimized: 0, paid: 600 },
+    user: { id: '3970', nick: '换个名字', phone: '151****9419' },
+    orderTime: '2026-05-07 22:32:29',
+    payTime: '2026-05-07',
+  },
+  // 挂起单 1 - 在待付款状态
+  {
+    orderNo: '202605061121370001',
+    shop: '中古优品·上海店', shopNo: '10086203',
+    sales: '王梅',
+    status: 'pending_pay',
+    held: true,
+    heldReason: '实际打款人「赵伟」与客户「张三」实名不一致',
+    heldAmount: 56800,
+    heldDuration: '2 小时 14 分钟',
+    products: [{ name: 'LV Capucines BB 2024 全皮款 黑色', sku: 'LV-CAP-BB-24-BLK', price: 56800, icon: '👜', sales: 56800, cost: 48000, optimized: 1200, finalPrice: 56800 }],
+    multiCount: 0,
+    amounts: { order: 58000, optimized: 1200, paid: 0 },
+    user: { id: '1001', nick: '张三', phone: '138****5678' },
+    orderTime: '2026-05-06 11:21:37',
+    payTime: '--',
+  },
+  // 挂起单 2
+  {
+    orderNo: '202605060955120002',
+    shop: '中古优品·北京店', shopNo: '10082108',
+    sales: '李冰',
+    status: 'pending_pay',
+    held: true,
+    heldReason: '实际打款人「李父亲」未在已登记付款人信息中',
+    heldAmount: 82500,
+    heldDuration: '5 小时 03 分钟',
+    products: [{ name: '劳力士 黑水鬼 116610LN-97200', sku: 'ROL-SUB-BLK-116610', price: 82500, icon: '⌚', sales: 82500, cost: 75000, optimized: 0, finalPrice: 82500 }],
+    multiCount: 0,
+    amounts: { order: 82500, optimized: 0, paid: 0 },
+    user: { id: '1008', nick: '李四', phone: '139****1234' },
+    orderTime: '2026-05-06 09:55:12',
+    payTime: '--',
+  },
+  // 挂起单 3
+  {
+    orderNo: '202605051830410003',
+    shop: '中古优品·上海店', shopNo: '10086203',
+    sales: '王梅',
+    status: 'pending_pay',
+    held: true,
+    heldReason: '银行回单未识别打款人姓名',
+    heldAmount: 18900,
+    heldDuration: '1 天 22 小时',
+    products: [{ name: 'Cartier LOVE 戒指 18K 玫瑰金', sku: 'CAR-LOV-RG-50', price: 18900, icon: '💍', sales: 18900, cost: 15000, optimized: 0, finalPrice: 18900 }],
+    multiCount: 0,
+    amounts: { order: 18900, optimized: 0, paid: 0 },
+    user: { id: '1015', nick: '王芳', phone: '136****5544' },
+    orderTime: '2026-05-05 18:30:41',
+    payTime: '--',
+  },
+  // 待付款(无挂起)
+  {
+    orderNo: '202605061445210004',
+    shop: '中古优品·上海店', shopNo: '10086203',
+    sales: '王梅',
+    status: 'pending_pay',
+    held: false,
+    products: [{ name: 'CHANEL CF 中号 23P 黑色金扣 羊皮', sku: 'CHL-CF-25-BLK-G', price: 98500, icon: '👜', sales: 98500, cost: 85000, optimized: 1300, finalPrice: 98500 }],
+    multiCount: 0,
+    amounts: { order: 99800, optimized: 1300, paid: 0 },
+    user: { id: '1042', nick: '刘磊', phone: '139****1234' },
+    orderTime: '2026-05-06 14:45:21',
+    payTime: '--',
+  },
+  // 待发货
+  {
+    orderNo: '202605061330120005',
+    shop: '中古优品·杭州店', shopNo: '10089517',
+    sales: '李冰',
+    status: 'pending_ship',
+    held: false,
+    products: [{ name: '百达翡丽 鹦鹉螺 5711/1A-014', sku: 'PP-NAU-5711A-BLU', price: 320000, icon: '⌚', sales: 320000, cost: 280000, optimized: 5000, finalPrice: 320000 }],
+    multiCount: 0,
+    amounts: { order: 325000, optimized: 5000, paid: 320000 },
+    user: { id: '1067', nick: '陈宇', phone: '136****8888' },
+    orderTime: '2026-05-06 13:30:12',
+    payTime: '2026-05-06 14:18:25',
+  },
+  // 待收货
+  {
+    orderNo: '202605052154080006',
+    shop: '中古优品·上海店', shopNo: '10086203',
+    sales: '王梅',
+    status: 'shipping',
+    held: false,
+    products: [{ name: '爱马仕 Birkin 25 Etoupe 银扣', sku: 'HRM-BIR-25-ETP-S', price: 158000, icon: '👜', sales: 158000, cost: 138000, optimized: 2000, finalPrice: 158000 }],
+    multiCount: 0,
+    amounts: { order: 160000, optimized: 2000, paid: 158000 },
+    user: { id: '1091', nick: '赵敏', phone: '187****6543' },
+    orderTime: '2026-05-05 21:54:08',
+    payTime: '2026-05-05 22:30:11',
+  },
+  // 已完成
+  {
+    orderNo: '202605051542330007',
+    shop: '中古优品·北京店', shopNo: '10082108',
+    sales: '张芳',
+    status: 'completed',
+    held: false,
+    products: [{ name: 'Tiffany & Co. 3 克拉钻戒 G色 VS1', sku: 'TIF-DR-3CT-G-VS1', price: 288000, icon: '💎', sales: 288000, cost: 250000, optimized: 0, finalPrice: 288000 }],
+    multiCount: 0,
+    amounts: { order: 288000, optimized: 0, paid: 288000 },
+    user: { id: '1103', nick: '孙莉', phone: '186****2345' },
+    orderTime: '2026-05-05 15:42:33',
+    payTime: '2026-05-05 16:08:42',
+  },
+  // 已取消
+  {
+    orderNo: '202605040915420008',
+    shop: '中古优品·上海店', shopNo: '10086203',
+    sales: '王梅',
+    status: 'cancelled',
+    held: false,
+    products: [{ name: 'DIOR Lady 中号 黑色羊皮', sku: 'DIO-LAD-M-BLK', price: 42800, icon: '👜', sales: 42800, cost: 35000, optimized: 1000, finalPrice: 42800 }],
+    multiCount: 0,
+    amounts: { order: 43800, optimized: 1000, paid: 0 },
+    user: { id: '1124', nick: '周磊', phone: '155****8765' },
+    orderTime: '2026-05-04 09:15:42',
+    payTime: '--',
+  },
+];
+
+const STATUS_MAP = {
+  pending_pay: { text: '待买家付款', color: 'tag-warning' },
+  pending_ship: { text: '待卖家发货', color: 'tag-success' },
+  shipping: { text: '待买家收货', color: 'tag-brand' },
+  completed: { text: '已完成', color: 'tag-default' },
+  cancelled: { text: '已取消', color: 'tag-default' },
+};
+
+// 按状态过滤(含 held 挂起特殊筛选项)
+let currentStatusFilter = 'all';
+function getOrdersByStatus(status) {
+  if (status === 'all') return ORDERS;
+  if (status === 'held') return ORDERS.filter(o => o.held);
+  return ORDERS.filter(o => o.status === status);
+}
+function getStatusCount(status) {
+  return getOrdersByStatus(status).length;
+}
+
+// 渲染:订单列表
+PAGES['orders-list'] = () => {
+  const orders = getOrdersByStatus(currentStatusFilter);
+  return `
+    <div class="breadcrumb">
+      <a>订单管理</a><span class="sep">/</span><span class="current">订单列表</span>
+    </div>
+
+    <!-- 数据汇总(图 1 风格 7 卡片)-->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-card-icon-lg purple">🛒</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">0</div>
+          <div class="summary-card-label">今日订单总数</div>
+          <div class="summary-card-extra"><span class="down">↓ 100%</span> 较昨天</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg pink">$</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">¥0</div>
+          <div class="summary-card-label">今日销售额</div>
+          <div class="summary-card-extra"><span class="down">↓ 100%</span> 较昨天</div>
+        </div>
+      </div>
+      <div class="summary-card active">
+        <div class="summary-card-icon-lg green">📈</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">¥123.7万</div>
+          <div class="summary-card-label">本月销售额(实际)</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg orange">⏰</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">18</div>
+          <div class="summary-card-label">待买家付款订单</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg brand">📤</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">167</div>
+          <div class="summary-card-label">待卖家发货订单</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg purple">🛡</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">14.49%</div>
+          <div class="summary-card-label">本月售后率</div>
+          <div class="summary-card-extra"><span class="up">↑ 1.77%</span> 较上月</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg red">📊</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">¥97万</div>
+          <div class="summary-card-label">本月预估销售额</div>
+          <div class="summary-card-extra"><span class="down">↓ 24.32%</span> 较上月</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 高级筛选 -->
+    <div class="filter-bar">
+      <div class="filter-grid">
+        <div class="filter-item"><div class="filter-item-label">订单编号:</div><input placeholder="订单编号/店铺货编"></div>
+        <div class="filter-item"><div class="filter-item-label">买家:</div><input placeholder="买家ID/昵称"></div>
+        <div class="filter-item"><div class="filter-item-label">店铺:</div><select><option>请选择店铺</option></select></div>
+        <div class="filter-item"><div class="filter-item-label">订单状态:</div><select><option>请选择订单状态</option></select></div>
+        <div class="filter-item"><div class="filter-item-label">下单时间:</div><input placeholder="开始日期 → 结束日期"></div>
+        <div class="filter-item"><div class="filter-item-label">付款时间:</div><input placeholder="开始日期 → 结束日期"></div>
+        <div class="filter-item"><div class="filter-item-label">支付方式:</div><select><option>请选择支付方式</option></select></div>
+        <div class="filter-item"><div class="filter-item-label">销售渠道:</div><select><option>请选择销售渠道</option></select></div>
+        <div class="filter-item"><div class="filter-item-label">订单类型:</div><select><option>请选择订单类型</option></select></div>
+        <div class="filter-item"><div class="filter-item-label">售后状态:</div><select><option>请选择售后状态</option></select></div>
+        <div class="filter-item"><div class="filter-item-label">完成时间:</div><input placeholder="开始日期 → 结束日期"></div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn">重置</button>
+        <button class="btn primary">查询</button>
+      </div>
+    </div>
+
+    <!-- 列表(状态 Tab + 表格)-->
+    <div class="card">
+      <div class="list-toolbar-tabs">
+        ${['all', 'pending_pay', 'pending_ship', 'shipping', 'completed', 'cancelled', 'held'].map(s => {
+          const labels = { all: '全部订单', pending_pay: '待买家付款', pending_ship: '待卖家发货', shipping: '待买家收货', completed: '已完成', cancelled: '已取消', held: '⚠️ 已挂起' };
+          const cnt = s === 'all' ? ORDERS.length : getStatusCount(s);
+          const extraCls = s === 'held' ? 'tab-held' : '';
+          return `<div class="tab-item ${extraCls} ${currentStatusFilter === s ? 'active' : ''}" onclick="filterOrderStatus('${s}')">${labels[s]}<span class="num">${cnt}</span></div>`;
+        }).join('')}
+      </div>
+
+      <!-- 列表统计条 -->
+      <div class="list-summary-strip">
+        <span>📋 共 <strong>${orders.length}</strong> 条</span>
+        <span>💰 销售金额统计 <strong>¥${orders.reduce((s, o) => s + o.amounts.paid, 0).toLocaleString()}</strong></span>
+      </div>
+
+      <!-- 表格(图 1 列结构)-->
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>订单号</th>
+            <th>店铺及销售</th>
+            <th>订单状态</th>
+            <th>商品信息</th>
+            <th>金额信息</th>
+            <th>下单用户</th>
+            <th>下单时间</th>
+            <th>付款时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${orders.map(o => renderOrderRow(o)).join('')}
+        </tbody>
+      </table>
+
+      <div class="list-footer">
+        <div class="batch-actions">
+          <span>共 ${ORDERS.length} 条</span>
+        </div>
+        <div class="pagination">
+          <span class="page-btn">‹</span>
+          <span class="page-btn active">1</span>
+          <span class="page-btn">›</span>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+function filterOrderStatus(status) {
+  currentStatusFilter = status;
+  goPage('orders-list');
+}
+
+function renderOrderRow(o) {
+  const statusInfo = STATUS_MAP[o.status];
+  const p = o.products[0];
+  return `
+    <tr>
+      <td>
+        <div class="order-no-cell">
+          <span class="order-no-link" onclick="goOrderDetail('${o.orderNo}')">${o.orderNo}</span>
+          <span class="copy-icon" onclick="copyText('${o.orderNo}')" title="复制">📋</span>
+        </div>
+      </td>
+      <td style="font-size: 12px;">
+        <div>店铺名称:${o.shop}</div>
+        <div style="color: var(--text-3); margin-top: 2px;">店铺编号:${o.shopNo}</div>
+      </td>
+      <td>
+        <div class="status-cell">
+          <span class="tag ${statusInfo.color}">${statusInfo.text}</span>
+          ${o.held ? '<span class="held-mark">⚠️ 已挂起</span>' : ''}
+        </div>
+      </td>
+      <td>
+        <div class="product-info-cell">
+          <div class="product-img-sm">${p.icon}</div>
+          <div class="product-info-text">
+            <div class="product-name-line"><span class="label">名称:</span><span class="value">${p.name}</span></div>
+            <div><span class="label">编号:</span><span class="value mono">${p.sku}</span></div>
+            <div><span class="label">销售金额:</span><span class="value">¥${p.price.toLocaleString()}</span></div>
+            ${o.multiCount > 1 
+              ? `<div class="expand-products" onclick="toggleSubRow('${o.orderNo}')">多件商品<span class="multi-products-count">${o.multiCount}</span></div>` 
+              : '<div class="expand-products" onclick="toggleSubRow(\'' + o.orderNo + '\')">展开商品 ▾</div>'}
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="amount-info-cell">
+          <div><span class="label">订单金额:</span><span class="value">¥${o.amounts.order.toLocaleString()}</span></div>
+          <div><span class="label">使用优币:</span><span class="value">${o.amounts.optimized || 0}</span></div>
+          <div><span class="label">实付金额:</span><span class="value">¥${o.amounts.paid.toLocaleString()}</span></div>
+        </div>
+      </td>
+      <td style="font-size: 12px;">
+        <div>ID: ${o.user.id}</div>
+        <div style="margin-top: 2px;">用户昵称:${o.user.nick}</div>
+        <div style="color: var(--text-3); margin-top: 2px;">手机号:${o.user.phone}</div>
+      </td>
+      <td class="mono" style="font-size: 12px;">${o.orderTime}</td>
+      <td class="mono" style="font-size: 12px;">${o.payTime}</td>
+      <td>
+        <div class="op-actions">
+          <button class="btn-link" onclick="goOrderDetail('${o.orderNo}')">查看详情</button>
+          ${o.held ? '<button class="btn-link error" onclick="goOrderDetail(\'' + o.orderNo + '\')">处理挂起</button>' : ''}
+          ${o.status === 'pending_pay' ? '<button class="btn-link" onclick="showCancelOrderModal(\'' + o.orderNo + '\')">取消订单</button>' : ''}
+          ${o.status === 'pending_ship' ? '<button class="btn-link" onclick="showToast(\'发货功能 demo 中未实现\', \'error\')">发货</button>' : ''}
+          ${o.status === 'shipping' ? '<button class="btn-link" onclick="showToast(\'物流详情 demo 中未实现\', \'error\')">查看物流</button>' : ''}
+        </div>
+      </td>
+    </tr>
+    <tr id="sub-${o.orderNo}" style="display:none;" class="sub-table-row">
+      <td colspan="9">
+        <table class="sub-table">
+          <thead>
+            <tr>
+              <th style="width: 280px">商品信息</th>
+              <th>商品渠道</th>
+              <th>价格信息</th>
+              <th>售后状态</th>
+              <th>售后类型</th>
+              <th>售后金额</th>
+              <th>主播/销售</th>
+              <th>助理/其他销售</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${o.products.map(pp => `
+              <tr>
+                <td>
+                  <div class="product-info-cell">
+                    <div class="product-img-sm" style="width:48px;height:48px;font-size:18px;">${pp.icon}</div>
+                    <div class="product-info-text">
+                      <div><span class="label">商品名称:</span><span class="value">${pp.name}</span></div>
+                      <div><span class="label">店铺货编:</span><span class="value mono">${pp.sku}</span></div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="tag tag-warning">直播间拍卖</span></td>
+                <td style="font-size: 12px;">
+                  <div>销售价:¥${pp.sales}</div>
+                  <div>成本价:¥${pp.cost}</div>
+                  <div>占用优币:0</div>
+                  <div>最终销售价:¥${pp.finalPrice}</div>
+                </td>
+                <td><span class="tag tag-default">无售后</span></td>
+                <td>--</td>
+                <td style="font-size: 12px;">
+                  <div>退款金额:¥0</div>
+                  <div>退款优币:0</div>
+                </td>
+                <td>${o.sales}</td>
+                <td>${o.sales === '王梅' ? '姚萍' : '刘洋'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  `;
+}
+
+function toggleSubRow(orderNo) {
+  const el = document.getElementById('sub-' + orderNo);
+  if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function copyText(t) {
+  if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
+  showToast('已复制 ' + t, 'success');
+}
+
+function goOrderDetail(orderNo) {
+  currentOrderNo = orderNo;
+  goPage('orders-detail');
+}
+
+let currentOrderNo = null;
+
+// ============ 订单详情 ============
+PAGES['orders-detail'] = () => {
+  const o = ORDERS.find(x => x.orderNo === currentOrderNo) || ORDERS[2];
+  const statusInfo = STATUS_MAP[o.status];
+  return `
+    <div class="back-link" onclick="goPage('orders-list')">← 返回列表</div>
+    <div class="breadcrumb">
+      <a onclick="goPage('orders-list')">订单管理</a><span class="sep">/</span>
+      <a onclick="goPage('orders-list')">订单列表</a><span class="sep">/</span>
+      <span class="current">${o.orderNo}</span>
+    </div>
+
+    <div class="detail-status-bar">
+      <div class="detail-status-info">
+        <div class="detail-status-text">订单详情</div>
+        <span class="tag ${statusInfo.color}">${statusInfo.text}</span>
+        ${o.held ? '<span class="held-mark">⚠️ 已挂起</span>' : ''}
+        <span class="detail-status-time">下单时间 ${o.orderTime}</span>
+      </div>
+      <div class="detail-amount">¥${o.amounts.order.toLocaleString()}.00</div>
+    </div>
+
+    ${o.held ? renderHeldBanner(o) : ''}
+
+    <div class="detail-grid">
+      ${renderBuyerCard(o)}
+      ${renderShopCard(o)}
+    </div>
+
+    <div class="card">
+      <div class="detail-tabs">
+        <div class="detail-tab" onclick="switchOrderTab(this, 'product')">商品信息</div>
+        <div class="detail-tab active" onclick="switchOrderTab(this, 'payment')">付款单 ${o.held ? '<span class="multi-products-count">1</span>' : (o.amounts.paid > 0 ? '<span class="multi-products-count">1</span>' : '')}</div>
+        <div class="detail-tab" onclick="switchOrderTab(this, 'log')">订单日志</div>
+      </div>
+
+      <div class="tab-content" id="tab-product">${renderProductTab(o)}</div>
+      <div class="tab-content active" id="tab-payment">${renderPaymentTab(o)}</div>
+      <div class="tab-content" id="tab-log">${renderLogTab(o)}</div>
+    </div>
+  `;
+};
+
+function switchOrderTab(el, name) {
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function renderHeldBanner(o) {
+  return `
+    <div class="held-banner">
+      <div class="held-banner-icon">!</div>
+      <div class="held-banner-body">
+        <div class="held-banner-title">付款单 PAY-001 校验未通过 · 已挂起</div>
+        <div class="held-banner-text">
+          ${o.heldReason}。已到账金额:<strong style="color: var(--error)">¥${o.heldAmount.toLocaleString()}.00</strong> · 挂起时长:<strong>${o.heldDuration}</strong>
+        </div>
+        <div class="held-banner-actions">
+          <button class="btn primary" onclick="showHeldModal('pass')">人工通过</button>
+          <button class="btn" onclick="showHeldModal('addPayer')">添加付款人信息并通过</button>
+          <button class="btn" onclick="showHeldModal('verify')">查看校验详情</button>
+        </div>
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #FFCCC7; font-size: 12px; color: var(--text-3);">
+          💡 如客户希望取消本次付款,请引导客户在 C 端订单页面自行取消(后台无该入口)
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBuyerCard(o) {
+  return `
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color: var(--brand);">
+          <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M2.5 12C2.5 9.5 4.5 8 7 8C9.5 8 11.5 9.5 11.5 12" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        买家信息
+      </div>
+      <div class="info-row"><div class="info-label">姓名</div><div class="info-value">${o.user.nick}</div></div>
+      <div class="info-row"><div class="info-label">用户ID</div><div class="info-value mono">${o.user.id}</div></div>
+      <div class="info-row"><div class="info-label">手机</div><div class="info-value mono">${o.user.phone}</div></div>
+      <div class="info-row"><div class="info-label">实名</div><div class="info-value">${o.user.nick} · <span class="mono">110***********5678</span></div></div>
+      <div class="info-row"><div class="info-label">客户标签</div><div class="info-value"><span class="tag tag-gold">钻石客户</span></div></div>
+      <div class="info-row"><div class="info-label">累计消费</div><div class="info-value">¥486,300 · 12 单</div></div>
+      <div class="info-row"><div class="info-label">收货人</div><div class="info-value">${o.user.nick}</div></div>
+      <div class="info-row"><div class="info-label">收货电话</div><div class="info-value mono">${o.user.phone}</div></div>
+      <div class="info-row"><div class="info-label">收货地址</div><div class="info-value">上海市黄浦区南京东路 100 号 ××大厦 18F</div></div>
+    </div>
+  `;
+}
+
+function renderShopCard(o) {
+  return `
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color: var(--brand);">
+          <path d="M2 5.5L3 2.5H11L12 5.5M2 5.5V11H12V5.5M2 5.5H12M5 8H9" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        店铺及交易信息
+      </div>
+      <div class="shop-grid">
+        <div class="info-row"><div class="info-label">店铺名称</div><div class="info-value">${o.shop}</div></div>
+        <div class="info-row"><div class="info-label">店铺编号</div><div class="info-value mono">${o.shopNo}</div></div>
+        <div class="info-row"><div class="info-label">订单类型</div><div class="info-value"><span class="tag tag-brand">普通订单</span></div></div>
+        <div class="info-row"><div class="info-label">支付方式</div><div class="info-value">${o.amounts.paid > 0 ? '银行转账' : '--'}</div></div>
+        <div class="info-row"><div class="info-label">支付时间</div><div class="info-value mono">${o.payTime}</div></div>
+        <div class="info-row"><div class="info-label">完成时间</div><div class="info-value mono">${o.status === 'completed' ? '2026-05-08 14:22:18' : '--'}</div></div>
+        <div class="info-row"><div class="info-label">结算状态</div><div class="info-value"><span class="tag ${o.status === 'completed' ? 'tag-success' : 'tag-default'}">${o.status === 'completed' ? '✓ 是' : '⊘ 否'}</span></div></div>
+        <div class="info-row"><div class="info-label">结算时间</div><div class="info-value mono">${o.status === 'completed' ? '2026-05-15 10:00' : '--'}</div></div>
+        <div class="info-row" style="grid-column: 1 / -1;"><div class="info-label">店铺管理员</div><div class="info-value"><span class="user-tag">👤 ${o.sales}</span></div></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderProductTab(o) {
+  const p = o.products[0];
+  return `
+    <div style="display: flex; gap: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-md);">
+      <div class="product-img-sm" style="width:96px;height:96px;font-size:36px;">${p.icon}</div>
+      <div style="flex: 1;">
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px;">${p.name}</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 16px; font-size: 12px;">
+          <div><span style="color:var(--text-3);">SKU</span> <span class="mono">${p.sku}</span></div>
+          <div><span style="color:var(--text-3);">销售价</span> ¥${p.sales.toLocaleString()}</div>
+          <div><span style="color:var(--text-3);">成本价</span> ¥${p.cost.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 16px 20px; margin-top: 16px;">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;"><span style="color:var(--text-3);">商品金额</span><span class="mono">¥${o.amounts.order.toLocaleString()}.00</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;"><span style="color:var(--text-3);">优惠</span><span class="mono">- ¥${(o.amounts.optimized || 0).toLocaleString()}.00</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0 6px;font-size:15px;border-top:1px solid var(--border);margin-top:8px;"><span style="font-weight:500;">订单金额</span><span style="color:var(--orange);font-weight:600;font-size:18px;">¥${o.amounts.paid > 0 ? o.amounts.paid.toLocaleString() : o.amounts.order.toLocaleString()}.00</span></div>
+    </div>
+  `;
+}
+
+function renderPaymentTab(o) {
+  if (o.status === 'pending_pay' && !o.held) {
+    return `<div style="text-align: center; color: var(--text-3); padding: 48px;">客户尚未发起支付,暂无付款单记录</div>`;
+  }
+  if (o.status === 'cancelled') {
+    return `<div style="text-align: center; color: var(--text-3); padding: 48px;">订单已取消,无付款单记录</div>`;
+  }
+  const heldRow = o.held ? `
+    <tr>
+      <td class="mono">${o.orderTime.split(' ')[0]} 11:37:52</td>
+      <td class="mono">PAY-001</td>
+      <td><span class="tag tag-error">⚠️ 已挂起</span></td>
+      <td class="mono">${o.orderTime.split(' ')[0]} 13:35:18</td>
+      <td style="text-align: right;"><strong style="color:var(--orange);">¥${o.heldAmount.toLocaleString()}</strong></td>
+      <td style="text-align: right;" class="mono">0</td>
+      <td style="text-align: right;"><strong style="color:var(--orange);">¥${o.heldAmount.toLocaleString()}</strong></td>
+      <td style="text-align: right;" class="mono">¥${(o.heldAmount * 0.001).toFixed(2)}</td>
+      <td>银行转账</td>
+      <td class="mono">PSF20260506001</td>
+      <td class="mono">BANK20260506112137</td>
+      <td style="text-align: right;" class="mono">¥0.00</td>
+      <td class="mono">--</td>
+      <td><span class="tag tag-default">普通付款</span></td>
+      <td class="mono">--</td>
+      <td>--</td>
+    </tr>` : '';
+  const paidRow = o.amounts.paid > 0 ? `
+    <tr>
+      <td class="mono">${o.payTime}</td>
+      <td class="mono">PAY-A18</td>
+      <td><span class="tag tag-success">✓ 已付款</span></td>
+      <td class="mono">${o.payTime}</td>
+      <td style="text-align: right;"><strong style="color:var(--orange);">¥${o.amounts.paid.toLocaleString()}</strong></td>
+      <td style="text-align: right;" class="mono">0</td>
+      <td style="text-align: right;"><strong style="color:var(--orange);">¥${o.amounts.paid.toLocaleString()}</strong></td>
+      <td style="text-align: right;" class="mono">¥${(o.amounts.paid * 0.001).toFixed(2)}</td>
+      <td>银行转账</td>
+      <td class="mono">PSF20260506018</td>
+      <td class="mono">BANK20260506133542</td>
+      <td style="text-align: right;" class="mono">¥0.00</td>
+      <td class="mono">--</td>
+      <td><span class="tag tag-default">普通付款</span></td>
+      <td class="mono">--</td>
+      <td>--</td>
+    </tr>` : '';
+
+  return `
+    <div style="overflow-x: auto;">
+      <table class="payment-detail-table">
+        <thead>
+          <tr>
+            <th>创建时间</th><th>付款单号</th><th>状态</th><th>付款交易时间</th>
+            <th style="text-align: right">付款金额</th><th style="text-align: right">使用优币</th>
+            <th style="text-align: right">原订单总金额</th><th style="text-align: right">支付通道费</th>
+            <th>付款方式</th><th>付款单流水号</th><th>付款交易流水号</th>
+            <th style="text-align: right">已退款总金额</th><th>最后一次退款时间</th>
+            <th>类型</th><th>关闭付款单时间</th><th>关闭原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${heldRow}
+          ${paidRow}
+        </tbody>
+      </table>
+    </div>
+    ${o.held ? '<div style="margin-top: 12px;"><button class="btn" onclick="showHeldModal(\'verify\')">查看校验详情</button></div>' : ''}
+  `;
+}
+
+function renderLogTab(o) {
+  return `
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot brand"></div>
+        <div class="timeline-time">${o.orderTime}</div>
+        <div class="timeline-title"><span class="tag tag-brand">订单创建</span></div>
+        <div class="timeline-desc">销售员·${o.sales} · 创建订单 <span class="mono">${o.orderNo}</span>,商品「${o.products[0].name}」</div>
+      </div>
+      ${o.held ? `
+      <div class="timeline-item">
+        <div class="timeline-dot error"></div>
+        <div class="timeline-time">${o.orderTime.split(' ')[0]} 13:35:42</div>
+        <div class="timeline-title"><span class="tag tag-error">⚠️ 付款单挂起</span></div>
+        <div class="timeline-desc">系统 · 付款单自动校验未通过(${o.heldReason}),已挂起</div>
+      </div>` : ''}
+      ${o.amounts.paid > 0 ? `
+      <div class="timeline-item">
+        <div class="timeline-dot success"></div>
+        <div class="timeline-time">${o.payTime}</div>
+        <div class="timeline-title"><span class="tag tag-success">✓ 付款单校验通过</span></div>
+        <div class="timeline-desc">系统 · 自动校验通过,订单流转</div>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+// ============ 挂起处理 Modal 集合 ============
+function showHeldModal(type) {
+  const modalsHtml = {
+    pass: `
+      <div class="modal-mask show" id="modalPass">
+        <div class="modal" style="width: 420px;">
+          <div class="modal-header">
+            <div class="modal-title">确认人工通过</div>
+            <button class="modal-close" onclick="closeModalById('modalPass')">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="alert warning">
+              系统已自动校验未通过,确认要人工通过该付款单吗?
+              <br>通过后:订单状态流转为「待卖家发货」,挂起标识解除。
+            </div>
+            <div class="form-row">
+              <label class="form-label"><span class="required">*</span>通过原因</label>
+              <textarea class="form-textarea" placeholder="请说明通过的原因(必填)"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="closeModalById('modalPass')">取消</button>
+            <button class="btn primary" onclick="closeModalById('modalPass'); showToast('✓ 付款单已人工通过,订单流转为「待卖家发货」', 'success');">确认通过</button>
+          </div>
+        </div>
+      </div>`,
+    addPayer: `
+      <div class="modal-mask show" id="modalAddPayer">
+        <div class="modal" style="width: 560px;">
+          <div class="modal-header">
+            <div class="modal-title">添加付款人信息并通过</div>
+            <button class="modal-close" onclick="closeModalById('modalAddPayer')">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="fund-meta">
+              <div class="fund-meta-row"><div class="fund-meta-label">客户</div><div class="fund-meta-value">张三 (1001)</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">实际打款人</div><div class="fund-meta-value">赵伟</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">银行账号</div><div class="fund-meta-value mono">招行 6225****4421</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">金额</div><div class="fund-meta-value fund-meta-amount">¥56,800.00</div></div>
+            </div>
+            <div class="alert brand">
+              <strong>💡 即将操作</strong>
+              <div style="margin-top: 6px;">为客户「张三」添加可信付款人「赵伟」。添加后该笔挂起付款单将自动通过,订单流转为「待卖家发货」。</div>
+            </div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>打款人姓名</label><input type="text" class="form-input" value="赵伟"></div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>身份证号</label><input type="text" class="form-input mono" placeholder="请输入打款人身份证号"></div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡号</label>
+              <div style="display:flex;gap:8px;">
+                <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml('招商银行')}</select>
+                <input type="text" class="form-input mono" value="6225 8874 1234 4421">
+              </div>
+            </div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>关系</label>
+              <select class="form-select"><option value="">请选择</option><option>亲属</option><option>公司财务</option><option>公司法人</option><option>其他</option></select>
+            </div>
+            <div class="form-row"><label class="form-label">凭证类型</label><input type="text" class="form-input" value="授权委托书" readonly style="background:var(--bg-secondary);"></div>
+            <div class="form-row"><div style="background:var(--brand-bg);border:1px solid #91CAFF;border-radius:var(--radius-md);padding:10px 12px;display:flex;align-items:center;gap:10px;"><div style="font-size:13px;color:var(--text-2);flex:1;">📄 授权委托书模板 / 客户填写后签字 / 扫描上传</div><button class="btn sm" onclick="downloadAuthFormPdf()">下载模板</button></div></div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>凭证图片</label><div style="border:1px dashed var(--border-2);border-radius:var(--radius-md);padding:20px;text-align:center;color:var(--text-3);cursor:pointer;" onclick="showToast('demo 未实现上传','error')"><div style="font-size:24px;">📷</div><div style="font-size:13px;margin-top:4px;">点击或拖拽上传</div></div></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="closeModalById('modalAddPayer')">取消</button>
+            <button class="btn primary" onclick="closeModalById('modalAddPayer'); showToast('✓ 已添加付款人信息「赵伟」,挂起付款单已自动通过,订单流转为「待卖家发货」', 'success');">添加并通过</button>
+          </div>
+        </div>
+      </div>`,
+    verify: `
+      <div class="modal-mask show" id="modalVerify">
+        <div class="modal" style="width: 700px;">
+          <div class="modal-header">
+            <div class="modal-title">付款单校验详情 · PAY-001</div>
+            <button class="modal-close" onclick="closeModalById('modalVerify')">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="verify-compare">
+              <div class="verify-card">
+                <div class="verify-card-title"><div class="icon brand">客</div>客户实名信息</div>
+                <div class="verify-row"><div class="label">姓名</div><div class="value">张三</div></div>
+                <div class="verify-row"><div class="label">身份证号</div><div class="value mono">110***********5678</div></div>
+                <div class="verify-row"><div class="label">付款人信息</div><div class="value">已登记 1 条(刘父亲)</div></div>
+              </div>
+              <div class="verify-vs">≠</div>
+              <div class="verify-card">
+                <div class="verify-card-title"><div class="icon warning">付</div>实际打款人</div>
+                <div class="verify-row mismatch"><div class="label">姓名</div><div class="value">赵伟</div></div>
+                <div class="verify-row mismatch"><div class="label">身份证号</div><div class="value mono">130***********8765</div></div>
+                <div class="verify-row"><div class="label">银行卡</div><div class="value mono">招行 6225****4421</div></div>
+                <div class="verify-row"><div class="label">金额</div><div class="value"><strong style="color: var(--orange)">¥56,800.00</strong></div></div>
+              </div>
+            </div>
+            <div class="verify-result">
+              <strong>校验结果:挂起</strong> · 实际打款人「赵伟」与客户「张三」实名不一致,银行卡号也未匹配客户已登记的付款人信息,系统判定为代付款风险,自动挂起。
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" onclick="closeModalById('modalVerify')">关闭</button>
+            <button class="btn primary" onclick="closeModalById('modalVerify'); showHeldModal('addPayer');">添加付款人信息并通过</button>
+          </div>
+        </div>
+      </div>`,
+  };
+
+  // 创建临时容器
+  let container = document.getElementById('temp-modal-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'temp-modal-container';
+    document.body.appendChild(container);
+  }
+  container.innerHTML = modalsHtml[type] || '';
+}
+
+function closeModalById(id) {
+  document.getElementById(id)?.classList.remove('show');
+  setTimeout(() => {
+    const c = document.getElementById('temp-modal-container');
+    if (c) c.innerHTML = '';
+  }, 300);
+}
+
+function showCancelOrderModal(orderNo) {
+  let container = document.getElementById('temp-modal-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'temp-modal-container';
+    document.body.appendChild(container);
+  }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalCancelOrder">
+      <div class="modal" style="width: 460px;">
+        <div class="modal-header">
+          <div class="modal-title">取消订单 · ${orderNo}</div>
+          <button class="modal-close" onclick="closeModalById('modalCancelOrder')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert warning">
+            <strong>⚠️ 取消订单</strong>
+            <div style="margin-top: 6px;">取消订单后,该订单状态将变为「已取消」,无法恢复。</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label"><span class="required">*</span>取消原因</label>
+            <select class="form-select"><option value="">请选择</option><option>客户要求</option><option>商品已售出</option><option>商品质量问题</option><option>客户长期未付款</option><option>其他</option></select>
+          </div>
+          <div class="form-row"><label class="form-label">补充说明</label><textarea class="form-textarea" placeholder="详细情况说明"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalCancelOrder')">取消</button>
+          <button class="btn danger" onclick="closeModalById('modalCancelOrder'); showToast('✓ 订单已取消', 'success');">确认取消订单</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+</script>
+
+
+<script>
+// ====================================================================
+// 财务模块 - 待确认款项
+// ====================================================================
+
+const FUNDS = [
+  { no: 'PAY-001', orderNo: 'SO...112137', customer: '张三 (1001)', payer: '赵伟', card: '招行 6225****4421', amount: 56800, status: 'pending', cancelTime: '05-06 13:35', duration: '2 小时' },
+  { no: 'PAY-K33', orderNo: 'SO...094521', customer: '李四 (1008)', payer: '李父亲', card: '农行 6228****1188', amount: 82500, status: 'pending', cancelTime: '05-04 17:30', duration: '2 天' },
+  { no: 'PAY-K17', orderNo: 'SO...082019', customer: '王芳 (1015)', payer: '未识别', card: '中行 6213****9012', amount: 18900, status: 'pending', cancelTime: '04-28 12:00', duration: '9 天' },
+  { no: 'PAY-K05', orderNo: 'SO...068742', customer: '陈某 (1022)', payer: '陈某', card: '建行 6217****5566', amount: 36000, status: 'refunded', cancelTime: '04-15 11:00', duration: '已处理' },
+  { no: 'PAY-K02', orderNo: 'SO...054128', customer: '孙某 (1030)', payer: '孙妻', card: '招行 6225****3344', amount: 45800, status: 'on_hold', cancelTime: '04-08 16:00', duration: '29 天' },
+  { no: 'PAY-K12', orderNo: 'SO...078234', customer: '周某 (1018)', payer: '周妻', card: '招行 6225****7788', amount: 42000, status: 'whitelist', cancelTime: '04-22 18:00', duration: '已处理' },
+  { no: 'PAY-K09', orderNo: 'SO...074219', customer: '赵某 (1025)', payer: '赵父', card: '农行 6228****6699', amount: 39400, status: 'whitelist', cancelTime: '04-19 12:00', duration: '已处理' },
+];
+
+const FUND_STATUS = {
+  pending: { text: '⏳ 待处理', cls: 'tag-warning' },
+  refunded: { text: '⊘ 已退款', cls: 'tag-default' },
+  on_hold: { text: '⏸ 暂时挂起观察', cls: 'tag-default' },
+  whitelist: { text: '✓ 已通过加白处理', cls: 'tag-success' },
+};
+
+let fundFilter = 'all';
+function getFundsByStatus(s) {
+  if (s === 'all') return FUNDS;
+  return FUNDS.filter(f => f.status === s);
+}
+
+PAGES['funds-list'] = () => {
+  const list = getFundsByStatus(fundFilter);
+  const pending = FUNDS.filter(f => f.status === 'pending');
+  return `
+    <div class="breadcrumb"><a>财务管理</a><span class="sep">/</span><span class="current">待确认款项</span></div>
+
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">待确认款项 <span style="display:inline-block;padding:0 6px;line-height:18px;background:var(--orange);color:white;font-size:10px;font-weight:600;border-radius:var(--radius-sm);">NEW</span></h2>
+        <div class="page-subtitle">客户在 C 端取消本次付款后产生的资金,管理员做最终处理:手动退款 / 暂时挂起观察 / 客户重新支付时通过加白名单自动归档。</div>
+      </div>
+    </div>
+
+    <div class="summary-cards cols-4">
+      <div class="summary-card">
+        <div class="summary-card-icon-lg orange">⏳</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value" style="color:var(--warning);">${pending.length} 笔</div>
+          <div class="summary-card-label">待处理</div>
+          <div class="summary-card-extra">¥${pending.reduce((s, f) => s + f.amount, 0).toLocaleString()}.00</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg brand">↻</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">¥56,800</div>
+          <div class="summary-card-label">本周新增</div>
+          <div class="summary-card-extra"><span class="up">↑ 较上周 +1 笔</span></div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg green">✓</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">${FUNDS.filter(f => f.status !== 'pending').length} 笔</div>
+          <div class="summary-card-label">本月已处理</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg red">!</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value" style="color:var(--text-3);">0 笔</div>
+          <div class="summary-card-label">超 30 天未处理</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="list-toolbar-tabs">
+        ${['all', 'pending', 'refunded', 'on_hold', 'whitelist'].map(s => {
+          const labels = { all: '全部', pending: '⏳ 待处理', refunded: '⊘ 已退款', on_hold: '⏸ 暂时挂起观察', whitelist: '✓ 已通过加白处理' };
+          const cnt = s === 'all' ? FUNDS.length : FUNDS.filter(f => f.status === s).length;
+          return `<div class="tab-item ${fundFilter === s ? 'active' : ''}" onclick="filterFundStatus('${s}')">${labels[s]}<span class="num">${cnt}</span></div>`;
+        }).join('')}
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>入账时间</th><th>付款单号</th><th>关联订单</th><th>客户</th>
+            <th>实际打款人</th><th>打款账号</th><th style="text-align:right">金额</th>
+            <th>资金状态</th><th>客户取消时间</th><th>滞留时长</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(f => {
+            const muted = f.status !== 'pending';
+            return `
+              <tr style="${muted ? 'color:var(--text-3);' : ''}">
+                <td class="mono">${f.cancelTime}</td>
+                <td class="mono"><a class="btn-link" onclick="goFundDetail('${f.no}')">${f.no}</a></td>
+                <td><a class="btn-link" onclick="showToast('跳转订单详情(demo 简化)', 'success')">${f.orderNo}</a></td>
+                <td>${f.customer}</td><td>${f.payer}</td><td class="mono">${f.card}</td>
+                <td style="text-align:right;${muted ? '' : 'color:var(--orange);font-weight:600;font-family:-apple-system;'}">¥${f.amount.toLocaleString()}</td>
+                <td><span class="tag ${FUND_STATUS[f.status].cls}">${FUND_STATUS[f.status].text}</span></td>
+                <td class="mono">${f.cancelTime}</td>
+                <td><span style="color:${f.status === 'pending' && parseInt(f.duration) > 7 ? 'var(--error)' : 'var(--text-3)'};font-size:12px;">${f.duration}</span></td>
+                <td>
+                  <div class="btn-text-row">
+                    ${f.status === 'pending' || f.status === 'on_hold' 
+                      ? `<button class="btn-link error" onclick="showFundProcess('${f.no}')">${f.status === 'on_hold' ? '重新处理' : '处理'}</button><span class="op-divider"></span>` 
+                      : ''}
+                    <button class="btn-link" onclick="goFundDetail('${f.no}')">详情</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+};
+
+function filterFundStatus(s) { fundFilter = s; goPage('funds-list'); }
+
+let currentFundNo = null;
+function goFundDetail(no) { currentFundNo = no; goPage('funds-detail'); }
+
+PAGES['funds-detail'] = () => {
+  const f = FUNDS.find(x => x.no === currentFundNo) || FUNDS[0];
+  const status = FUND_STATUS[f.status];
+  return `
+    <div class="back-link" onclick="goPage('funds-list')">← 返回列表</div>
+    <div class="breadcrumb">
+      <a onclick="goPage('funds-list')">财务管理</a><span class="sep">/</span>
+      <a onclick="goPage('funds-list')">待确认款项</a><span class="sep">/</span>
+      <span class="current">${f.no}</span>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">待确认款项详情 · ${f.no} <span class="tag ${status.cls}">${status.text}</span></h2>
+        <div class="page-subtitle">${
+          f.status === 'pending' ? '资金已到账,等待管理员决定处理方式' :
+          f.status === 'refunded' ? '退款工单已创建' :
+          f.status === 'on_hold' ? '已挂起 ' + f.duration + ',接近 30 天阈值' :
+          '客户重新支付时管理员添加付款人信息,本笔自动归档'
+        }</div>
+      </div>
+      ${f.status === 'pending' || f.status === 'on_hold'
+        ? `<button class="btn primary" onclick="showFundProcess('${f.no}')">${f.status === 'on_hold' ? '重新处理' : '立即处理'}</button>` : ''}
+    </div>
+
+    ${f.status === 'pending' ? `
+      <div class="alert warning"><strong>⚠️ 本笔款项尚未处理</strong><div style="margin-top:6px;">资金停留在平台账户。请尽快选择处理方式。</div></div>
+    ` : ''}
+    ${f.status === 'whitelist' ? `
+      <div class="alert" style="background:var(--success-bg);border-color:#B7EB8F;"><strong style="color:var(--success);">✓ 本笔款项已通过添加付款人信息(加白)自动归档</strong>
+        <div style="margin-top:6px;">客户重新支付订单时,管理员将打款人「${f.payer}」添加为客户「${f.customer.split(' ')[0]}」的付款人信息;系统检测到本笔历史款项的打款人匹配新加白记录,自动将本笔款项标记为「已通过加白处理」,无需退款。</div>
+      </div>
+    ` : ''}
+
+    <div class="card">
+      <div class="card-title">资金信息</div>
+      <div class="detail-grid">
+        <div>
+          <div class="info-row"><div class="info-label">付款单号</div><div class="info-value mono">${f.no}</div></div>
+          <div class="info-row"><div class="info-label">关联订单</div><div class="info-value mono"><a class="btn-link">${f.orderNo}</a></div></div>
+          <div class="info-row"><div class="info-label">入账时间</div><div class="info-value mono">2026-${f.cancelTime}:18</div></div>
+          <div class="info-row"><div class="info-label">客户取消时间</div><div class="info-value mono">2026-${f.cancelTime}:42</div></div>
+          <div class="info-row"><div class="info-label">取消方</div><div class="info-value"><span class="tag tag-brand">客户(C 端)</span></div></div>
+          <div class="info-row"><div class="info-label">取消原因</div><div class="info-value">客户主动取消本次付款(C 端发起)</div></div>
+        </div>
+        <div>
+          <div class="info-row"><div class="info-label">客户</div><div class="info-value">${f.customer}</div></div>
+          <div class="info-row"><div class="info-label">实际打款人</div><div class="info-value">${f.payer}</div></div>
+          <div class="info-row"><div class="info-label">打款人证件</div><div class="info-value mono">370***********1234</div></div>
+          <div class="info-row"><div class="info-label">打款账号</div><div class="info-value mono">${f.card}</div></div>
+          <div class="info-row"><div class="info-label">金额</div><div class="info-value"><span class="mono" style="font-size:20px;font-weight:600;color:var(--orange);">¥${f.amount.toLocaleString()}.00</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    ${f.status !== 'pending' ? `
+      <div class="card">
+        <div class="card-title">处理信息</div>
+        <div class="detail-grid">
+          <div>
+            <div class="info-row"><div class="info-label">处理方式</div><div class="info-value"><span class="tag ${status.cls}">${status.text}</span></div></div>
+            ${f.status === 'refunded' ? `
+              <div class="info-row"><div class="info-label">退款原因</div><div class="info-value">客户要求原路退回</div></div>
+              <div class="info-row"><div class="info-label">退款工单号</div><div class="info-value mono"><a class="btn-link">REFUND-2026041501</a></div></div>` : ''}
+            ${f.status === 'whitelist' ? `
+              <div class="info-row"><div class="info-label">触发动作</div><div class="info-value">客户「${f.customer.split(' ')[0]}」添加付款人信息「${f.payer}」</div></div>
+              <div class="info-row"><div class="info-label">关联付款人信息</div><div class="info-value mono"><a class="btn-link">PAYER-${f.customer.match(/\d+/)[0]}-001</a></div></div>` : ''}
+          </div>
+          <div>
+            <div class="info-row"><div class="info-label">处理人</div><div class="info-value">王梅</div></div>
+            <div class="info-row"><div class="info-label">处理时间</div><div class="info-value mono">2026-${f.cancelTime}:25</div></div>
+          </div>
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="card">
+      <div class="card-title">操作日志</div>
+      <div class="timeline">
+        ${f.status === 'whitelist' ? `
+          <div class="timeline-item"><div class="timeline-dot success"></div>
+            <div class="timeline-time">2026-${f.cancelTime}:00</div>
+            <div class="timeline-title"><span class="tag tag-success">✓ 通过加白自动归档</span></div>
+            <div class="timeline-desc">系统 检测到客户新加白名单匹配,自动归档为已处理。</div>
+          </div>
+          <div class="timeline-item"><div class="timeline-dot brand"></div>
+            <div class="timeline-time">2026-${f.cancelTime}:32</div>
+            <div class="timeline-title"><span class="tag tag-brand">+ 添加付款人信息</span></div>
+            <div class="timeline-desc">王梅 在客户主页添加付款人信息:<strong>${f.payer} · ${f.card}</strong></div>
+          </div>` : ''}
+        ${f.status === 'refunded' ? `
+          <div class="timeline-item"><div class="timeline-dot success"></div>
+            <div class="timeline-time">2026-${f.cancelTime}:25</div>
+            <div class="timeline-title"><span class="tag tag-success">✓ 退款工单创建</span></div>
+            <div class="timeline-desc">王梅 创建退款工单 REFUND-2026041501</div>
+          </div>` : ''}
+        <div class="timeline-item"><div class="timeline-dot error"></div>
+          <div class="timeline-time">2026-${f.cancelTime}:42</div>
+          <div class="timeline-title"><span class="tag tag-error">⊘ 客户取消本次付款</span></div>
+          <div class="timeline-desc">客户·${f.customer.split(' ')[0]}(C 端发起) 取消订单 <span class="mono">${f.orderNo}</span> 的本次付款</div>
+        </div>
+        <div class="timeline-item"><div class="timeline-dot brand"></div>
+          <div class="timeline-time">2026-${f.cancelTime}:18</div>
+          <div class="timeline-title"><span class="tag tag-brand">入账</span></div>
+          <div class="timeline-desc">系统 银行回调入账 ¥${f.amount.toLocaleString()} · 打款人识别为「${f.payer}」</div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+function showFundProcess(no) {
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  const f = FUNDS.find(x => x.no === no);
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalFundProcess">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">处理待确认款项 · ${no}</div>
+          <button class="modal-close" onclick="closeModalById('modalFundProcess')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="fund-meta">
+            <div class="fund-meta-row"><div class="fund-meta-label">付款单号</div><div class="fund-meta-value mono">${f.no}</div></div>
+            <div class="fund-meta-row"><div class="fund-meta-label">客户</div><div class="fund-meta-value">${f.customer}</div></div>
+            <div class="fund-meta-row"><div class="fund-meta-label">实际打款人</div><div class="fund-meta-value">${f.payer} · ${f.card}</div></div>
+            <div class="fund-meta-row"><div class="fund-meta-label">金额</div><div class="fund-meta-value fund-meta-amount">¥${f.amount.toLocaleString()}.00</div></div>
+          </div>
+          <div class="form-row">
+            <label class="form-label"><span class="required">*</span>处理方式</label>
+            <div class="method-options">
+              <div class="method-option" onclick="selectFundMethod(this, 'refund')">
+                <div class="method-option-radio"></div>
+                <div class="method-option-body">
+                  <div class="method-option-title">⊘ 手动退款 <span class="real-fund-warn">⚠️ 真实资金动作</span></div>
+                  <div class="method-option-desc">生成退款工单 → 财务审核 → 银行打款 → 退回客户原打款账户</div>
+                </div>
+              </div>
+              <div class="method-option" onclick="selectFundMethod(this, 'on_hold')">
+                <div class="method-option-radio"></div>
+                <div class="method-option-body">
+                  <div class="method-option-title">⏸ 暂时挂起观察</div>
+                  <div class="method-option-desc">保留观察,无任何动作。后续可重新切换为退款。超 30 天系统提示但不自动动作</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row" id="refundReasonRow" style="display:none;">
+            <label class="form-label"><span class="required">*</span>退款原因</label>
+            <select class="form-select"><option value="">请选择</option><option>客户要求原路退回</option><option>实际打款人非本人</option><option>金额异常</option><option>其他</option></select>
+          </div>
+          <div class="form-row"><label class="form-label">处理备注</label><textarea class="form-textarea" placeholder="备注说明,操作日志会记录"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalFundProcess')">取消</button>
+          <button class="btn primary" onclick="submitFundProcess()">确认处理</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+let selectedFundMethod = null;
+function selectFundMethod(el, method) {
+  document.querySelectorAll('.method-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFundMethod = method;
+  document.getElementById('refundReasonRow').style.display = method === 'refund' ? 'block' : 'none';
+}
+function submitFundProcess() {
+  if (!selectedFundMethod) { showToast('请选择处理方式', 'error'); return; }
+  closeModalById('modalFundProcess');
+  showToast(selectedFundMethod === 'refund' ? '✓ 已创建退款工单,等待财务审核' : '✓ 已标记为暂时挂起观察', 'success');
+}
+
+
+// ====================================================================
+// 客户模块 - 客户列表 + 客户详情
+// ====================================================================
+
+const CUSTOMERS = [
+  { id: '1001', name: '张三', phone: '138****5678', regTime: '2024-03-15 10:23:45', lastOrder: '2026-05-06', spent: 486300, status: 'active', tags: ['钻石客户', '老客户'], payerCount: 1 },
+  { id: '1008', name: '李四', phone: '139****1234', regTime: '2024-08-22 14:18:33', lastOrder: '2026-05-06', spent: 235800, status: 'active', tags: ['白金客户'], payerCount: 0 },
+  { id: '1015', name: '王芳', phone: '136****5544', regTime: '2024-11-05 09:55:12', lastOrder: '2026-05-05', spent: 56700, status: 'active', tags: ['普通客户'], payerCount: 0 },
+  { id: '1018', name: '周某', phone: '137****8866', regTime: '2025-02-10 16:42:18', lastOrder: '2026-04-22', spent: 142000, status: 'active', tags: ['白金客户'], payerCount: 1 },
+  { id: '1022', name: '陈某', phone: '138****1122', regTime: '2025-01-18 08:30:00', lastOrder: '2026-04-15', spent: 36000, status: 'active', tags: ['普通客户'], payerCount: 0 },
+  { id: '1025', name: '赵某', phone: '155****3344', regTime: '2025-03-22 19:18:42', lastOrder: '2026-04-19', spent: 79400, status: 'active', tags: ['普通客户'], payerCount: 1 },
+  { id: '1042', name: '刘磊', phone: '139****1234', regTime: '2025-04-08 11:25:08', lastOrder: '2026-05-06', spent: 235400, status: 'active', tags: ['白金客户'], payerCount: 0 },
+  { id: '1067', name: '陈宇', phone: '136****8888', regTime: '2024-06-03 13:45:22', lastOrder: '2026-05-06', spent: 1250800, status: 'active', tags: ['钻石客户', '老客户'], payerCount: 2 },
+  { id: '1091', name: '赵敏', phone: '187****6543', regTime: '2024-09-14 17:30:55', lastOrder: '2026-05-05', spent: 968200, status: 'active', tags: ['钻石客户'], payerCount: 1 },
+  { id: '1103', name: '孙莉', phone: '186****2345', regTime: '2024-04-29 10:12:38', lastOrder: '2026-05-05', spent: 1650000, status: 'active', tags: ['钻石客户', '老客户'], payerCount: 0 },
+  { id: '5490', name: '用户5490', phone: '152****0001', regTime: '2026-05-08 04:10:36', lastOrder: '—', spent: 0, status: 'active', tags: [], payerCount: 0 },
+];
+
+PAGES['customers-list'] = () => {
+  return `
+    <div class="breadcrumb"><a>客户管理</a><span class="sep">/</span><span class="current">客户列表</span></div>
+
+    <div class="summary-cards cols-4">
+      <div class="summary-card">
+        <div class="summary-card-icon-lg purple">👥</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">${CUSTOMERS.length.toLocaleString()}</div>
+          <div class="summary-card-label">用户总数</div>
+          <div class="summary-card-extra"><span class="up">↑ 1.6%</span> 较上月</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg pink">+</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">3</div>
+          <div class="summary-card-label">本月新增</div>
+          <div class="summary-card-extra"><span class="down">↓ 34.4%</span> 较上月</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg green">●</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">0</div>
+          <div class="summary-card-label">活跃用户</div>
+          <div class="summary-card-extra"><span class="down">↓ 100%</span> 较上月</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon-lg blue">📊</div>
+        <div class="summary-card-body">
+          <div class="summary-card-value">0%</div>
+          <div class="summary-card-label">付费转化率</div>
+          <div class="summary-card-extra"><span class="down">↓ 50.79%</span> 较上月</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="list-toolbar-tabs">
+        <div class="tab-item active">用户列表 <span class="num">${CUSTOMERS.length}</span></div>
+        <div class="tab-item" onclick="showToast('用户画像功能在 demo 范围外', 'error')">用户画像</div>
+      </div>
+
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;color:var(--text-2);">用户ID/手机/昵称:</span>
+          <input type="text" class="search-input" placeholder="请输入" style="width:180px;">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:13px;color:var(--text-2);">账户状态:</span>
+          <button class="btn sm primary">全部</button>
+          <button class="btn sm">正常</button>
+          <button class="btn sm">已冻结</button>
+          <button class="btn sm">发起注销</button>
+          <button class="btn sm">已注销</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:13px;color:var(--text-2);">标签:</span>
+          <button class="btn sm primary">全部</button>
+          <button class="btn sm">已认证</button>
+          <button class="btn sm">未认证</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:13px;color:var(--text-2);">注册时间:</span>
+          <input type="text" class="search-input" placeholder="开始日期 → 结束日期" style="width:240px;">
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn primary">查询</button>
+          <button class="btn">重置</button>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>用户信息</th><th>注册时间</th><th>最近下单</th>
+            <th>消费金额</th><th>账户状态</th><th>标签</th><th>付款人</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${CUSTOMERS.map(c => `
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">${c.name.charAt(0)}</div>
+                  <div class="user-info-text">
+                    <div class="user-name" onclick="goCustomerDetail('${c.id}')">${c.name}</div>
+                    <div class="user-id-line">ID: ${c.id}</div>
+                    <div class="user-id-line">手机: ${c.phone}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="mono" style="font-size:12px;">${c.regTime}</td>
+              <td class="mono" style="font-size:12px;">${c.lastOrder}</td>
+              <td><span class="mono">¥${c.spent.toLocaleString()}</span></td>
+              <td><span class="tag tag-success">正常</span></td>
+              <td>${c.tags.length ? c.tags.map(t => `<span class="tag tag-gold" style="margin-right:4px;">${t}</span>`).join('') : '<span style="color:var(--text-3);">--</span>'}</td>
+              <td>${c.payerCount > 0 ? `<span class="tag tag-brand">${c.payerCount} 个</span>` : '<span style="color:var(--text-3);">未登记</span>'}</td>
+              <td>
+                <div class="op-actions">
+                  <button class="btn-link" onclick="goCustomerDetail('${c.id}')">详情</button>
+                  <button class="btn-link" onclick="showEditCustomerModal('${c.id}')">编辑</button>
+                  <button class="btn-link danger" onclick="showToast('冻结功能 demo 中未实现', 'error')">冻结</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+};
+
+let currentCustomerId = null;
+function goCustomerDetail(id) { currentCustomerId = id; goPage('customers-detail'); }
+
+PAGES['customers-detail'] = () => {
+  const c = CUSTOMERS.find(x => x.id === currentCustomerId) || CUSTOMERS[0];
+  return `
+    <div class="back-link" onclick="goPage('customers-list')">← 返回列表</div>
+    <div class="breadcrumb">
+      <a onclick="goPage('customers-list')">客户管理</a><span class="sep">/</span>
+      <a onclick="goPage('customers-list')">客户列表</a><span class="sep">/</span>
+      <span class="current">${c.name}</span>
+    </div>
+
+    <div class="page-header">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="user-avatar-sm" style="width:56px;height:56px;font-size:22px;">${c.name.charAt(0)}</div>
+        <div>
+          <h2 class="page-title">${c.name} <span class="tag tag-success">正常</span> ${c.tags.map(t => `<span class="tag tag-gold">${t}</span>`).join('')}</h2>
+          <div class="page-subtitle">用户ID ${c.id} · 手机 ${c.phone} · 注册于 ${c.regTime}</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn" onclick="showEditCustomerModal('${c.id}')">编辑客户信息</button>
+      </div>
+    </div>
+
+    <!-- 基本信息 -->
+    <div class="card">
+      <div class="card-title">基本信息</div>
+      <div class="detail-grid">
+        <div>
+          <div class="info-row"><div class="info-label">姓名</div><div class="info-value">${c.name}</div></div>
+          <div class="info-row"><div class="info-label">用户ID</div><div class="info-value mono">${c.id}</div></div>
+          <div class="info-row"><div class="info-label">手机号</div><div class="info-value mono">${c.phone}</div></div>
+          <div class="info-row"><div class="info-label">注册时间</div><div class="info-value mono">${c.regTime}</div></div>
+        </div>
+        <div>
+          <div class="info-row"><div class="info-label">实名信息</div><div class="info-value">${c.name} · 110***********5678</div></div>
+          <div class="info-row"><div class="info-label">客户标签</div><div class="info-value">${c.tags.length ? c.tags.map(t => `<span class="tag tag-gold" style="margin-right:4px;">${t}</span>`).join('') : '--'}</div></div>
+          <div class="info-row"><div class="info-label">账户状态</div><div class="info-value"><span class="tag tag-success">正常</span></div></div>
+          <div class="info-row"><div class="info-label">最近下单</div><div class="info-value mono">${c.lastOrder}</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- 数据概览 -->
+    <div class="card">
+      <div class="card-title">数据概览</div>
+      <div class="purple-cards-grid">
+        <div class="purple-card"><div class="purple-card-value">¥${c.spent.toLocaleString()}</div><div class="purple-card-label">累计消费</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.id === '1067' ? 18 : c.id === '1103' ? 22 : c.id === '1091' ? 14 : c.id === '1001' ? 12 : c.id === '1067' ? 18 : 0}</div><div class="purple-card-label">支付订单</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.id === '1067' ? 24 : c.id === '1103' ? 26 : c.id === '1091' ? 18 : c.id === '1001' ? 15 : 0}</div><div class="purple-card-label">购买商品</div></div>
+        <div class="purple-card"><div class="purple-card-value">¥${c.spent > 0 ? Math.round(c.spent / (c.id === '1067' ? 24 : c.id === '1103' ? 26 : c.id === '1091' ? 18 : c.id === '1001' ? 15 : 1)).toLocaleString() : 0}</div><div class="purple-card-label">购买商品均价</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.id === '1067' ? 8 : c.id === '1103' ? 6 : c.id === '1091' ? 4 : c.id === '1001' ? 3 : 0}</div><div class="purple-card-label">购买组货</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.id === '1067' ? 5 : c.id === '1103' ? 8 : c.id === '1091' ? 3 : c.id === '1001' ? 2 : 0}</div><div class="purple-card-label">购买暗拍</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.id === '1067' ? 11 : c.id === '1103' ? 12 : c.id === '1091' ? 11 : c.id === '1001' ? 10 : 0}</div><div class="purple-card-label">购买直播</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.id === '1067' ? 0 : c.id === '1103' ? 0 : 0}</div><div class="purple-card-label">购买挂售</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.spent > 500000 ? '95.50' : c.spent > 100000 ? '88.00' : '0.00'}<span class="pct">%</span></div><div class="purple-card-label">直播履约率</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.spent > 500000 ? '92.00' : c.spent > 100000 ? '85.00' : '0.00'}<span class="pct">%</span></div><div class="purple-card-label">暗拍履约率</div></div>
+        <div class="purple-card"><div class="purple-card-value">${c.spent > 500000 ? '2.50' : c.spent > 100000 ? '5.20' : '0.00'}<span class="pct">%</span></div><div class="purple-card-label">退货率</div></div>
+        <div class="purple-card"><div class="purple-card-value" style="font-size:14px;">${c.lastOrder !== '—' ? c.lastOrder : '--'}</div><div class="purple-card-label">支付时间</div></div>
+      </div>
+    </div>
+
+    <!-- 数据详情 -->
+    <div class="card">
+      <div class="card-title">数据详情</div>
+      <div class="data-overview-grid">
+        <div class="data-col">
+          <div class="data-row"><span class="data-label">是否实名认证:</span><span class="data-value">${c.spent > 0 ? '<span class="tag tag-success" style="font-size:11px;">已实名</span>' : '<span class="tag tag-error" style="font-size:11px;">未实名</span>'}</span></div>
+          <div class="data-row"><span class="data-label">最后一次交易时间:</span><span class="data-value mono">${c.lastOrder !== '—' ? c.lastOrder + ' 17:49:53' : '--'}</span></div>
+          <div class="data-row"><span class="data-label">统计时间截止:</span><span class="data-value mono">${c.lastOrder !== '—' ? '2026-05-08' : '--'}</span></div>
+        </div>
+        <div class="data-col">
+          <div class="data-row"><span class="data-label">直播拍下商品:</span><span class="data-value mono">${c.id === '1067' ? 11 : c.id === '1103' ? 12 : c.id === '1091' ? 11 : c.id === '1001' ? 10 : 0}</span></div>
+          <div class="data-row"><span class="data-label">直播拍下未付款商品:</span><span class="data-value mono">0</span></div>
+          <div class="data-row"><span class="data-label">最近 7 天未付款数:</span><span class="data-value mono">0</span></div>
+          <div class="data-row"><span class="data-label">直播最近 7 天参拍率:</span><span class="data-value mono">${c.spent > 500000 ? '12%' : '0%'}</span></div>
+          <div class="data-row"><span class="data-label">直播最近 30 天参拍率:</span><span class="data-value mono">${c.spent > 500000 ? '8%' : '0%'}</span></div>
+          <div class="data-row"><span class="data-label">直播最近 180 天参拍率:</span><span class="data-value mono">${c.spent > 500000 ? '5%' : '0%'}</span></div>
+        </div>
+        <div class="data-col">
+          <div class="data-row"><span class="data-label">暗拍中拍商品数量:</span><span class="data-value mono">${c.id === '1067' ? 5 : c.id === '1103' ? 8 : 0}</span></div>
+          <div class="data-row"><span class="data-label">暗拍中拍未付款商品数量:</span><span class="data-value mono">0</span></div>
+          <div class="data-row"><span class="data-label">最近 7 天未付款商品数量:</span><span class="data-value mono">0</span></div>
+          <div class="data-row"><span class="data-label">暗拍出价成功率:</span><span class="data-value mono">${c.spent > 500000 ? '45%' : '0%'}</span></div>
+          <div class="data-row"><span class="data-label">暗拍最近 7 天参拍率:</span><span class="data-value mono">${c.spent > 500000 ? '15%' : '0%'}</span></div>
+          <div class="data-row"><span class="data-label">暗拍最近 30 天参拍率:</span><span class="data-value mono">${c.spent > 500000 ? '10%' : '0%'}</span></div>
+          <div class="data-row"><span class="data-label">暗拍最近 180 天参拍率:</span><span class="data-value mono">${c.spent > 500000 ? '6%' : '0%'}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 偏好 -->
+    <div class="prefs-grid">
+      <div class="card">
+        <div class="card-title">下单活跃时段</div>
+        <div class="prefs-content">
+          ${c.spent > 100000 ? '<span class="tag tag-brand">20:00 - 22:00</span> <span class="tag tag-default" style="margin-left:4px;">高峰时段</span>' : '<span style="color:var(--text-3);">无活跃下单时段</span>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">价格偏好</div>
+        <div class="prefs-content">
+          ${c.spent > 500000 ? '<span class="tag tag-gold">高端 ¥10万+</span>' : c.spent > 100000 ? '<span class="tag tag-brand">中端 ¥3-10万</span>' : '<span style="color:var(--text-3);">无价格偏好</span>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">品牌偏好</div>
+        <div class="prefs-content">
+          ${c.spent > 500000 ? '<span class="tag tag-purple">爱马仕</span> <span class="tag tag-purple" style="margin-left:4px;">百达翡丽</span> <span class="tag tag-purple" style="margin-left:4px;">Tiffany</span>' : c.spent > 100000 ? '<span class="tag tag-purple">CHANEL</span> <span class="tag tag-purple" style="margin-left:4px;">LV</span>' : '<span style="color:var(--text-3);">无品牌偏好</span>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">品类偏好</div>
+        <div class="prefs-content">
+          ${c.spent > 500000 ? '<span class="tag tag-success">珠宝</span> <span class="tag tag-success" style="margin-left:4px;">腕表</span>' : c.spent > 100000 ? '<span class="tag tag-success">包袋</span>' : '<span style="color:var(--text-3);">无品类偏好</span>'}
+        </div>
+      </div>
+    </div>
+
+    <!-- 付款人信息模块(本次需求重点)-->
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color: var(--brand);"><circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 12C2.5 9.5 4.5 8 7 8C9.5 8 11.5 9.5 11.5 12" stroke="currentColor" stroke-width="1.4"/></svg>
+        付款人信息
+        <span style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+          <button class="btn primary sm" onclick="showAddPayerModal()">+ 添加付款人信息</button>
+        </span>
+      </div>
+
+      ${c.payerCount === 0 ? `
+        <div style="text-align:center;color:var(--text-3);padding:40px 0;">
+          <div style="font-size:40px;margin-bottom:8px;">👥</div>
+          <div>该客户未登记付款人信息</div>
+          <div style="font-size:12px;margin-top:6px;">为客户登记可信代付人后,代付订单可自动通过校验</div>
+        </div>
+      ` : `
+        <div class="payer-card-list">
+          ${c.id === '1001' ? `
+            <div class="payer-card">
+              <div class="payer-card-header">
+                <div>
+                  <div class="payer-card-name">刘父亲 <span class="tag tag-success" style="margin-left:6px;font-size:11px;">已生效</span></div>
+                  <div style="font-size:12px;color:var(--text-3);margin-top:2px;">关系:亲属</div>
+                </div>
+                <div class="payer-card-actions">
+                  <button class="btn-link" onclick="showEditPayerModal()">编辑</button>
+                  <button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button>
+                </div>
+              </div>
+              <div class="payer-card-info">
+                <div class="row"><span class="label">证件号:</span><span class="value mono">110***********1234</span></div>
+                <div class="row"><span class="label">联系电话:</span><span class="value mono">139****8866</span></div>
+                <div class="row">
+                  <span class="label">银行卡:</span>
+                  <span class="value">
+                    <div class="payer-bank-list">
+                      <span class="payer-bank-item"><span class="bank-name">交通银行</span><span class="card-no">6222 6012 3456 1188</span></span>
+                      <span class="payer-bank-item"><span class="bank-name">招商银行</span><span class="card-no">6225 8801 4477 1188</span></span>
+                    </div>
+                  </span>
+                </div>
+                <div class="row">
+                  <span class="label">授权委托书:</span>
+                  <span class="value">
+                    <div class="payer-attachments">
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('刘父亲_授权委托书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">委托书.pdf</div></div>
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('刘父亲_身份证正面.jpg', 'img')"><div class="icon">🖼️</div><div class="name">身份证.jpg</div></div>
+                    </div>
+                  </span>
+                </div>
+                <div class="row"><span class="label">添加时间:</span><span class="value">2025-01-15 10:32 · 操作人 王梅</span></div>
+                <div class="row"><span class="label">备注:</span><span class="value" style="color:var(--text-3);">客户父亲长期代付,已加入白名单</span></div>
+              </div>
+            </div>
+            <!-- 已失效付款人样例 -->
+            <div class="payer-card payer-card-invalid">
+              <div class="payer-card-header">
+                <div>
+                  <div class="payer-card-name">张前妻 <span class="tag tag-default" style="margin-left:6px;font-size:11px;">已失效</span></div>
+                  <div style="font-size:12px;color:var(--text-3);margin-top:2px;">关系:亲属</div>
+                </div>
+                <div class="payer-card-actions">
+                  <button class="btn-link" onclick="showRestorePayerModal(this)">恢复</button>
+                  <button class="btn-link danger" onclick="showDeletePayerModal(this)">删除</button>
+                </div>
+              </div>
+              <div class="payer-card-info">
+                <div class="row"><span class="label">证件号:</span><span class="value mono">320***********8821</span></div>
+                <div class="row"><span class="label">联系电话:</span><span class="value mono">137****6655</span></div>
+                <div class="row">
+                  <span class="label">银行卡:</span>
+                  <span class="value">
+                    <div class="payer-bank-list">
+                      <span class="payer-bank-item"><span class="bank-name">华夏银行</span><span class="card-no">6226 5588 9911 3344</span></span>
+                    </div>
+                  </span>
+                </div>
+                <div class="row">
+                  <span class="label">授权委托书:</span>
+                  <span class="value">
+                    <div class="payer-attachments">
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('张前妻_授权委托书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">委托书.pdf</div></div>
+                    </div>
+                  </span>
+                </div>
+                <div class="row"><span class="label">添加时间:</span><span class="value">2024-09-22 14:30 · 操作人 王梅</span></div>
+                <div class="row"><span class="label">失效时间:</span><span class="value">2025-12-08 11:25 · 操作人 王梅</span></div>
+                <div class="row"><span class="label">失效原因:</span><span class="value" style="color:var(--text-3);">客户告知双方关系变更,解除代付授权</span></div>
+              </div>
+            </div>
+          ` : ''}
+          ${c.id === '1067' ? `
+            <div class="payer-card">
+              <div class="payer-card-header">
+                <div><div class="payer-card-name">陈父亲 <span class="tag tag-success" style="margin-left:6px;font-size:11px;">已生效</span></div><div style="font-size:12px;color:var(--text-3);margin-top:2px;">关系:亲属</div></div>
+                <div class="payer-card-actions"><button class="btn-link" onclick="showEditPayerModal()">编辑</button><button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button></div>
+              </div>
+              <div class="payer-card-info">
+                <div class="row"><span class="label">证件号:</span><span class="value mono">120***********5678</span></div>
+                <div class="row"><span class="label">联系电话:</span><span class="value mono">138****9911</span></div>
+                <div class="row">
+                  <span class="label">银行卡:</span>
+                  <span class="value">
+                    <div class="payer-bank-list">
+                      <span class="payer-bank-item"><span class="bank-name">招商银行</span><span class="card-no">6225 8801 0000 6789</span></span>
+                    </div>
+                  </span>
+                </div>
+                <div class="row">
+                  <span class="label">授权委托书:</span>
+                  <span class="value">
+                    <div class="payer-attachments">
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('陈父亲_授权委托书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">委托书.pdf</div></div>
+                    </div>
+                  </span>
+                </div>
+                <div class="row"><span class="label">添加时间:</span><span class="value">2024-12-08 14:15 · 操作人 李冰</span></div>
+              </div>
+            </div>
+            <div class="payer-card">
+              <div class="payer-card-header">
+                <div><div class="payer-card-name">陈宇贸易公司 <span class="tag tag-success" style="margin-left:6px;font-size:11px;">已生效</span></div><div style="font-size:12px;color:var(--text-3);margin-top:2px;">关系:公司财务</div></div>
+                <div class="payer-card-actions"><button class="btn-link" onclick="showEditPayerModal()">编辑</button><button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button></div>
+              </div>
+              <div class="payer-card-info">
+                <div class="row"><span class="label">证件号:</span><span class="value mono">91440300...XXXX(对公)</span></div>
+                <div class="row"><span class="label">联系电话:</span><span class="value mono">021-6688****</span></div>
+                <div class="row">
+                  <span class="label">银行卡:</span>
+                  <span class="value">
+                    <div class="payer-bank-list">
+                      <span class="payer-bank-item"><span class="bank-name">建设银行</span><span class="card-no">6217 0050 1234 8888</span></span>
+                      <span class="payer-bank-item"><span class="bank-name">兴业银行</span><span class="card-no">4365 8800 0000 8888</span></span>
+                    </div>
+                  </span>
+                </div>
+                <div class="row">
+                  <span class="label">授权委托书:</span>
+                  <span class="value">
+                    <div class="payer-attachments">
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('陈宇贸易_对公授权书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">对公授权.pdf</div></div>
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('陈宇贸易_营业执照.jpg', 'img')"><div class="icon">🖼️</div><div class="name">营业执照</div></div>
+                      <div class="attachment-thumb" onclick="showAttachmentPreview('陈宇贸易_法人身份证.jpg', 'img')"><div class="icon">🖼️</div><div class="name">法人证件</div></div>
+                    </div>
+                  </span>
+                </div>
+                <div class="row"><span class="label">添加时间:</span><span class="value">2025-03-22 16:45 · 操作人 王梅</span></div>
+                <div class="row"><span class="label">备注:</span><span class="value" style="color:var(--text-3);">客户名下贸易公司,公账代付已签三方协议</span></div>
+              </div>
+            </div>
+          ` : ''}
+          ${c.id === '1018' || c.id === '1025' || c.id === '1091' ? (() => {
+            const data = {
+              '1018': { name: '周妻', phone: '152****3344', cards: [['招商银行', '6225 8801 4422 7788']], idNum: '320***********6622', addedBy: '王梅', addedAt: '2025-04-10 09:18', note: '客户配偶,频繁代付' },
+              '1025': { name: '赵父', phone: '189****5511', cards: [['农业银行', '6228 4801 2345 6699']], idNum: '410***********1107', addedBy: '李冰', addedAt: '2025-04-12 14:32', note: '' },
+              '1091': { name: '赵敏丈夫', phone: '136****7788', cards: [['建设银行', '6217 0050 9988 2233'], ['平安银行', '6230 5811 4567 2233']], idNum: '110***********5544', addedBy: '王梅', addedAt: '2025-04-15 11:25', note: '客户丈夫,夫妻共同账户代付' },
+            }[c.id];
+            return `
+              <div class="payer-card">
+                <div class="payer-card-header">
+                  <div><div class="payer-card-name">${data.name} <span class="tag tag-success" style="margin-left:6px;font-size:11px;">已生效</span></div><div style="font-size:12px;color:var(--text-3);margin-top:2px;">关系:亲属</div></div>
+                  <div class="payer-card-actions"><button class="btn-link" onclick="showEditPayerModal()">编辑</button><button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button></div>
+                </div>
+                <div class="payer-card-info">
+                  <div class="row"><span class="label">证件号:</span><span class="value mono">${data.idNum}</span></div>
+                  <div class="row"><span class="label">联系电话:</span><span class="value mono">${data.phone}</span></div>
+                  <div class="row">
+                    <span class="label">银行卡:</span>
+                    <span class="value">
+                      <div class="payer-bank-list">
+                        ${data.cards.map(card => `<span class="payer-bank-item"><span class="bank-name">${card[0]}</span><span class="card-no">${card[1]}</span></span>`).join('')}
+                      </div>
+                    </span>
+                  </div>
+                  <div class="row">
+                    <span class="label">授权委托书:</span>
+                    <span class="value">
+                      <div class="payer-attachments">
+                        <div class="attachment-thumb" onclick="showAttachmentPreview('${data.name}_授权委托书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">委托书.pdf</div></div>
+                      </div>
+                    </span>
+                  </div>
+                  <div class="row"><span class="label">添加时间:</span><span class="value">${data.addedAt} · 操作人 ${data.addedBy}</span></div>
+                  ${data.note ? `<div class="row"><span class="label">备注:</span><span class="value" style="color:var(--text-3);">${data.note}</span></div>` : ''}
+                </div>
+              </div>
+            `;
+          })() : ''}
+        </div>
+      `}
+    </div>
+
+  `;
+};
+
+function showEditCustomerModal(id) {
+  const c = CUSTOMERS.find(x => x.id === id);
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalEditCustomer">
+      <div class="modal" style="width: 540px;">
+        <div class="modal-header">
+          <div class="modal-title">编辑客户信息 · ${c.name}</div>
+          <button class="modal-close" onclick="closeModalById('modalEditCustomer')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert brand">
+            <strong>💡 编辑客户基本信息 + 付款人信息</strong>
+            <div style="margin-top: 6px;">编辑后请保存,付款人信息变更会同步影响该客户后续支付的自动校验。</div>
+          </div>
+          <div class="form-row"><label class="form-label">姓名</label><input type="text" class="form-input" value="${c.name}"></div>
+          <div class="form-row"><label class="form-label">手机号</label><input type="text" class="form-input mono" value="${c.phone}"></div>
+          <div class="form-row"><label class="form-label">客户标签</label><input type="text" class="form-input" value="${c.tags.join(',')}"></div>
+
+          <div style="border-top: 1px solid var(--border); margin: 20px -24px; padding: 20px 24px 0;">
+            <div style="font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <span>付款人信息(${c.payerCount})</span>
+              <button class="btn sm primary" onclick="closeModalById('modalEditCustomer'); showAddPayerModal();">+ 添加付款人</button>
+            </div>
+            ${c.payerCount === 0 
+              ? '<div style="font-size:12px;color:var(--text-3);text-align:center;padding:16px 0;">尚未登记付款人信息</div>' 
+              : '<div style="font-size:12px;color:var(--text-3);">该客户已登记 ' + c.payerCount + ' 条付款人信息,如需修改请关闭后到详情页查看完整付款人卡片</div>'}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalEditCustomer')">取消</button>
+          <button class="btn primary" onclick="closeModalById('modalEditCustomer'); showToast('✓ 客户信息已保存', 'success');">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showAddPayerModal() {
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalAddPayer2">
+      <div class="modal" style="width: 540px;">
+        <div class="modal-header">
+          <div class="modal-title">添加付款人信息</div>
+          <button class="modal-close" onclick="closeModalById('modalAddPayer2')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row"><label class="form-label"><span class="required">*</span>打款人姓名</label><input type="text" class="form-input" placeholder="请输入打款人姓名"></div>
+          <div class="form-row"><label class="form-label"><span class="required">*</span>身份证号</label><input type="text" class="form-input mono" placeholder="请输入身份证号"></div>
+          <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡号</label>
+            <div style="display:flex;gap:8px;">
+              <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml()}</select>
+              <input type="text" class="form-input mono" placeholder="请输入银行卡号">
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label"><span class="required">*</span>关系</label>
+            <select class="form-select"><option value="">请选择</option><option>亲属</option><option>公司财务</option><option>公司法人</option><option>其他</option></select>
+          </div>
+          <div class="form-row"><label class="form-label">凭证类型</label><input type="text" class="form-input" value="授权委托书" readonly style="background:var(--bg-secondary);"></div>
+          <div class="form-row">
+            <div style="background:var(--brand-bg);border:1px solid #91CAFF;border-radius:var(--radius-md);padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <div style="font-size:13px;color:var(--text-2);flex:1;">📄 授权委托书模板 / 通用空白 PDF / 客户填写后签字 / 扫描上传</div>
+              <button class="btn sm" onclick="downloadAuthFormPdf()">下载模板</button>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label"><span class="required">*</span>凭证图片</label>
+            <div style="border:1px dashed var(--border-2);border-radius:var(--radius-md);padding:20px;text-align:center;color:var(--text-3);cursor:pointer;" onclick="showToast('demo 中未实现上传','error')">
+              <div style="font-size:24px;">📷</div><div style="font-size:13px;margin-top:4px;">点击或拖拽上传</div>
+            </div>
+          </div>
+          <div class="form-row"><label class="form-label">备注</label><textarea class="form-textarea" placeholder="选填"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalAddPayer2')">取消</button>
+          <button class="btn primary" onclick="closeModalById('modalAddPayer2'); showToast('✓ 已添加付款人信息', 'success');">添加</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 附件预览(PDF 走下载,图片走占位预览)
+function showAttachmentPreview(filename, type) {
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+
+  if (type === 'pdf') {
+    // PDF 内联预览(用 base64 + iframe 渲染)
+    const pdfDataUrl = 'data:application/pdf;base64,' + AUTH_FORM_PDF_BASE64;
+    container.innerHTML = `
+      <div class="modal-mask show" id="modalAttachPreview">
+        <div class="modal" style="width: 880px; max-width: 95vw; max-height: 90vh;">
+          <div class="modal-header">
+            <div class="modal-title">📄 附件预览 · ${filename}</div>
+            <button class="modal-close" onclick="closeModalById('modalAttachPreview')">×</button>
+          </div>
+          <div class="modal-body" style="padding: 0;">
+            <div style="background: #F5F5F5; padding: 16px;">
+              <iframe src="${pdfDataUrl}" style="width: 100%; height: 65vh; border: 1px solid var(--border); border-radius: var(--radius-md); background: white;" title="${filename}"></iframe>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div style="flex: 1; font-size: 12px; color: var(--text-3);">
+              💡 demo 中所有 PDF 统一渲染委托书模板,实际项目按附件 ID 取真实文件
+            </div>
+            <button class="btn" onclick="closeModalById('modalAttachPreview')">关闭</button>
+            <button class="btn primary" onclick="downloadAuthFormPdf()">⬇ 下载 PDF</button>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // 图片附件:用 SVG 占位
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalAttachPreview">
+      <div class="modal" style="width: 600px;">
+        <div class="modal-header">
+          <div class="modal-title">🖼 附件预览 · ${filename}</div>
+          <button class="modal-close" onclick="closeModalById('modalAttachPreview')">×</button>
+        </div>
+        <div class="modal-body">
+          <div style="background: #F5F5F5; border-radius: var(--radius-md); height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 1px solid var(--border);">
+            <div style="font-size: 64px;">🖼️</div>
+            <div style="color: var(--text-3); font-size: 13px;">${filename}</div>
+            <div style="color: var(--text-4); font-size: 12px;">(demo 中未提供真实图片,实际项目中此处展示扫描件)</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalAttachPreview')">关闭</button>
+          <button class="btn primary" onclick="showToast('实际项目支持下载原图', 'success')">⬇ 下载原图</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showInvalidatePayerModal(btn) {
+  const card = btn.closest('.payer-card');
+  const payerName = card?.querySelector('.payer-card-name')?.childNodes[0]?.textContent?.trim() || '该付款人';
+
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalInvalidatePayer">
+      <div class="modal" style="width: 460px;">
+        <div class="modal-header">
+          <div class="modal-title">设为失效 · ${payerName}</div>
+          <button class="modal-close" onclick="closeModalById('modalInvalidatePayer')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert error">
+            <strong>⚠️ 注意</strong>
+            <div style="margin-top: 6px; line-height: 1.6;">
+              失效后,「<strong>${payerName}</strong>」的所有银行卡将不再用于自动校验。
+              该付款人记录会保留(用于历史订单追溯),但状态变为「已失效」。
+              <br><br>
+              <strong>不会影响</strong>:已通过校验的历史订单。<br>
+              <strong>会影响</strong>:此后该付款人代付,将再次触发挂起。
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">失效原因 <span style="color:var(--text-3);font-weight:400;">(选填,留底备查)</span></label>
+            <textarea class="form-textarea" placeholder="如:客户告知该付款人不再使用 / 客户解除授权"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalInvalidatePayer')">取消</button>
+          <button class="btn danger" onclick="submitInvalidatePayer('${payerName}')">确认失效</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function submitInvalidatePayer(payerName) {
+  closeModalById('modalInvalidatePayer');
+  showToast('✓ 付款人「' + payerName + '」已设为失效', 'success');
+}
+
+// 恢复已失效的付款人
+function showRestorePayerModal(btn) {
+  const card = btn.closest('.payer-card');
+  const payerName = card?.querySelector('.payer-card-name')?.childNodes[0]?.textContent?.trim() || '该付款人';
+
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalRestorePayer">
+      <div class="modal" style="width: 460px;">
+        <div class="modal-header">
+          <div class="modal-title">恢复付款人 · ${payerName}</div>
+          <button class="modal-close" onclick="closeModalById('modalRestorePayer')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert brand">
+            <strong>💡 恢复操作</strong>
+            <div style="margin-top: 6px; line-height: 1.6;">
+              恢复后,「<strong>${payerName}</strong>」会重新生效,其名下所有银行卡可用于自动校验。
+              <br><br>
+              <strong>会影响</strong>:此后该付款人代付,系统自动通过校验。
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">恢复原因 <span style="color:var(--text-3);font-weight:400;">(选填,留底备查)</span></label>
+            <textarea class="form-textarea" placeholder="如:客户告知关系恢复 / 重新授权"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalRestorePayer')">取消</button>
+          <button class="btn primary" onclick="closeModalById('modalRestorePayer'); showToast('✓ 付款人「${payerName}」已恢复生效', 'success');">确认恢复</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 永久删除已失效的付款人
+function showDeletePayerModal(btn) {
+  const card = btn.closest('.payer-card');
+  const payerName = card?.querySelector('.payer-card-name')?.childNodes[0]?.textContent?.trim() || '该付款人';
+
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalDeletePayer">
+      <div class="modal" style="width: 460px;">
+        <div class="modal-header">
+          <div class="modal-title">永久删除 · ${payerName}</div>
+          <button class="modal-close" onclick="closeModalById('modalDeletePayer')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert error">
+            <strong>⚠️ 此操作不可恢复</strong>
+            <div style="margin-top: 6px; line-height: 1.6;">
+              永久删除后,付款人「<strong>${payerName}</strong>」的记录将从系统移除,无法找回。
+              <br><br>
+              <strong>建议</strong>:仅在数据录入错误等场景下使用。如客户告知不再代付,使用「失效」即可保留历史数据。
+              <br><br>
+              <strong>历史订单</strong>:该付款人关联的历史订单不受影响,但订单详情中的付款人信息将显示为「已删除」。
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label"><span class="required">*</span>删除原因</label>
+            <select class="form-select">
+              <option value="">请选择</option>
+              <option>录入错误</option>
+              <option>客户要求删除</option>
+              <option>其他</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalDeletePayer')">取消</button>
+          <button class="btn danger" onclick="closeModalById('modalDeletePayer'); showToast('✓ 付款人「${payerName}」已永久删除', 'success');">确认永久删除</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showEditPayerModal() {
+  let container = document.getElementById('temp-modal-container');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container'; document.body.appendChild(container); }
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalEditPayer">
+      <div class="modal" style="width: 480px;">
+        <div class="modal-header">
+          <div class="modal-title">编辑付款人信息</div>
+          <button class="modal-close" onclick="closeModalById('modalEditPayer')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert warning">⚠️ 姓名 / 证件号不可修改。可修改关系 / 备注、增 / 删 / 改银行卡号。</div>
+          <div class="form-row"><label class="form-label">打款人姓名</label><input type="text" class="form-input" value="刘父亲" readonly style="background:var(--bg-secondary);"></div>
+          <div class="form-row"><label class="form-label">身份证号</label><input type="text" class="form-input mono" value="110***********1234" readonly style="background:var(--bg-secondary);"></div>
+          <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡列表 <span style="color:var(--text-3);font-weight:400;font-size:12px;">(至少保留 1 张)</span></label>
+            <div id="editPayerCardList">
+              <div class="edit-card-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+                <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml('交通银行')}</select>
+                <input type="text" class="form-input mono" value="6222 6012 3456 1188">
+                <button class="btn sm" onclick="confirmDeletePayerCard(this)" style="flex-shrink:0;">删除</button>
+              </div>
+              <div class="edit-card-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+                <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml('招商银行')}</select>
+                <input type="text" class="form-input mono" value="6225 8801 4477 1188">
+                <button class="btn sm" onclick="confirmDeletePayerCard(this)" style="flex-shrink:0;">删除</button>
+              </div>
+            </div>
+            <button class="btn sm" style="margin-top:4px;" onclick="addPayerCardRow()">+ 添加银行卡号</button>
+          </div>
+          <div class="form-row"><label class="form-label"><span class="required">*</span>关系</label>
+            <select class="form-select"><option>亲属</option><option>公司财务</option><option>公司法人</option><option>其他</option></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeModalById('modalEditPayer')">取消</button>
+          <button class="btn primary" onclick="closeModalById('modalEditPayer'); showToast('✓ 已保存修改', 'success');">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// 删除银行卡号 - 弹二次确认
+function confirmDeletePayerCard(btn) {
+  const row = btn.closest('.edit-card-row');
+  const list = document.getElementById('editPayerCardList');
+  if (!row || !list) return;
+
+  // 至少保留 1 张
+  const remaining = list.querySelectorAll('.edit-card-row').length;
+  if (remaining <= 1) {
+    showToast('至少保留 1 张银行卡', 'error');
+    return;
+  }
+
+  // 提取卡号显示在确认框
+  const cardNo = row.querySelector('input')?.value || '该卡号';
+  const bankName = row.querySelector('select')?.value || '';
+
+  // 二次确认
+  let container = document.getElementById('temp-modal-container-2');
+  if (!container) { container = document.createElement('div'); container.id = 'temp-modal-container-2'; document.body.appendChild(container); }
+  // 给行加唯一 id 用于回调
+  if (!row.dataset.delMark) row.dataset.delMark = 'del-' + Date.now();
+  const mark = row.dataset.delMark;
+
+  container.innerHTML = `
+    <div class="modal-mask show" id="modalDelCard" style="z-index: 250;">
+      <div class="modal" style="width: 420px;">
+        <div class="modal-header">
+          <div class="modal-title">确认删除银行卡</div>
+          <button class="modal-close" onclick="closeDelCardModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert warning">
+            <div style="line-height:1.6;">
+              确认删除该银行卡号?<br>
+              <strong>${bankName}</strong> · <span class="mono">${cardNo}</span><br><br>
+              删除后,该卡号将不再用于自动校验。后续以该卡号付款的订单会触发挂起。
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeDelCardModal()">取消</button>
+          <button class="btn danger" onclick="doDeletePayerCard('${mark}')">确认删除</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeDelCardModal() {
+  document.getElementById('modalDelCard')?.classList.remove('show');
+  setTimeout(() => {
+    const c = document.getElementById('temp-modal-container-2');
+    if (c) c.innerHTML = '';
+  }, 300);
+}
+
+function doDeletePayerCard(mark) {
+  const row = document.querySelector('.edit-card-row[data-del-mark="' + mark + '"]');
+  if (row) row.remove();
+  closeDelCardModal();
+  showToast('✓ 银行卡已删除', 'success');
+}
+
+// 添加银行卡号
+function addPayerCardRow() {
+  const list = document.getElementById('editPayerCardList');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'edit-card-row';
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+  row.innerHTML = `
+    <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml()}</select>
+    <input type="text" class="form-input mono" placeholder="请输入银行卡号">
+    <button class="btn sm" onclick="confirmDeletePayerCard(this)" style="flex-shrink:0;">删除</button>
+  `;
+  list.appendChild(row);
+}
+</script>
+
+
+<script>
+// 默认进订单列表
+goPage('orders-list');
+</script>
+
+</body>
+</html>
