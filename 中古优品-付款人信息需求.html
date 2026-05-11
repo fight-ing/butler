@@ -1714,9 +1714,54 @@ const FUND_STATUS = {
 };
 
 let fundFilter = 'all';
+const fundFilterState = { userId: '', orderNo: '', dateRange: '' };
+
 function getFundsByStatus(s) {
-  if (s === 'all') return FUNDS;
-  return FUNDS.filter(f => f.status === s);
+  let list = (s === 'all') ? FUNDS : FUNDS.filter(f => f.status === s);
+
+  // 用户ID 模糊匹配(客户字段如 "张三 (1001)" 含 ID)
+  if (fundFilterState.userId) {
+    const kw = fundFilterState.userId.trim();
+    list = list.filter(f => f.customer.includes(kw));
+  }
+  // 订单号 模糊匹配
+  if (fundFilterState.orderNo) {
+    const kw = fundFilterState.orderNo.trim();
+    list = list.filter(f => f.orderNo.includes(kw));
+  }
+  // 时间范围:简单字符串匹配(用 cancelTime 字段如 "05-06 13:35")
+  if (fundFilterState.dateRange) {
+    // 接受格式如 "2026-05-01 → 2026-05-10" 或 "05-01 → 05-10"
+    const m = fundFilterState.dateRange.match(/(\d{2,4}-\d{1,2}-\d{1,2}|\d{2}-\d{2})\s*[→~-]+\s*(\d{2,4}-\d{1,2}-\d{1,2}|\d{2}-\d{2})/);
+    if (m) {
+      // 简化版:用 MM-DD 比较(因为 mock 数据只有 MM-DD)
+      const normalize = (s) => s.includes(',') ? s : s.slice(-5); // 取末尾 MM-DD
+      const start = normalize(m[1]);
+      const end = normalize(m[2]);
+      list = list.filter(f => {
+        const t = f.cancelTime.slice(0, 5); // "05-06 13:35" → "05-06"
+        return t >= start && t <= end;
+      });
+    }
+  }
+  return list;
+}
+
+function applyFundFilter() {
+  fundFilterState.userId = document.getElementById('fundFilterUserId')?.value || '';
+  fundFilterState.orderNo = document.getElementById('fundFilterOrderNo')?.value || '';
+  fundFilterState.dateRange = document.getElementById('fundFilterDateRange')?.value || '';
+  goPage('funds-list');
+  showToast('✓ 已应用筛选条件', 'success');
+}
+
+function resetFundFilter() {
+  fundFilterState.userId = '';
+  fundFilterState.orderNo = '';
+  fundFilterState.dateRange = '';
+  fundFilter = 'all';
+  goPage('funds-list');
+  showToast('已重置筛选', 'success');
 }
 
 PAGES['funds-list'] = () => {
@@ -1765,11 +1810,34 @@ PAGES['funds-list'] = () => {
       </div>
     </div>
 
+    <!-- 搜索 + 筛选 -->
+    <div class="filter-bar">
+      <div class="filter-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="filter-item">
+          <div class="filter-item-label">用户ID:</div>
+          <input type="text" placeholder="输入客户用户ID,如 1001" id="fundFilterUserId" value="${fundFilterState.userId || ''}">
+        </div>
+        <div class="filter-item">
+          <div class="filter-item-label">订单号:</div>
+          <input type="text" placeholder="输入关联订单号" id="fundFilterOrderNo" value="${fundFilterState.orderNo || ''}">
+        </div>
+        <div class="filter-item">
+          <div class="filter-item-label">时间范围:</div>
+          <input type="text" placeholder="开始日期 → 结束日期(YYYY-MM-DD)" id="fundFilterDateRange" value="${fundFilterState.dateRange || ''}">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn" onclick="resetFundFilter()">重置</button>
+        <button class="btn primary" onclick="applyFundFilter()">查询</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="list-toolbar-tabs">
         ${['all', 'pending', 'refunded', 'on_hold', 'whitelist'].map(s => {
           const labels = { all: '全部', pending: '⏳ 待处理', refunded: '⊘ 已退款', on_hold: '⏸ 暂时挂起观察', whitelist: '✓ 已通过加白处理' };
-          const cnt = s === 'all' ? FUNDS.length : FUNDS.filter(f => f.status === s).length;
+          // 计数考虑当前搜索筛选条件
+          const cnt = getFundsByStatus(s).length;
           return `<div class="tab-item ${fundFilter === s ? 'active' : ''}" onclick="filterFundStatus('${s}')">${labels[s]}<span class="num">${cnt}</span></div>`;
         }).join('')}
       </div>
@@ -1783,7 +1851,15 @@ PAGES['funds-list'] = () => {
           </tr>
         </thead>
         <tbody>
-          ${list.map(f => {
+          ${list.length === 0 ? `
+            <tr>
+              <td colspan="11" style="text-align: center; color: var(--text-3); padding: 48px 16px;">
+                <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+                <div>未找到符合条件的款项</div>
+                <div style="font-size: 12px; margin-top: 6px;">请调整搜索条件或<a class="btn-link" onclick="resetFundFilter()">重置筛选</a></div>
+              </td>
+            </tr>
+          ` : list.map(f => {
             const muted = f.status !== 'pending';
             return `
               <tr style="${muted ? 'color:var(--text-3);' : ''}">
