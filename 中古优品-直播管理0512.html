@@ -204,6 +204,12 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .filter-label{font-size:13px;color:var(--text-2);white-space:nowrap}
 .filter-input,.filter-select{height:30px;border:1px solid var(--border);border-radius:4px;padding:0 10px;font-size:13px;color:var(--text-1);background:#fff;outline:none;min-width:140px;cursor:pointer;transition:border-color .15s}
 .filter-input:hover,.filter-select:hover{border-color:var(--brand)}
+.filter-input.filter-searchable{
+  cursor:text;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat right 10px center;
+  padding-right:28px;
+}
+.filter-input.filter-searchable:focus{border-color:var(--brand);outline:none}
 .filter-actions{margin-left:auto;display:flex;gap:8px}
 
 /* ===== Tab ===== */
@@ -562,7 +568,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .goods-action-cell{min-width:90px}
 .goods-action-cell .action-link{display:block;line-height:1.9}
 
-/* ===== 直播货品模块 - 4 阶段统计卡 ===== */
+/* ===== 直播商品模块 - 4 阶段统计卡 ===== */
 .goods-stage-grid{
   display:grid;grid-template-columns:repeat(4,1fr);
   gap:12px;margin-bottom:16px;position:relative;
@@ -775,7 +781,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         </div>
         <div class="menu-l2-wrap expanded">
           <div class="menu-l2 active" id="menu-session" onclick="switchModule('session')">直播场次</div>
-          <div class="menu-l2" id="menu-goods" onclick="switchModule('goods')">直播货品</div>
+          <div class="menu-l2" id="menu-goods" onclick="switchModule('goods')">直播商品</div>
         </div>
       </div>
       <div class="menu-group">
@@ -804,7 +810,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     <div class="main-topbar">
       <div class="page-tabs">
         <div class="page-tab active" id="tab-session" onclick="switchModule('session')">📺 直播场次</div>
-        <div class="page-tab" id="tab-goods" onclick="switchModule('goods')">📦 直播货品</div>
+        <div class="page-tab" id="tab-goods" onclick="switchModule('goods')">📦 直播商品</div>
       </div>
       <div class="right">
         <span>消息</span>
@@ -843,9 +849,16 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       </div>
       <div class="filter-item">
         <span class="filter-label">主播</span>
-        <select class="filter-select">
-          <option>全部主播</option><option>郑倩</option><option>刘若轩</option><option>高崇嵘</option><option>刘若楠</option>
-        </select>
+        <input class="filter-input filter-searchable" list="anchor-list-session" placeholder="搜索主播昵称">
+        <datalist id="anchor-list-session">
+          <option value="郑倩">
+          <option value="刘若轩">
+          <option value="高崇嵘">
+          <option value="刘若楠">
+          <option value="韩换宁">
+          <option value="李莹">
+          <option value="张敏">
+        </datalist>
       </div>
       <div class="filter-item">
         <span class="filter-label">店铺类型</span>
@@ -897,7 +910,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
             <th class="staff-col">人员</th>
             <th class="watch-col">观看互动</th>
             <th class="goods-sell-col sortable">上架 / 支付 / 支付率</th>
-            <th class="money-profit-col sortable">支付总计 / 成本 / 利润率</th>
+            <th class="money-profit-col sortable">支付总计 / 成本 / 成本利润率</th>
             <th class="action-col">操作</th>
           </tr>
         </thead>
@@ -1235,7 +1248,7 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="l0-merged-right">
         <div class="l0-metric">
           <div class="l0-metric-label">
-            支付利润率
+            成本利润率
             <i class="kp-icon" onclick="showKp(event,'kp-profit-rate-detail')"></i>
           </div>
           <div class="l0-metric-value" style="color:var(--color-red)">4.24<span class="unit">%</span></div>
@@ -1746,17 +1759,17 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   </div>
 </div>
 
-<!-- ====================== 直播货品模块 ====================== -->
+<!-- ====================== 直播商品模块 ====================== -->
 <div class="view" id="view-goods-module">
 
   <div class="breadcrumb">
-    直播 <span class="sep">/</span> <span class="current">直播货品</span>
+    直播 <span class="sep">/</span> <span class="current">直播商品</span>
   </div>
 
   <div class="container">
 
     <div class="page-header">
-      <div class="page-title">直播货品统计</div>
+      <div class="page-title">直播商品统计</div>
       <div class="page-actions">
         <button class="btn">⬇ 导出列表</button>
         <button class="btn btn-primary">⬇ 导出统计数据</button>
@@ -1805,6 +1818,19 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <option>全部</option>
           <option>已支付</option><option>已下单</option><option>未售出</option>
         </select>
+      </div>
+      <div class="filter-item">
+        <span class="filter-label">主播</span>
+        <input class="filter-input filter-searchable" list="anchor-list-goods" placeholder="搜索主播昵称">
+        <datalist id="anchor-list-goods">
+          <option value="郑倩">
+          <option value="刘若轩">
+          <option value="高崇嵘">
+          <option value="刘若楠">
+          <option value="韩换宁">
+          <option value="李莹">
+          <option value="张敏">
+        </datalist>
       </div>
       <div class="filter-item">
         <span class="filter-label">店铺类型</span>
@@ -2324,12 +2350,12 @@ const kpData = {
     body: '已支付商品的商品成本价合计。成本价以商品建档时录入的成本价为准,不包含鉴定、物流、仓储等其它费用。'
   },
   'kp-profit-rate': {
-    title: '平均利润率',
-    body: '所选时间范围内,所有场次的平均支付利润率。公式:Σ(支付利润) ÷ Σ(支付总额)。按金额加权平均,不按场次个数算术平均。'
+    title: '平均成本利润率',
+    body: '所选时间范围内,所有场次的平均成本利润率。公式:Σ(支付利润) ÷ Σ(支付成本)。按金额加权平均,不按场次个数算术平均。'
   },
   'kp-profit-rate-detail': {
-    title: '支付利润率',
-    body: '本场已支付订单的整体利润率。公式:(支付总额 − 支付成本) ÷ 支付总额 × 100%。与售后退回无关。'
+    title: '成本利润率',
+    body: '本场已支付订单的成本利润率。公式:(支付总额 − 支付成本) ÷ 支付成本 × 100%。反映"每投入 1 元成本能赚多少",从成本视角看获利能力。注意区分:成本利润率分母是成本,销售利润率分母是售价,数值不同。'
   },
   'kp-sell-rate': {
     title: '平均售出率',
@@ -2391,7 +2417,7 @@ const kpData = {
     title: '支付',
     body: '已完成支付的商品件数。仅统计本场直播间内下单的订单,不扣除后期售后退回。转化率:支付件数 ÷ 上架件数(即"商品售出率")。'
   },
-  // 直播货品模块
+  // 直播商品模块
   'kp-g-shelf': {
     title: '上架商品',
     body: '直播结束时全部上架货品(去重)。包含拍卖模式 + 一口价模式合并统计。'
@@ -2422,7 +2448,7 @@ const kpData = {
   },
   'kp-g-cost-profit-rate': {
     title: '成本利润率',
-    body: '(支付金额 − 支付成本) ÷ 支付成本 × 100%。从成本视角看获利能力:每投入 1 元成本能赚多少。'
+    body: '(支付金额 − 支付成本) ÷ 支付成本 × 100%。从成本视角看获利能力:每投入 1 元成本能赚多少。注意区分:成本利润率分母是成本,销售利润率分母是售价,数值不同(同一组数据,成本利润率通常 > 销售利润率)。'
   }
 };
 
