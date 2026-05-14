@@ -498,11 +498,21 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   background: var(--error); color: white;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; flex-shrink: 0; margin-top: 1px;
+  font-weight: 600;
 }
 .held-banner-body { flex: 1; }
 .held-banner-title { font-weight: 600; color: var(--error); margin-bottom: 6px; font-size: 14px; }
 .held-banner-text { color: var(--text-2); font-size: 13px; line-height: 1.6; }
 .held-banner-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* 多笔挂起的统一头部 */
+.held-multi-header {
+  background: #FFF8F8;
+  border: 1px solid #FFCCC7;
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  margin-bottom: 12px;
+}
 
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .info-row { display: flex; padding: 6px 0; font-size: 13px; }
@@ -895,9 +905,30 @@ const ORDERS = [
     sales: '王梅',
     status: 'pending_pay',
     held: true,
-    heldReason: '实际打款人「赵伟」与客户「张三」实名不一致',
-    heldAmount: 56800,
-    heldDuration: '2 小时 14 分钟',
+    heldPayments: [
+      {
+        payNo: 'PAY-001',
+        payerName: '赵伟',
+        payerCard: '招商银行 6225 8870 1234 4421',
+        payerIdMasked: '130***********8765',
+        amount: 56800,
+        duration: '2 小时 14 分钟',
+        createdAt: '2026-05-06 11:37:52',
+        paidAt: '2026-05-06 13:35:18',
+        reason: '实际打款人「赵伟」与客户「张三」实名不一致',
+      },
+      {
+        payNo: 'PAY-002',
+        payerName: '王伟', 
+        payerCard: '建设银行 6217 0050 8888 6611',
+        payerIdMasked: '310***********4422',
+        amount: 56800,
+        duration: '45 分钟',
+        createdAt: '2026-05-06 14:25:30',
+        paidAt: '2026-05-06 15:10:08',
+        reason: '客户再次重新支付,打款人「王伟」仍非客户本人',
+      },
+    ],
     products: [{ name: 'LV Capucines BB 2024 全皮款 黑色', sku: 'LV-CAP-BB-24-BLK', price: 56800, icon: '👜', sales: 56800, cost: 48000, optimized: 1200, finalPrice: 56800 }],
     multiCount: 0,
     amounts: { order: 58000, optimized: 1200, paid: 0 },
@@ -905,16 +936,26 @@ const ORDERS = [
     orderTime: '2026-05-06 11:21:37',
     payTime: '--',
   },
-  // 挂起单 2
+  // 挂起单 2(单笔)
   {
     orderNo: '202605060955120002',
     shop: '中古优品·北京店', shopNo: '10082108',
     sales: '李冰',
     status: 'pending_pay',
     held: true,
-    heldReason: '实际打款人「李父亲」未在已登记付款人信息中',
-    heldAmount: 82500,
-    heldDuration: '5 小时 03 分钟',
+    heldPayments: [
+      {
+        payNo: 'PAY-K33',
+        payerName: '李父亲',
+        payerCard: '农业银行 6228 4801 2345 1188',
+        payerIdMasked: '410***********6677',
+        amount: 82500,
+        duration: '5 小时 03 分钟',
+        createdAt: '2026-05-06 10:08:11',
+        paidAt: '2026-05-06 10:25:33',
+        reason: '实际打款人「李父亲」未在已登记付款人信息中',
+      },
+    ],
     products: [{ name: '劳力士 黑水鬼 116610LN-97200', sku: 'ROL-SUB-BLK-116610', price: 82500, icon: '⌚', sales: 82500, cost: 75000, optimized: 0, finalPrice: 82500 }],
     multiCount: 0,
     amounts: { order: 82500, optimized: 0, paid: 0 },
@@ -922,16 +963,26 @@ const ORDERS = [
     orderTime: '2026-05-06 09:55:12',
     payTime: '--',
   },
-  // 挂起单 3
+  // 挂起单 3(单笔)
   {
     orderNo: '202605051830410003',
     shop: '中古优品·上海店', shopNo: '10086203',
     sales: '王梅',
     status: 'pending_pay',
     held: true,
-    heldReason: '银行回单未识别打款人姓名',
-    heldAmount: 18900,
-    heldDuration: '1 天 22 小时',
+    heldPayments: [
+      {
+        payNo: 'PAY-K17',
+        payerName: '未识别',
+        payerCard: '中国银行 6213 8800 1234 9012',
+        payerIdMasked: '--',
+        amount: 18900,
+        duration: '1 天 22 小时',
+        createdAt: '2026-05-05 19:45:22',
+        paidAt: '2026-05-05 20:02:18',
+        reason: '银行回单未识别打款人姓名',
+      },
+    ],
     products: [{ name: 'Cartier LOVE 戒指 18K 玫瑰金', sku: 'CAR-LOV-RG-50', price: 18900, icon: '💍', sales: 18900, cost: 15000, optimized: 0, finalPrice: 18900 }],
     multiCount: 0,
     amounts: { order: 18900, optimized: 0, paid: 0 },
@@ -1349,24 +1400,55 @@ function switchOrderTab(el, name) {
 }
 
 function renderHeldBanner(o) {
-  return `
-    <div class="held-banner">
-      <div class="held-banner-icon">!</div>
-      <div class="held-banner-body">
-        <div class="held-banner-title">付款单 PAY-001 校验未通过 · 已挂起</div>
-        <div class="held-banner-text">
-          ${o.heldReason}。已到账金额:<strong style="color: var(--error)">¥${o.heldAmount.toLocaleString()}.00</strong> · 挂起时长:<strong>${o.heldDuration}</strong>
-        </div>
-        <div class="held-banner-actions">
-          <button class="btn primary" onclick="showHeldModal('pass')">人工通过</button>
-          <button class="btn" onclick="showHeldModal('addPayer')">添加付款人信息并通过</button>
-          <button class="btn" onclick="showHeldModal('verify')">查看校验详情</button>
-        </div>
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #FFCCC7; font-size: 12px; color: var(--text-3);">
-          💡 如客户希望取消本次付款,请引导客户在 C 端订单页面自行取消(后台无该入口)
-        </div>
+  // 兼容旧数据(heldAmount/heldReason 单字段)→ 包装成数组
+  const payments = o.heldPayments || (o.heldAmount ? [{
+    payNo: 'PAY-001',
+    payerName: '赵伟',
+    payerCard: '招商银行 6225****4421',
+    amount: o.heldAmount,
+    duration: o.heldDuration,
+    reason: o.heldReason,
+  }] : []);
+  if (payments.length === 0) return '';
+
+  // 多笔挂起的提示头
+  const headerHtml = payments.length > 1 ? `
+    <div class="held-multi-header">
+      <div style="font-weight: 600; color: var(--error); display: flex; align-items: center; gap: 8px;">
+        <span style="background:var(--error);color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;">!</span>
+        该订单存在 <strong style="font-size:15px;">${payments.length}</strong> 笔挂起付款单,需逐笔处理
+      </div>
+      <div style="margin-top: 6px; font-size: 12px; color: var(--text-3);">
+        客户先后多次代付仍未识别,请管理员对每笔分别决定处理方式
       </div>
     </div>
+  ` : '';
+
+  return `
+    ${headerHtml}
+    ${payments.map((p, idx) => `
+      <div class="held-banner">
+        <div class="held-banner-icon">${payments.length > 1 ? (idx + 1) : '!'}</div>
+        <div class="held-banner-body">
+          <div class="held-banner-title">付款单 ${p.payNo} 校验未通过 · 已挂起</div>
+          <div class="held-banner-text">
+            ${p.reason}。已到账金额:<strong style="color: var(--error)">¥${p.amount.toLocaleString()}.00</strong> · 挂起时长:<strong>${p.duration}</strong>
+            <br>
+            <span style="font-size: 12px; color: var(--text-3);">实际打款人:${p.payerName} · ${p.payerCard}</span>
+          </div>
+          <div class="held-banner-actions">
+            <button class="btn primary" onclick="showHeldModal('pass', '${p.payNo}')">人工通过</button>
+            <button class="btn" onclick="showHeldModal('addPayer', '${p.payNo}')">加白通过</button>
+            <button class="btn" onclick="showFundProcess('${p.payNo}')">退款 / 挂起观察</button>
+            <button class="btn" onclick="showHeldModal('verify', '${p.payNo}')">查看校验</button>
+          </div>
+          <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #FFCCC7; font-size: 12px; color: var(--text-3);">
+            💡 该付款单与「待确认款项」列表为同一条记录,任一侧处理后两侧同步
+            <br>💡 如客户希望取消本次付款,请引导客户在 C 端订单页面自行取消(后台无该入口)
+          </div>
+        </div>
+      </div>
+    `).join('')}
   `;
 }
 
@@ -1447,25 +1529,44 @@ function renderPaymentTab(o) {
   if (o.status === 'cancelled') {
     return `<div style="text-align: center; color: var(--text-3); padding: 48px;">订单已取消,无付款单记录</div>`;
   }
-  const heldRow = o.held ? `
+
+  // 兼容旧数据
+  const heldPayments = o.heldPayments || (o.held && o.heldAmount ? [{
+    payNo: 'PAY-001', payerName: '赵伟', payerCard: '招商银行 6225****4421',
+    amount: o.heldAmount, duration: o.heldDuration, reason: o.heldReason,
+    createdAt: (o.orderTime.split(' ')[0]) + ' 11:37:52',
+    paidAt: (o.orderTime.split(' ')[0]) + ' 13:35:18',
+  }] : []);
+
+  const heldRows = heldPayments.map(p => `
     <tr>
-      <td class="mono">${o.orderTime.split(' ')[0]} 11:37:52</td>
-      <td class="mono">PAY-001</td>
+      <td class="mono">${p.createdAt}</td>
+      <td class="mono">${p.payNo}</td>
       <td><span class="tag tag-error">⚠️ 已挂起</span></td>
-      <td class="mono">${o.orderTime.split(' ')[0]} 13:35:18</td>
-      <td style="text-align: right;"><strong style="color:var(--orange);">¥${o.heldAmount.toLocaleString()}</strong></td>
+      <td class="mono">${p.paidAt}</td>
+      <td style="text-align: right;"><strong style="color:var(--orange);">¥${p.amount.toLocaleString()}</strong></td>
       <td style="text-align: right;" class="mono">0</td>
-      <td style="text-align: right;"><strong style="color:var(--orange);">¥${o.heldAmount.toLocaleString()}</strong></td>
-      <td style="text-align: right;" class="mono">¥${(o.heldAmount * 0.001).toFixed(2)}</td>
+      <td style="text-align: right;"><strong style="color:var(--orange);">¥${p.amount.toLocaleString()}</strong></td>
+      <td style="text-align: right;" class="mono">¥${(p.amount * 0.001).toFixed(2)}</td>
       <td>银行转账</td>
-      <td class="mono">PSF20260506001</td>
-      <td class="mono">BANK20260506112137</td>
+      <td class="mono">PSF${p.payNo.replace(/[^0-9]/g, '').padStart(11, '2')}</td>
+      <td class="mono">BANK${p.payNo.replace(/[^0-9]/g, '')}${o.orderTime.replace(/[^0-9]/g, '').slice(0, 8)}</td>
       <td style="text-align: right;" class="mono">¥0.00</td>
       <td class="mono">--</td>
       <td><span class="tag tag-default">普通付款</span></td>
       <td class="mono">--</td>
       <td>--</td>
-    </tr>` : '';
+      <td>
+        <div class="op-actions" style="min-width: 96px;">
+          <button class="btn-link error" onclick="showHeldModal('pass', '${p.payNo}')">人工通过</button>
+          <button class="btn-link" onclick="showHeldModal('addPayer', '${p.payNo}')">加白通过</button>
+          <button class="btn-link" onclick="showFundProcess('${p.payNo}')">退款/挂起观察</button>
+          <button class="btn-link" onclick="showHeldModal('verify', '${p.payNo}')">查看校验</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
   const paidRow = o.amounts.paid > 0 ? `
     <tr>
       <td class="mono">${o.payTime}</td>
@@ -1484,6 +1585,7 @@ function renderPaymentTab(o) {
       <td><span class="tag tag-default">普通付款</span></td>
       <td class="mono">--</td>
       <td>--</td>
+      <td><span style="color: var(--text-3);">--</span></td>
     </tr>` : '';
 
   return `
@@ -1497,10 +1599,11 @@ function renderPaymentTab(o) {
             <th>付款方式</th><th>付款单流水号</th><th>付款交易流水号</th>
             <th style="text-align: right">已退款总金额</th><th>最后一次退款时间</th>
             <th>类型</th><th>关闭付款单时间</th><th>关闭原因</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
-          ${heldRow}
+          ${heldRows}
           ${paidRow}
         </tbody>
       </table>
@@ -1510,55 +1613,115 @@ function renderPaymentTab(o) {
 }
 
 function renderLogTab(o) {
+  const heldPayments = o.heldPayments || (o.held && o.heldAmount ? [{
+    payNo: 'PAY-001', amount: o.heldAmount, reason: o.heldReason,
+    createdAt: (o.orderTime.split(' ')[0]) + ' 11:37:52',
+    paidAt: (o.orderTime.split(' ')[0]) + ' 13:35:18',
+  }] : []);
+
+  // 倒序排列日志:最近的事件在上
+  const events = [];
+  // 挂起事件(倒序)
+  heldPayments.forEach(p => {
+    events.push({
+      time: p.paidAt + ':42',
+      type: 'held',
+      title: '⚠️ 付款单挂起',
+      desc: `系统 · 付款单 <span class="mono">${p.payNo}</span> 自动校验未通过(${p.reason}),已挂起`,
+    });
+  });
+  if (o.amounts.paid > 0) {
+    events.push({
+      time: o.payTime,
+      type: 'paid',
+      title: '✓ 付款单校验通过',
+      desc: '系统 · 自动校验通过,订单流转',
+    });
+  }
+  events.push({
+    time: o.orderTime,
+    type: 'created',
+    title: '订单创建',
+    desc: `销售员·${o.sales} · 创建订单 <span class="mono">${o.orderNo}</span>,商品「${o.products[0].name}」`,
+  });
+  // 按时间倒序
+  events.sort((a, b) => (b.time > a.time ? 1 : -1));
+
   return `
     <div class="timeline">
-      <div class="timeline-item">
-        <div class="timeline-dot brand"></div>
-        <div class="timeline-time">${o.orderTime}</div>
-        <div class="timeline-title"><span class="tag tag-brand">订单创建</span></div>
-        <div class="timeline-desc">销售员·${o.sales} · 创建订单 <span class="mono">${o.orderNo}</span>,商品「${o.products[0].name}」</div>
-      </div>
-      ${o.held ? `
-      <div class="timeline-item">
-        <div class="timeline-dot error"></div>
-        <div class="timeline-time">${o.orderTime.split(' ')[0]} 13:35:42</div>
-        <div class="timeline-title"><span class="tag tag-error">⚠️ 付款单挂起</span></div>
-        <div class="timeline-desc">系统 · 付款单自动校验未通过(${o.heldReason}),已挂起</div>
-      </div>` : ''}
-      ${o.amounts.paid > 0 ? `
-      <div class="timeline-item">
-        <div class="timeline-dot success"></div>
-        <div class="timeline-time">${o.payTime}</div>
-        <div class="timeline-title"><span class="tag tag-success">✓ 付款单校验通过</span></div>
-        <div class="timeline-desc">系统 · 自动校验通过,订单流转</div>
-      </div>` : ''}
+      ${events.map(e => {
+        const dotCls = e.type === 'held' ? 'error' : (e.type === 'paid' ? 'success' : 'brand');
+        const tagCls = e.type === 'held' ? 'tag-error' : (e.type === 'paid' ? 'tag-success' : 'tag-brand');
+        return `
+          <div class="timeline-item">
+            <div class="timeline-dot ${dotCls}"></div>
+            <div class="timeline-time">${e.time}</div>
+            <div class="timeline-title"><span class="tag ${tagCls}">${e.title}</span></div>
+            <div class="timeline-desc">${e.desc}</div>
+          </div>
+        `;
+      }).join('')}
     </div>
   `;
 }
 
 // ============ 挂起处理 Modal 集合 ============
-function showHeldModal(type) {
+// type: 'pass' | 'addPayer' | 'verify'
+// payNo: 付款单号(可选,若提供则在 Modal 标题中标注)
+function showHeldModal(type, payNo) {
+  // 找到该付款单的明细(从当前订单或全局所有订单)
+  let payDetail = null;
+  if (payNo) {
+    for (const ord of ORDERS) {
+      if (ord.heldPayments) {
+        const p = ord.heldPayments.find(x => x.payNo === payNo);
+        if (p) { payDetail = { order: ord, payment: p }; break; }
+      }
+    }
+  }
+
+  const customerName = payDetail?.order?.user?.nick || '张三';
+  const customerId = payDetail?.order?.user?.id || '1001';
+  const payerName = payDetail?.payment?.payerName || '赵伟';
+  const payerCard = payDetail?.payment?.payerCard || '招商银行 6225 8870 1234 4421';
+  const payerCardShort = payerCard.replace(/(\d{4})\s?(\d+)\s?(\d{4})/, '$1****$3');
+  const payerIdMasked = payDetail?.payment?.payerIdMasked || '130***********8765';
+  const amount = payDetail?.payment?.amount || 56800;
+  const reason = payDetail?.payment?.reason || '实际打款人与客户实名不一致';
+  const labelSuffix = payNo ? ' · ' + payNo : '';
+
+  // 拆出银行名和卡号(用于"添加付款人"表单回填)
+  const cardMatch = payerCard.match(/^([^\s]+)\s+(.+)$/);
+  const cardBank = cardMatch ? cardMatch[1] : '招商银行';
+  const cardNo = cardMatch ? cardMatch[2] : '6225 8870 1234 4421';
+
   const modalsHtml = {
     pass: `
       <div class="modal-mask show" id="modalPass">
-        <div class="modal" style="width: 420px;">
+        <div class="modal" style="width: 460px;">
           <div class="modal-header">
-            <div class="modal-title">确认人工通过</div>
+            <div class="modal-title">确认人工通过${labelSuffix}</div>
             <button class="modal-close" onclick="closeModalById('modalPass')">×</button>
           </div>
           <div class="modal-body">
+            <div class="fund-meta">
+              <div class="fund-meta-row"><div class="fund-meta-label">付款单号</div><div class="fund-meta-value mono">${payNo || 'PAY-001'}</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">客户</div><div class="fund-meta-value">${customerName} (${customerId})</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">实际打款人</div><div class="fund-meta-value">${payerName} · ${payerCardShort}</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">金额</div><div class="fund-meta-value fund-meta-amount">¥${amount.toLocaleString()}.00</div></div>
+            </div>
             <div class="alert warning">
-              系统已自动校验未通过,确认要人工通过该付款单吗?
-              <br>通过后:订单状态流转为「待卖家发货」,挂起标识解除。
+              确认要人工通过该笔付款单吗?
+              <br>通过后:本笔挂起标识解除。如订单下还有其他挂起付款单,订单整体仍标"已挂起",需逐笔处理。
             </div>
             <div class="form-row">
               <label class="form-label"><span class="required">*</span>通过原因</label>
-              <textarea class="form-textarea" placeholder="请说明通过的原因(必填)"></textarea>
+              <textarea class="form-textarea" placeholder="请说明通过的原因(必填,留底备查)"></textarea>
             </div>
           </div>
           <div class="modal-footer">
             <button class="btn" onclick="closeModalById('modalPass')">取消</button>
-            <button class="btn primary" onclick="closeModalById('modalPass'); showToast('✓ 付款单已人工通过,订单流转为「待卖家发货」', 'success');">确认通过</button>
+            <button class="btn primary" onclick="closeModalById('modalPass'); showToast('✓ 付款单${payNo || ''}已人工通过', 'success');">确认通过</button>
           </div>
         </div>
       </div>`,
@@ -1566,26 +1729,27 @@ function showHeldModal(type) {
       <div class="modal-mask show" id="modalAddPayer">
         <div class="modal" style="width: 560px;">
           <div class="modal-header">
-            <div class="modal-title">添加付款人信息并通过</div>
+            <div class="modal-title">添加付款人信息并通过${labelSuffix}</div>
             <button class="modal-close" onclick="closeModalById('modalAddPayer')">×</button>
           </div>
           <div class="modal-body">
             <div class="fund-meta">
-              <div class="fund-meta-row"><div class="fund-meta-label">客户</div><div class="fund-meta-value">张三 (1001)</div></div>
-              <div class="fund-meta-row"><div class="fund-meta-label">实际打款人</div><div class="fund-meta-value">赵伟</div></div>
-              <div class="fund-meta-row"><div class="fund-meta-label">银行账号</div><div class="fund-meta-value mono">招行 6225****4421</div></div>
-              <div class="fund-meta-row"><div class="fund-meta-label">金额</div><div class="fund-meta-value fund-meta-amount">¥56,800.00</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">付款单号</div><div class="fund-meta-value mono">${payNo || 'PAY-001'}</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">客户</div><div class="fund-meta-value">${customerName} (${customerId})</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">实际打款人</div><div class="fund-meta-value">${payerName}</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">银行账号</div><div class="fund-meta-value mono">${payerCard}</div></div>
+              <div class="fund-meta-row"><div class="fund-meta-label">金额</div><div class="fund-meta-value fund-meta-amount">¥${amount.toLocaleString()}.00</div></div>
             </div>
             <div class="alert brand">
               <strong>💡 即将操作</strong>
-              <div style="margin-top: 6px;">为客户「张三」添加可信付款人「赵伟」。添加后该笔挂起付款单将自动通过,订单流转为「待卖家发货」。</div>
+              <div style="margin-top: 6px;">为客户「${customerName}」添加可信付款人「${payerName}」。添加后本笔挂起付款单将自动通过。</div>
             </div>
-            <div class="form-row"><label class="form-label"><span class="required">*</span>打款人姓名</label><input type="text" class="form-input" value="赵伟"></div>
-            <div class="form-row"><label class="form-label"><span class="required">*</span>身份证号</label><input type="text" class="form-input mono" placeholder="请输入打款人身份证号"></div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>打款人姓名</label><input type="text" class="form-input" value="${payerName}"></div>
+            <div class="form-row"><label class="form-label"><span class="required">*</span>身份证号</label><input type="text" class="form-input mono" value="${payerIdMasked === '--' ? '' : payerIdMasked.replace(/\*/g, '')}" placeholder="请输入打款人身份证号"></div>
             <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡号</label>
               <div style="display:flex;gap:8px;">
-                <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml('招商银行')}</select>
-                <input type="text" class="form-input mono" value="6225 8874 1234 4421">
+                <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml(cardBank)}</select>
+                <input type="text" class="form-input mono" value="${cardNo}">
               </div>
             </div>
             <div class="form-row"><label class="form-label"><span class="required">*</span>关系</label>
@@ -1597,7 +1761,7 @@ function showHeldModal(type) {
           </div>
           <div class="modal-footer">
             <button class="btn" onclick="closeModalById('modalAddPayer')">取消</button>
-            <button class="btn primary" onclick="closeModalById('modalAddPayer'); showToast('✓ 已添加付款人信息「赵伟」,挂起付款单已自动通过,订单流转为「待卖家发货」', 'success');">添加并通过</button>
+            <button class="btn primary" onclick="closeModalById('modalAddPayer'); showToast('✓ 已添加付款人「${payerName}」,付款单${payNo || ''}自动通过', 'success');">添加并通过</button>
           </div>
         </div>
       </div>`,
@@ -1605,33 +1769,33 @@ function showHeldModal(type) {
       <div class="modal-mask show" id="modalVerify">
         <div class="modal" style="width: 700px;">
           <div class="modal-header">
-            <div class="modal-title">付款单校验详情 · PAY-001</div>
+            <div class="modal-title">付款单校验详情${labelSuffix}</div>
             <button class="modal-close" onclick="closeModalById('modalVerify')">×</button>
           </div>
           <div class="modal-body">
             <div class="verify-compare">
               <div class="verify-card">
                 <div class="verify-card-title"><div class="icon brand">客</div>客户实名信息</div>
-                <div class="verify-row"><div class="label">姓名</div><div class="value">张三</div></div>
+                <div class="verify-row"><div class="label">姓名</div><div class="value">${customerName}</div></div>
                 <div class="verify-row"><div class="label">身份证号</div><div class="value mono">110***********5678</div></div>
-                <div class="verify-row"><div class="label">付款人信息</div><div class="value">已登记 1 条(刘父亲)</div></div>
+                <div class="verify-row"><div class="label">付款人信息</div><div class="value">已登记 1 条</div></div>
               </div>
               <div class="verify-vs">≠</div>
               <div class="verify-card">
                 <div class="verify-card-title"><div class="icon warning">付</div>实际打款人</div>
-                <div class="verify-row mismatch"><div class="label">姓名</div><div class="value">赵伟</div></div>
-                <div class="verify-row mismatch"><div class="label">身份证号</div><div class="value mono">130***********8765</div></div>
-                <div class="verify-row"><div class="label">银行卡</div><div class="value mono">招行 6225****4421</div></div>
-                <div class="verify-row"><div class="label">金额</div><div class="value"><strong style="color: var(--orange)">¥56,800.00</strong></div></div>
+                <div class="verify-row mismatch"><div class="label">姓名</div><div class="value">${payerName}</div></div>
+                <div class="verify-row mismatch"><div class="label">身份证号</div><div class="value mono">${payerIdMasked}</div></div>
+                <div class="verify-row"><div class="label">银行卡</div><div class="value mono">${payerCardShort}</div></div>
+                <div class="verify-row"><div class="label">金额</div><div class="value"><strong style="color: var(--orange)">¥${amount.toLocaleString()}.00</strong></div></div>
               </div>
             </div>
             <div class="verify-result">
-              <strong>校验结果:挂起</strong> · 实际打款人「赵伟」与客户「张三」实名不一致,银行卡号也未匹配客户已登记的付款人信息,系统判定为代付款风险,自动挂起。
+              <strong>校验结果:挂起</strong> · ${reason}
             </div>
           </div>
           <div class="modal-footer">
             <button class="btn" onclick="closeModalById('modalVerify')">关闭</button>
-            <button class="btn primary" onclick="closeModalById('modalVerify'); showHeldModal('addPayer');">添加付款人信息并通过</button>
+            <button class="btn primary" onclick="closeModalById('modalVerify'); showHeldModal('addPayer', '${payNo || ''}');">添加付款人信息并通过</button>
           </div>
         </div>
       </div>`,
@@ -1696,15 +1860,48 @@ function showCancelOrderModal(orderNo) {
 // 财务模块 - 待确认款项
 // ====================================================================
 
-const FUNDS = [
-  { no: 'PAY-001', orderNo: 'SO...112137', customer: '张三 (1001)', payer: '赵伟', card: '招行 6225****4421', amount: 56800, status: 'pending', cancelTime: '05-06 13:35', duration: '2 小时' },
-  { no: 'PAY-K33', orderNo: 'SO...094521', customer: '李四 (1008)', payer: '李父亲', card: '农行 6228****1188', amount: 82500, status: 'pending', cancelTime: '05-04 17:30', duration: '2 天' },
-  { no: 'PAY-K17', orderNo: 'SO...082019', customer: '王芳 (1015)', payer: '未识别', card: '中行 6213****9012', amount: 18900, status: 'pending', cancelTime: '04-28 12:00', duration: '9 天' },
-  { no: 'PAY-K05', orderNo: 'SO...068742', customer: '陈某 (1022)', payer: '陈某', card: '建行 6217****5566', amount: 36000, status: 'refunded', cancelTime: '04-15 11:00', duration: '已处理' },
-  { no: 'PAY-K02', orderNo: 'SO...054128', customer: '孙某 (1030)', payer: '孙妻', card: '招行 6225****3344', amount: 45800, status: 'on_hold', cancelTime: '04-08 16:00', duration: '29 天' },
-  { no: 'PAY-K12', orderNo: 'SO...078234', customer: '周某 (1018)', payer: '周妻', card: '招行 6225****7788', amount: 42000, status: 'whitelist', cancelTime: '04-22 18:00', duration: '已处理' },
-  { no: 'PAY-K09', orderNo: 'SO...074219', customer: '赵某 (1025)', payer: '赵父', card: '农行 6228****6699', amount: 39400, status: 'whitelist', cancelTime: '04-19 12:00', duration: '已处理' },
+// 历史已处理的待确认款项(refunded / on_hold / whitelist)— 这些是过去的记录,不在订单挂起列表中
+const FUNDS_HISTORY = [
+  { no: 'PAY-K05', orderNo: 'SO...068742', customer: '陈某 (1022)', userId: '1022', payer: '陈某', card: '建设银行 6217****5566', amount: 36000, status: 'refunded', cancelTime: '04-15 11:00', duration: '已处理' },
+  { no: 'PAY-K02', orderNo: 'SO...054128', customer: '孙某 (1030)', userId: '1030', payer: '孙妻', card: '招商银行 6225****3344', amount: 45800, status: 'on_hold', cancelTime: '04-08 16:00', duration: '29 天' },
+  { no: 'PAY-K12', orderNo: 'SO...078234', customer: '周某 (1018)', userId: '1018', payer: '周妻', card: '招商银行 6225****7788', amount: 42000, status: 'whitelist', cancelTime: '04-22 18:00', duration: '已处理' },
+  { no: 'PAY-K09', orderNo: 'SO...074219', customer: '赵某 (1025)', userId: '1025', payer: '赵父', card: '农业银行 6228****6699', amount: 39400, status: 'whitelist', cancelTime: '04-19 12:00', duration: '已处理' },
 ];
+
+// 待确认款项数据 = 订单挂起付款单(pending) + 历史已处理(refunded / on_hold / whitelist)
+// 这种结构确保「订单详情挂起警示条」与「待确认款项列表」对应同一条 payment_record
+function buildFunds() {
+  const pending = [];
+
+  // 从 ORDERS 派生 pending 部分(这就是当前活跃的"挂起付款单"="待确认-待处理")
+  if (typeof ORDERS !== 'undefined') {
+    for (const o of ORDERS) {
+      if (o.held && o.heldPayments) {
+        for (const p of o.heldPayments) {
+          // 简化卡号显示:招商银行 6225 8870 1234 4421 → 招商银行 6225****4421
+          const cardShort = p.payerCard.replace(/(\d{4})[\s\d]+(\d{4})/, '$1****$2');
+          pending.push({
+            no: p.payNo,
+            orderNo: 'SO...' + o.orderNo.slice(-6),
+            orderNoFull: o.orderNo,
+            customer: `${o.user.nick} (${o.user.id})`,
+            userId: o.user.id,
+            payer: p.payerName,
+            card: cardShort,
+            amount: p.amount,
+            status: 'pending',
+            cancelTime: p.paidAt.slice(5, 16),  // "MM-DD HH:MM"
+            duration: p.duration,
+          });
+        }
+      }
+    }
+  }
+
+  return [...pending, ...FUNDS_HISTORY];
+}
+
+const FUNDS = buildFunds();
 
 const FUND_STATUS = {
   pending: { text: '⏳ 待处理', cls: 'tag-warning' },
@@ -1719,15 +1916,15 @@ const fundFilterState = { userId: '', orderNo: '', dateRange: '' };
 function getFundsByStatus(s) {
   let list = (s === 'all') ? FUNDS : FUNDS.filter(f => f.status === s);
 
-  // 用户ID 模糊匹配(客户字段如 "张三 (1001)" 含 ID)
+  // 用户ID 精确/模糊匹配
   if (fundFilterState.userId) {
     const kw = fundFilterState.userId.trim();
-    list = list.filter(f => f.customer.includes(kw));
+    list = list.filter(f => (f.userId || '').includes(kw) || f.customer.includes(kw));
   }
-  // 订单号 模糊匹配
+  // 订单号 模糊匹配(支持完整号和缩写)
   if (fundFilterState.orderNo) {
     const kw = fundFilterState.orderNo.trim();
-    list = list.filter(f => f.orderNo.includes(kw));
+    list = list.filter(f => f.orderNo.includes(kw) || (f.orderNoFull || '').includes(kw));
   }
   // 时间范围:简单字符串匹配(用 cancelTime 字段如 "05-06 13:35")
   if (fundFilterState.dateRange) {
@@ -1872,11 +2069,18 @@ PAGES['funds-list'] = () => {
                 <td class="mono">${f.cancelTime}</td>
                 <td><span style="color:${f.status === 'pending' && parseInt(f.duration) > 7 ? 'var(--error)' : 'var(--text-3)'};font-size:12px;">${f.duration}</span></td>
                 <td>
-                  <div class="btn-text-row">
-                    ${f.status === 'pending' || f.status === 'on_hold' 
-                      ? `<button class="btn-link error" onclick="showFundProcess('${f.no}')">${f.status === 'on_hold' ? '重新处理' : '处理'}</button><span class="op-divider"></span>` 
-                      : ''}
-                    <button class="btn-link" onclick="goFundDetail('${f.no}')">详情</button>
+                  <div class="op-actions" style="min-width: 96px;">
+                    ${f.status === 'pending' ? `
+                      <button class="btn-link error" onclick="showHeldModal('pass', '${f.no}')">人工通过</button>
+                      <button class="btn-link" onclick="showHeldModal('addPayer', '${f.no}')">加白通过</button>
+                      <button class="btn-link" onclick="showFundProcess('${f.no}')">退款/挂起观察</button>
+                      <button class="btn-link" onclick="showHeldModal('verify', '${f.no}')">查看校验</button>
+                    ` : f.status === 'on_hold' ? `
+                      <button class="btn-link error" onclick="showFundProcess('${f.no}')">重新处理</button>
+                      <button class="btn-link" onclick="goFundDetail('${f.no}')">详情</button>
+                    ` : `
+                      <button class="btn-link" onclick="goFundDetail('${f.no}')">详情</button>
+                    `}
                   </div>
                 </td>
               </tr>
@@ -1914,12 +2118,31 @@ PAGES['funds-detail'] = () => {
           '客户重新支付时管理员添加付款人信息,本笔自动归档'
         }</div>
       </div>
-      ${f.status === 'pending' || f.status === 'on_hold'
-        ? `<button class="btn primary" onclick="showFundProcess('${f.no}')">${f.status === 'on_hold' ? '重新处理' : '立即处理'}</button>` : ''}
+      ${f.status === 'pending'
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">
+             <button class="btn primary" onclick="showHeldModal('pass', '${f.no}')">人工通过</button>
+             <button class="btn" onclick="showHeldModal('addPayer', '${f.no}')">加白通过</button>
+             <button class="btn" onclick="showFundProcess('${f.no}')">退款 / 挂起观察</button>
+             <button class="btn" onclick="showHeldModal('verify', '${f.no}')">查看校验</button>
+           </div>`
+        : f.status === 'on_hold' 
+          ? `<button class="btn primary" onclick="showFundProcess('${f.no}')">重新处理</button>` 
+          : ''}
     </div>
 
     ${f.status === 'pending' ? `
-      <div class="alert warning"><strong>⚠️ 本笔款项尚未处理</strong><div style="margin-top:6px;">资金停留在平台账户。请尽快选择处理方式。</div></div>
+      <div class="alert warning">
+        <strong>⚠️ 本笔款项尚未处理</strong>
+        <div style="margin-top:6px;line-height:1.6;">
+          该付款单已挂起,资金停留在平台账户。可通过以下方式处理:
+          <br>① <strong>人工通过</strong>:确认打款人可信,放行该笔付款,订单流转
+          <br>② <strong>加白通过</strong>:将该打款人加入客户白名单后自动通过
+          <br>③ <strong>退款 / 挂起观察</strong>:客户已在 C 端取消该次付款,需决定退款或暂时挂起
+        </div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #FFE58F;font-size:12px;color:var(--text-3);">
+          💡 本记录与「订单详情挂起警示条」对应同一付款单,处理后两侧同步
+        </div>
+      </div>
     ` : ''}
     ${f.status === 'whitelist' ? `
       <div class="alert" style="background:var(--success-bg);border-color:#B7EB8F;"><strong style="color:var(--success);">✓ 本笔款项已通过添加付款人信息(加白)自动归档</strong>
