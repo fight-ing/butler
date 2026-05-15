@@ -910,7 +910,6 @@ const ORDERS = [
         payNo: 'PAY-001',
         payerName: '赵伟',
         payerCard: '招商银行 6225 8870 1234 4421',
-        payerIdMasked: '130***********8765',
         amount: 56800,
         duration: '2 小时 14 分钟',
         createdAt: '2026-05-06 11:37:52',
@@ -921,7 +920,6 @@ const ORDERS = [
         payNo: 'PAY-002',
         payerName: '王伟', 
         payerCard: '建设银行 6217 0050 8888 6611',
-        payerIdMasked: '310***********4422',
         amount: 56800,
         duration: '45 分钟',
         createdAt: '2026-05-06 14:25:30',
@@ -948,7 +946,6 @@ const ORDERS = [
         payNo: 'PAY-K33',
         payerName: '李父亲',
         payerCard: '农业银行 6228 4801 2345 1188',
-        payerIdMasked: '410***********6677',
         amount: 82500,
         duration: '5 小时 03 分钟',
         createdAt: '2026-05-06 10:08:11',
@@ -975,7 +972,6 @@ const ORDERS = [
         payNo: 'PAY-K17',
         payerName: '未识别',
         payerCard: '中国银行 6213 8800 1234 9012',
-        payerIdMasked: '--',
         amount: 18900,
         duration: '1 天 22 小时',
         createdAt: '2026-05-05 19:45:22',
@@ -1439,7 +1435,7 @@ function renderHeldBanner(o) {
           <div class="held-banner-actions">
             <button class="btn primary" onclick="showHeldModal('pass', '${p.payNo}')">人工通过</button>
             <button class="btn" onclick="showHeldModal('addPayer', '${p.payNo}')">加白通过</button>
-            <button class="btn" onclick="showFundProcess('${p.payNo}')">退款 / 挂起观察</button>
+            <button class="btn" onclick="showFundProcess('${p.payNo}')">原路退款 / 挂起观察</button>
             <button class="btn" onclick="showHeldModal('verify', '${p.payNo}')">查看校验</button>
           </div>
           <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #FFCCC7; font-size: 12px; color: var(--text-3);">
@@ -1560,7 +1556,7 @@ function renderPaymentTab(o) {
         <div class="op-actions" style="min-width: 96px;">
           <button class="btn-link error" onclick="showHeldModal('pass', '${p.payNo}')">人工通过</button>
           <button class="btn-link" onclick="showHeldModal('addPayer', '${p.payNo}')">加白通过</button>
-          <button class="btn-link" onclick="showFundProcess('${p.payNo}')">退款/挂起观察</button>
+          <button class="btn-link" onclick="showFundProcess('${p.payNo}')">原路退款/挂起观察</button>
           <button class="btn-link" onclick="showHeldModal('verify', '${p.payNo}')">查看校验</button>
         </div>
       </td>
@@ -1696,7 +1692,6 @@ function showHeldModal(type, payNo) {
   const payerCardMasked = cardDigits.length >= 8
     ? `${cardDigits.slice(0, 4)} **** **** ${cardDigits.slice(-4)}`
     : payerCard;
-  const payerIdMasked = payDetail?.payment?.payerIdMasked || '130***********8765';
   const amount = payDetail?.payment?.amount || 56800;
   const reason = payDetail?.payment?.reason || '实际打款人与客户实名不一致';
   const labelSuffix = payNo ? ' · ' + payNo : '';
@@ -1758,7 +1753,6 @@ function showHeldModal(type, payNo) {
               <div style="margin-top: 6px;">为客户「${customerName}」添加该笔打款人为可信付款人。添加成功后,本笔挂起付款单将自动通过。请管理员根据客户授权委托书等凭证录入真实信息。</div>
             </div>
             <div class="form-row"><label class="form-label"><span class="required">*</span>打款人姓名</label><input type="text" class="form-input" placeholder="请输入真实打款人姓名"></div>
-            <div class="form-row"><label class="form-label"><span class="required">*</span>身份证号</label><input type="text" class="form-input mono" placeholder="请输入打款人身份证号"></div>
             <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡号</label>
               <div style="display:flex;gap:8px;">
                 <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml(cardBank)}</select>
@@ -1790,14 +1784,12 @@ function showHeldModal(type, payNo) {
               <div class="verify-card">
                 <div class="verify-card-title"><div class="icon brand">客</div>客户实名信息</div>
                 <div class="verify-row"><div class="label">姓名</div><div class="value">${customerName}</div></div>
-                <div class="verify-row"><div class="label">身份证号</div><div class="value mono">110***********5678</div></div>
                 <div class="verify-row"><div class="label">付款人信息</div><div class="value">已登记 1 条</div></div>
               </div>
               <div class="verify-vs">≠</div>
               <div class="verify-card">
                 <div class="verify-card-title"><div class="icon warning">付</div>实际打款人</div>
                 <div class="verify-row mismatch"><div class="label">姓名</div><div class="value">${payerNameMasked}</div></div>
-                <div class="verify-row mismatch"><div class="label">身份证号</div><div class="value mono">${payerIdMasked}</div></div>
                 <div class="verify-row"><div class="label">银行卡</div><div class="value mono">${payerCardMasked}</div></div>
                 <div class="verify-row"><div class="label">金额</div><div class="value"><strong style="color: var(--orange)">¥${amount.toLocaleString()}.00</strong></div></div>
               </div>
@@ -1985,7 +1977,7 @@ PAGES['funds-list'] = () => {
     <div class="page-header">
       <div>
         <h2 class="page-title">待确认款项 <span style="display:inline-block;padding:0 6px;line-height:18px;background:var(--orange);color:white;font-size:10px;font-weight:600;border-radius:var(--radius-sm);">NEW</span></h2>
-        <div class="page-subtitle">客户在 C 端取消本次付款后产生的资金,管理员做最终处理:手动退款 / 暂时挂起观察 / 客户重新支付时通过加白名单自动归档。</div>
+        <div class="page-subtitle">客户在 C 端取消本次付款后产生的资金,管理员做最终处理:原路退款 / 暂时挂起观察 / 客户重新支付时通过加白名单自动归档。</div>
       </div>
     </div>
 
@@ -2088,7 +2080,7 @@ PAGES['funds-list'] = () => {
                     ${f.status === 'pending' ? `
                       <button class="btn-link error" onclick="showHeldModal('pass', '${f.no}')">人工通过</button>
                       <button class="btn-link" onclick="showHeldModal('addPayer', '${f.no}')">加白通过</button>
-                      <button class="btn-link" onclick="showFundProcess('${f.no}')">退款/挂起观察</button>
+                      <button class="btn-link" onclick="showFundProcess('${f.no}')">原路退款/挂起观察</button>
                       <button class="btn-link" onclick="showHeldModal('verify', '${f.no}')">查看校验</button>
                     ` : f.status === 'on_hold' ? `
                       <button class="btn-link error" onclick="showFundProcess('${f.no}')">重新处理</button>
@@ -2128,7 +2120,7 @@ PAGES['funds-detail'] = () => {
         <h2 class="page-title">待确认款项详情 · ${f.no} <span class="tag ${status.cls}">${status.text}</span></h2>
         <div class="page-subtitle">${
           f.status === 'pending' ? '资金已到账,等待管理员决定处理方式' :
-          f.status === 'refunded' ? '退款工单已创建' :
+          f.status === 'refunded' ? '原路退款已完成' :
           f.status === 'on_hold' ? '已挂起 ' + f.duration + ',接近 30 天阈值' :
           '客户重新支付时管理员添加付款人信息,本笔自动归档'
         }</div>
@@ -2137,7 +2129,7 @@ PAGES['funds-detail'] = () => {
         ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">
              <button class="btn primary" onclick="showHeldModal('pass', '${f.no}')">人工通过</button>
              <button class="btn" onclick="showHeldModal('addPayer', '${f.no}')">加白通过</button>
-             <button class="btn" onclick="showFundProcess('${f.no}')">退款 / 挂起观察</button>
+             <button class="btn" onclick="showFundProcess('${f.no}')">原路退款 / 挂起观察</button>
              <button class="btn" onclick="showHeldModal('verify', '${f.no}')">查看校验</button>
            </div>`
         : f.status === 'on_hold' 
@@ -2152,7 +2144,7 @@ PAGES['funds-detail'] = () => {
           该付款单已挂起,资金停留在平台账户。可通过以下方式处理:
           <br>① <strong>人工通过</strong>:确认打款人可信,放行该笔付款,订单流转
           <br>② <strong>加白通过</strong>:将该打款人加入客户白名单后自动通过
-          <br>③ <strong>退款 / 挂起观察</strong>:客户已在 C 端取消该次付款,需决定退款或暂时挂起
+          <br>③ <strong>原路退款 / 挂起观察</strong>:客户已在 C 端取消该次付款,需决定原路退款或暂时挂起
         </div>
         <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #FFE58F;font-size:12px;color:var(--text-3);">
           💡 本记录与「订单详情挂起警示条」对应同一付款单,处理后两侧同步
@@ -2194,7 +2186,9 @@ PAGES['funds-detail'] = () => {
             <div class="info-row"><div class="info-label">处理方式</div><div class="info-value"><span class="tag ${status.cls}">${status.text}</span></div></div>
             ${f.status === 'refunded' ? `
               <div class="info-row"><div class="info-label">退款原因</div><div class="info-value">客户要求原路退回</div></div>
-              <div class="info-row"><div class="info-label">退款工单号</div><div class="info-value mono"><a class="btn-link">REFUND-2026041501</a></div></div>` : ''}
+              <div class="info-row"><div class="info-label">退款单号</div><div class="info-value mono"><a class="btn-link">REFUND-2026041501</a></div></div>
+              <div class="info-row"><div class="info-label">退款流水号</div><div class="info-value mono">RFND${f.no.replace(/[^0-9]/g, '')}20260415</div></div>
+              <div class="info-row"><div class="info-label">退款渠道</div><div class="info-value">银行原路退回 · ${f.card.split(' ')[0]}</div></div>` : ''}
             ${f.status === 'whitelist' ? `
               <div class="info-row"><div class="info-label">触发动作</div><div class="info-value">客户「${f.customer.split(' ')[0]}」添加付款人信息「${f.payer}」</div></div>
               <div class="info-row"><div class="info-label">关联付款人信息</div><div class="info-value mono"><a class="btn-link">PAYER-${f.customer.match(/\d+/)[0]}-001</a></div></div>` : ''}
@@ -2223,9 +2217,21 @@ PAGES['funds-detail'] = () => {
           </div>` : ''}
         ${f.status === 'refunded' ? `
           <div class="timeline-item"><div class="timeline-dot success"></div>
+            <div class="timeline-time">2026-${f.cancelTime}:58</div>
+            <div class="timeline-title"><span class="tag tag-success">✓ 银行原路退回成功</span></div>
+            <div class="timeline-desc">系统 银行回调成功,资金已退回客户原打款账户 ${f.card}<br>
+              <span style="color:var(--text-3);font-size:12px;">退款流水号:<span class="mono">RFND${f.no.replace(/[^0-9]/g, '')}20260415</span></span>
+            </div>
+          </div>
+          <div class="timeline-item"><div class="timeline-dot brand"></div>
+            <div class="timeline-time">2026-${f.cancelTime}:40</div>
+            <div class="timeline-title"><span class="tag tag-brand">↗ 已发起银行退款</span></div>
+            <div class="timeline-desc">系统 通过${f.card.split(' ')[0]}支付通道发起退款指令,等待银行回调</div>
+          </div>
+          <div class="timeline-item"><div class="timeline-dot success"></div>
             <div class="timeline-time">2026-${f.cancelTime}:25</div>
-            <div class="timeline-title"><span class="tag tag-success">✓ 退款工单创建</span></div>
-            <div class="timeline-desc">王梅 创建退款工单 REFUND-2026041501</div>
+            <div class="timeline-title"><span class="tag tag-success">✓ 创建退款单</span></div>
+            <div class="timeline-desc">王梅 创建退款单 <span class="mono">REFUND-2026041501</span>,金额 ¥${f.amount.toLocaleString()}.00,退款原因:客户要求原路退回</div>
           </div>` : ''}
         <div class="timeline-item"><div class="timeline-dot error"></div>
           <div class="timeline-time">2026-${f.cancelTime}:42</div>
@@ -2266,15 +2272,15 @@ function showFundProcess(no) {
               <div class="method-option" onclick="selectFundMethod(this, 'refund')">
                 <div class="method-option-radio"></div>
                 <div class="method-option-body">
-                  <div class="method-option-title">⊘ 手动退款 <span class="real-fund-warn">⚠️ 真实资金动作</span></div>
-                  <div class="method-option-desc">生成退款工单 → 财务审核 → 银行打款 → 退回客户原打款账户</div>
+                  <div class="method-option-title">↩ 原路退款 <span class="real-fund-warn">⚠️ 真实资金动作</span></div>
+                  <div class="method-option-desc">确认后该笔支付将原路退回客户原打款账户,请确认后操作。</div>
                 </div>
               </div>
               <div class="method-option" onclick="selectFundMethod(this, 'on_hold')">
                 <div class="method-option-radio"></div>
                 <div class="method-option-body">
                   <div class="method-option-title">⏸ 暂时挂起观察</div>
-                  <div class="method-option-desc">保留观察,无任何动作。后续可重新切换为退款。超 30 天系统提示但不自动动作</div>
+                  <div class="method-option-desc">保留观察,无任何动作。后续可重新切换为原路退款。超 30 天系统提示但不自动动作</div>
                 </div>
               </div>
             </div>
@@ -2282,6 +2288,14 @@ function showFundProcess(no) {
           <div class="form-row" id="refundReasonRow" style="display:none;">
             <label class="form-label"><span class="required">*</span>退款原因</label>
             <select class="form-select"><option value="">请选择</option><option>客户要求原路退回</option><option>实际打款人非本人</option><option>金额异常</option><option>其他</option></select>
+          </div>
+          <div class="form-row" id="refundConfirmRow" style="display:none;">
+            <div class="alert error" style="margin: 0;">
+              <strong>⚠️ 确认原路退款</strong>
+              <div style="margin-top: 6px; line-height: 1.6;">
+                确认后该笔支付将原路退回客户原打款账户,本操作不可撤销,请确认后操作。
+              </div>
+            </div>
           </div>
           <div class="form-row"><label class="form-label">处理备注</label><textarea class="form-textarea" placeholder="备注说明,操作日志会记录"></textarea></div>
         </div>
@@ -2300,11 +2314,12 @@ function selectFundMethod(el, method) {
   el.classList.add('selected');
   selectedFundMethod = method;
   document.getElementById('refundReasonRow').style.display = method === 'refund' ? 'block' : 'none';
+  document.getElementById('refundConfirmRow').style.display = method === 'refund' ? 'block' : 'none';
 }
 function submitFundProcess() {
   if (!selectedFundMethod) { showToast('请选择处理方式', 'error'); return; }
   closeModalById('modalFundProcess');
-  showToast(selectedFundMethod === 'refund' ? '✓ 已创建退款工单,等待财务审核' : '✓ 已标记为暂时挂起观察', 'success');
+  showToast(selectedFundMethod === 'refund' ? '✓ 原路退款已提交,退款单号 REFUND-2026050801' : '✓ 已标记为暂时挂起观察', 'success');
 }
 
 
@@ -2592,8 +2607,6 @@ PAGES['customers-detail'] = () => {
                 </div>
               </div>
               <div class="payer-card-info">
-                <div class="row"><span class="label">证件号:</span><span class="value mono">110***********1234</span></div>
-                <div class="row"><span class="label">联系电话:</span><span class="value mono">139****8866</span></div>
                 <div class="row">
                   <span class="label">银行卡:</span>
                   <span class="value">
@@ -2608,7 +2621,6 @@ PAGES['customers-detail'] = () => {
                   <span class="value">
                     <div class="payer-attachments">
                       <div class="attachment-thumb" onclick="showAttachmentPreview('刘父亲_授权委托书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">委托书.pdf</div></div>
-                      <div class="attachment-thumb" onclick="showAttachmentPreview('刘父亲_身份证正面.jpg', 'img')"><div class="icon">🖼️</div><div class="name">身份证.jpg</div></div>
                     </div>
                   </span>
                 </div>
@@ -2629,8 +2641,6 @@ PAGES['customers-detail'] = () => {
                 </div>
               </div>
               <div class="payer-card-info">
-                <div class="row"><span class="label">证件号:</span><span class="value mono">320***********8821</span></div>
-                <div class="row"><span class="label">联系电话:</span><span class="value mono">137****6655</span></div>
                 <div class="row">
                   <span class="label">银行卡:</span>
                   <span class="value">
@@ -2660,8 +2670,6 @@ PAGES['customers-detail'] = () => {
                 <div class="payer-card-actions"><button class="btn-link" onclick="showEditPayerModal()">编辑</button><button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button></div>
               </div>
               <div class="payer-card-info">
-                <div class="row"><span class="label">证件号:</span><span class="value mono">120***********5678</span></div>
-                <div class="row"><span class="label">联系电话:</span><span class="value mono">138****9911</span></div>
                 <div class="row">
                   <span class="label">银行卡:</span>
                   <span class="value">
@@ -2687,8 +2695,6 @@ PAGES['customers-detail'] = () => {
                 <div class="payer-card-actions"><button class="btn-link" onclick="showEditPayerModal()">编辑</button><button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button></div>
               </div>
               <div class="payer-card-info">
-                <div class="row"><span class="label">证件号:</span><span class="value mono">91440300...XXXX(对公)</span></div>
-                <div class="row"><span class="label">联系电话:</span><span class="value mono">021-6688****</span></div>
                 <div class="row">
                   <span class="label">银行卡:</span>
                   <span class="value">
@@ -2704,7 +2710,6 @@ PAGES['customers-detail'] = () => {
                     <div class="payer-attachments">
                       <div class="attachment-thumb" onclick="showAttachmentPreview('陈宇贸易_对公授权书.pdf', 'pdf')"><div class="icon">📄</div><div class="name">对公授权.pdf</div></div>
                       <div class="attachment-thumb" onclick="showAttachmentPreview('陈宇贸易_营业执照.jpg', 'img')"><div class="icon">🖼️</div><div class="name">营业执照</div></div>
-                      <div class="attachment-thumb" onclick="showAttachmentPreview('陈宇贸易_法人身份证.jpg', 'img')"><div class="icon">🖼️</div><div class="name">法人证件</div></div>
                     </div>
                   </span>
                 </div>
@@ -2715,9 +2720,9 @@ PAGES['customers-detail'] = () => {
           ` : ''}
           ${c.id === '1018' || c.id === '1025' || c.id === '1091' ? (() => {
             const data = {
-              '1018': { name: '周妻', phone: '152****3344', cards: [['招商银行', '6225 8801 4422 7788']], idNum: '320***********6622', addedBy: '王梅', addedAt: '2025-04-10 09:18', note: '客户配偶,频繁代付' },
-              '1025': { name: '赵父', phone: '189****5511', cards: [['农业银行', '6228 4801 2345 6699']], idNum: '410***********1107', addedBy: '李冰', addedAt: '2025-04-12 14:32', note: '' },
-              '1091': { name: '赵敏丈夫', phone: '136****7788', cards: [['建设银行', '6217 0050 9988 2233'], ['平安银行', '6230 5811 4567 2233']], idNum: '110***********5544', addedBy: '王梅', addedAt: '2025-04-15 11:25', note: '客户丈夫,夫妻共同账户代付' },
+              '1018': { name: '周妻', cards: [['招商银行', '6225 8801 4422 7788']], addedBy: '王梅', addedAt: '2025-04-10 09:18', note: '客户配偶,频繁代付' },
+              '1025': { name: '赵父', cards: [['农业银行', '6228 4801 2345 6699']], addedBy: '李冰', addedAt: '2025-04-12 14:32', note: '' },
+              '1091': { name: '赵敏丈夫', cards: [['建设银行', '6217 0050 9988 2233'], ['平安银行', '6230 5811 4567 2233']], addedBy: '王梅', addedAt: '2025-04-15 11:25', note: '客户丈夫,夫妻共同账户代付' },
             }[c.id];
             return `
               <div class="payer-card">
@@ -2726,8 +2731,6 @@ PAGES['customers-detail'] = () => {
                   <div class="payer-card-actions"><button class="btn-link" onclick="showEditPayerModal()">编辑</button><button class="btn-link danger" onclick="showInvalidatePayerModal(this)">失效</button></div>
                 </div>
                 <div class="payer-card-info">
-                  <div class="row"><span class="label">证件号:</span><span class="value mono">${data.idNum}</span></div>
-                  <div class="row"><span class="label">联系电话:</span><span class="value mono">${data.phone}</span></div>
                   <div class="row">
                     <span class="label">银行卡:</span>
                     <span class="value">
@@ -2808,7 +2811,6 @@ function showAddPayerModal() {
         </div>
         <div class="modal-body">
           <div class="form-row"><label class="form-label"><span class="required">*</span>打款人姓名</label><input type="text" class="form-input" placeholder="请输入打款人姓名"></div>
-          <div class="form-row"><label class="form-label"><span class="required">*</span>身份证号</label><input type="text" class="form-input mono" placeholder="请输入身份证号"></div>
           <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡号</label>
             <div style="display:flex;gap:8px;">
               <select class="form-select" style="width:120px;flex-shrink:0;">${bankOptionsHtml()}</select>
@@ -3033,9 +3035,8 @@ function showEditPayerModal() {
           <button class="modal-close" onclick="closeModalById('modalEditPayer')">×</button>
         </div>
         <div class="modal-body">
-          <div class="alert warning">⚠️ 姓名 / 证件号不可修改。可修改关系 / 备注、增 / 删 / 改银行卡号。</div>
+          <div class="alert warning">⚠️ 打款人姓名不可修改。可修改关系 / 备注、增 / 删 / 改银行卡号。</div>
           <div class="form-row"><label class="form-label">打款人姓名</label><input type="text" class="form-input" value="刘父亲" readonly style="background:var(--bg-secondary);"></div>
-          <div class="form-row"><label class="form-label">身份证号</label><input type="text" class="form-input mono" value="110***********1234" readonly style="background:var(--bg-secondary);"></div>
           <div class="form-row"><label class="form-label"><span class="required">*</span>银行卡列表 <span style="color:var(--text-3);font-weight:400;font-size:12px;">(至少保留 1 张)</span></label>
             <div id="editPayerCardList">
               <div class="edit-card-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
