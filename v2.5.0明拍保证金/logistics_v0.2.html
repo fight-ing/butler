@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 物流详情 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF0E0;
+    --success: #2F855A; --success-bg: #E8F5EE;
+    --warning: #C05621; --danger: #C53030; --info: #2B6CB0; --info-bg: #E8F0FA;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 124px;  /* tab bar 60 + sticky bottom 64 */
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: transparent;
+    position: relative; z-index: 3;
+    color: #FFFFFF;
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 12px;
+    background: transparent;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 3;
+    color: #FFFFFF;
+  }
+  .nav-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: inherit;
+  }
+  .nav-btn svg { width: 22px; height: 22px; }
+  .nav-title { font-size: 17px; font-weight: 600; }
+
+  /* Hero (深色渐变状态卡) */
+  .hero-wrap {
+    position: relative;
+    background: linear-gradient(150deg, #2A1810 0%, #4A2818 50%, var(--brand-900) 100%);
+    margin-top: -88px;
+    padding-top: 88px;
+    padding-bottom: 22px;
+    overflow: hidden;
+  }
+  .hero-wrap::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: -40px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,165,38,0.08);
+  }
+  .hero-wrap::before {
+    content: '';
+    position: absolute;
+    left: -50px; bottom: -70px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,195,0,0.06);
+  }
+  .hero-content {
+    position: relative; z-index: 1;
+    padding: 6px 20px 0;
+    color: #FFFFFF;
+  }
+  .hero-status-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .hero-status-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(255,128,0,0.4);
+    position: relative;
+  }
+  .hero-status-icon svg { width: 26px; height: 26px; }
+  .hero-status-icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 16px;
+    border: 2px solid rgba(255,165,38,0.5);
+    animation: ringPulse 1.6s ease-out infinite;
+  }
+  @keyframes ringPulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
+  .hero-status-title {
+    font-size: 22px; font-weight: 700;
+    line-height: 1.2;
+  }
+  .hero-status-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+    margin-top: 3px;
+  }
+  .hero-tracking {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .hero-tracking-info {
+    flex: 1; min-width: 0;
+  }
+  .hero-tracking-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+  .hero-tracking-no {
+    font-size: 13px; font-weight: 600;
+    color: #FFFFFF;
+    font-family: 'SF Mono', Menlo, monospace;
+    margin-top: 2px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .copy-btn {
+    color: var(--brand-300);
+    font-size: 11px;
+    display: inline-flex; align-items: center; gap: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,195,0,0.15);
+  }
+  .copy-btn svg { width: 11px; height: 11px; }
+  .hero-eta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.78);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .hero-eta strong {
+    color: var(--brand-300);
+    font-weight: 600;
+  }
+  .hero-eta svg { width: 12px; height: 12px; }
+  .hero-courier-logo {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #000000, #333333);
+    display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Section */
+  .section { margin: 0 12px 12px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 4px 8px;
+  }
+  .section-title {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--text-primary);
+  }
+  .section-title::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+
+  /* 商品信息卡 */
+  .product-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin: -16px 12px 12px;
+    position: relative; z-index: 4;
+  }
+  .product-row {
+    display: flex; gap: 12px;
+    padding: 12px 14px;
+  }
+  .product-thumb {
+    width: 72px; height: 72px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 30px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 60%);
+  }
+  .product-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .product-brand {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .product-name {
+    font-size: 14px; font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 1px;
+    line-height: 1.3;
+  }
+  .product-meta {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 6px;
+  }
+  .channel-tag {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--mingpai-deep-bg);
+    color: var(--mingpai-deep);
+  }
+  .lot-tag {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .product-price-row {
+    margin-top: auto;
+    display: flex; align-items: baseline; gap: 6px;
+    padding-top: 4px;
+  }
+  .product-price-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .product-price {
+    font-size: 16px; font-weight: 700;
+    color: var(--brand-700);
+  }
+  .product-price::before {
+    content: '¥';
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 1px;
+  }
+  .product-order-link {
+    border-top: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-subtle);
+  }
+  .product-order-link strong { color: var(--text-primary); font-weight: 600; font-family: 'SF Mono', Menlo, monospace; }
+  .product-order-link .arrow { color: var(--text-tertiary); }
+
+  /* 地址卡 */
+  .addr-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin: 0 12px 12px;
+    overflow: hidden;
+  }
+  .addr-map {
+    height: 96px;
+    background:
+      linear-gradient(135deg, #F2EFE5 0%, #E8E4D6 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .addr-map::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(45deg, transparent 48%, rgba(180,170,150,0.25) 48%, rgba(180,170,150,0.25) 52%, transparent 52%),
+      linear-gradient(-45deg, transparent 48%, rgba(180,170,150,0.25) 48%, rgba(180,170,150,0.25) 52%, transparent 52%);
+    background-size: 40px 40px;
+    opacity: 0.5;
+  }
+  .map-line {
+    position: absolute;
+    top: 50%; left: 16%; right: 16%;
+    height: 0; border-top: 2px dashed var(--brand-500);
+    transform: translateY(-50%);
+  }
+  .map-line::before, .map-line::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    top: 50%; transform: translateY(-50%);
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .map-line::before {
+    left: -6px;
+    background: var(--text-secondary);
+  }
+  .map-line::after {
+    right: -6px;
+    background: var(--brand-500);
+    animation: pulseDot 1.6s infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 0 0 0 rgba(255,128,0,0.5); }
+    50% { box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 0 0 8px rgba(255,128,0,0); }
+  }
+  .map-truck {
+    position: absolute;
+    top: 50%; left: 62%;
+    transform: translate(-50%, -50%);
+    width: 28px; height: 28px;
+    background: var(--brand-500);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    box-shadow: 0 4px 8px rgba(255,128,0,0.4);
+  }
+  .map-truck svg { width: 16px; height: 16px; }
+
+  .addr-rows {
+    padding: 12px 14px;
+  }
+  .addr-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 6px 0;
+  }
+  .addr-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .addr-dot.from { background: var(--text-secondary); }
+  .addr-dot.to {
+    background: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(255,128,0,0.15);
+  }
+  .addr-info { flex: 1; min-width: 0; line-height: 1.3; }
+  .addr-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .addr-city {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .addr-detail {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .addr-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    border-radius: 3px;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+  .addr-divider {
+    height: 14px;
+    margin-left: 4px;
+    border-left: 2px dotted var(--border-strong);
+  }
+
+  /* 时间轴 */
+  .timeline-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin: 0 12px 12px;
+    padding: 14px 0 12px;
+  }
+  .timeline-head {
+    padding: 0 14px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .timeline-head .left {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .timeline-head .left::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .timeline-head .filter {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .timeline-head .filter svg { width: 11px; height: 11px; }
+
+  .timeline {
+    position: relative;
+    padding: 0 14px;
+  }
+  .tl-node {
+    position: relative;
+    padding: 8px 0 8px 24px;
+    border-left: 2px solid var(--border);
+    margin-left: 4px;
+  }
+  .tl-node:first-child { border-left-color: transparent; padding-top: 0; }
+  .tl-node:first-child::before {
+    /* extend line under first node manually */
+    content: '';
+    position: absolute;
+    left: -2px; top: 12px; bottom: -8px;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-node:first-child.current::before { background: var(--brand-500); }
+  .tl-node:last-child { padding-bottom: 0; }
+  .tl-node:last-child::after {
+    /* mask the bottom of border-line */
+    content: '';
+    position: absolute;
+    left: -2px; top: 28px; bottom: 0;
+    width: 2px;
+    background: var(--bg-card);
+  }
+  .tl-dot {
+    position: absolute;
+    left: -8px; top: 4px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border-strong);
+    z-index: 1;
+  }
+  .tl-node.history .tl-dot {
+    background: var(--text-tertiary);
+    border-color: var(--text-tertiary);
+  }
+  .tl-node.current .tl-dot {
+    width: 14px; height: 14px;
+    left: -9px;
+    background: var(--brand-500);
+    border: 3px solid var(--brand-100);
+    box-shadow: 0 0 0 0 rgba(255,128,0,0.4);
+    animation: dotPulse 1.6s infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,128,0,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(255,128,0,0); }
+  }
+  .tl-node.pending {
+    border-left: 2px dashed var(--border-strong);
+  }
+  .tl-node.pending .tl-dot {
+    background: var(--bg-card);
+    border: 2px dashed var(--border-strong);
+  }
+
+  .tl-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', Menlo, monospace;
+    margin-bottom: 3px;
+  }
+  .tl-node.current .tl-time { color: var(--brand-700); font-weight: 600; }
+  .tl-stage {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-right: 4px;
+    vertical-align: 1px;
+  }
+  .tl-stage.current { background: var(--anpai-orange-bg); color: var(--anpai-orange); }
+  .tl-stage.warn { background: var(--brand-100); color: var(--brand-700); }
+  .tl-stage.success { background: var(--success-bg); color: var(--success); }
+  .tl-stage.info { background: var(--info-bg); color: var(--info); }
+  .tl-stage.pending { background: var(--bg-subtle); color: var(--text-tertiary); border: 1px dashed var(--border-strong); }
+
+  .tl-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .tl-node.current .tl-text {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .tl-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .tl-text .price {
+    color: var(--mingpai-deep);
+    font-weight: 700;
+  }
+  .tl-meta {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tl-meta .phone-link {
+    color: var(--info);
+    display: inline-flex; align-items: center; gap: 2px;
+  }
+  .tl-meta .phone-link svg { width: 11px; height: 11px; }
+
+  /* Pending divider */
+  .tl-pending-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding: 6px 0 4px 24px;
+    margin-left: 4px;
+    border-left: 2px dashed var(--border-strong);
+    position: relative;
+  }
+
+  /* 保障横条 */
+  .guarantee-bar {
+    margin: 0 12px 12px;
+    background: linear-gradient(135deg, var(--success-bg) 0%, #DCEEE3 100%);
+    border: 1px solid #B7DCC4;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .guard-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--success);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .guard-icon svg { width: 16px; height: 16px; }
+  .guard-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .guard-text strong {
+    color: var(--success);
+    font-weight: 700;
+  }
+  .guard-arrow {
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* Sticky bottom actions */
+  .bottom-actions {
+    position: absolute;
+    bottom: 60px; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    z-index: 4;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  }
+  .ba-btn {
+    height: 36px;
+    border-radius: 18px;
+    font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 4px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  .ba-btn svg { width: 14px; height: 14px; }
+  .ba-btn.primary {
+    background: linear-gradient(135deg, var(--brand-400), var(--brand-500));
+    color: white;
+    border-color: var(--brand-500);
+    box-shadow: 0 2px 6px rgba(255,128,0,0.25);
+  }
+  .ba-btn.danger {
+    background: var(--bg-card);
+    color: var(--live-red);
+    border-color: #FBC9C9;
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Hero (深色渐变) -->
+    <div class="hero-wrap">
+      <!-- Status bar -->
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+      </div>
+      <!-- Nav bar -->
+      <div class="navbar">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">物流详情</div>
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3v4zM3 19a2 2 0 0 0 2 2h1v-6H3v4z"/></svg>
+        </div>
+      </div>
+
+      <!-- 状态卡 -->
+      <div class="hero-content">
+        <div class="hero-status-row">
+          <div class="hero-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <div>
+            <div class="hero-status-title">运输中</div>
+            <div class="hero-status-sub">快件已到达【上海浦东转运中心】</div>
+          </div>
+        </div>
+        <div class="hero-tracking">
+          <div class="hero-courier-logo">SF</div>
+          <div class="hero-tracking-info">
+            <div class="hero-tracking-label">顺丰速运 · 物流单号</div>
+            <div class="hero-tracking-no">
+              <span>SF1234567890123</span>
+              <span class="copy-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                复制
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-eta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          预计 <strong>2026-05-12 12:00 前</strong> 送达 · 已运输 6 小时
+        </div>
+      </div>
+    </div>
+
+    <!-- 商品信息卡 -->
+    <div class="product-card">
+      <div class="product-row">
+        <div class="product-thumb">⌚</div>
+        <div class="product-info">
+          <div class="product-brand">ROLEX</div>
+          <div class="product-name">Daytona 116500LN 熊猫盘</div>
+          <div class="product-meta">
+            <span class="channel-tag">明拍</span>
+            <span class="lot-tag">20260513002 · 第 24 期</span>
+          </div>
+          <div class="product-price-row">
+            <span class="product-price-label">中拍价</span>
+            <span class="product-price">252,000</span>
+          </div>
+        </div>
+      </div>
+      <div class="product-order-link">
+        <span>订单号 <strong>OD20260511002</strong></span>
+        <span class="arrow">查看订单 ›</span>
+      </div>
+    </div>
+
+    <!-- 地址卡（含地图预览） -->
+    <div class="addr-card">
+      <div class="addr-map">
+        <div class="map-line"></div>
+        <div class="map-truck">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+      </div>
+      <div class="addr-rows">
+        <div class="addr-row">
+          <div class="addr-dot from"></div>
+          <div class="addr-info">
+            <span class="addr-label">出发</span>
+            <span class="addr-city">杭州市余杭区</span>
+            <div class="addr-detail">商家 · 京都中古工坊 (135****8821)</div>
+          </div>
+        </div>
+        <div class="addr-divider"></div>
+        <div class="addr-row">
+          <div class="addr-dot to"></div>
+          <div class="addr-info">
+            <span class="addr-label">目的</span>
+            <span class="addr-city">上海市浦东新区</span><span class="addr-tag">默认地址</span>
+            <div class="addr-detail">沪上中古集 · 张经理 (138****5566)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 物流时间轴 -->
+    <div class="timeline-card">
+      <div class="timeline-head">
+        <div class="left">物流轨迹</div>
+        <span class="filter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          关键节点
+        </span>
+      </div>
+      <div class="timeline">
+
+        <!-- 待完成 / 预计节点 -->
+        <div class="tl-node pending">
+          <div class="tl-dot"></div>
+          <div class="tl-time">预计 2026-05-12 13:00 后</div>
+          <div>
+            <span class="tl-stage pending">待验货</span>
+          </div>
+          <div class="tl-text" style="color:var(--text-tertiary)">签收后 <strong style="color:var(--text-secondary)">7 天质保期</strong>开始计算</div>
+        </div>
+
+        <div class="tl-node pending">
+          <div class="tl-dot"></div>
+          <div class="tl-time">预计 2026-05-12 12:00 前</div>
+          <div>
+            <span class="tl-stage pending">待签收</span>
+          </div>
+          <div class="tl-text" style="color:var(--text-tertiary)">快件预计由顺丰小哥派送至沪上中古集</div>
+        </div>
+
+        <!-- 当前节点 -->
+        <div class="tl-node current">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 16:32</div>
+          <div>
+            <span class="tl-stage current">运输中</span>
+          </div>
+          <div class="tl-text">快件已到达【<strong>上海浦东转运中心</strong>】</div>
+        </div>
+
+        <!-- 历史节点 -->
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 14:18</div>
+          <div>
+            <span class="tl-stage">运输中</span>
+          </div>
+          <div class="tl-text">快件离开【杭州余杭转运中心】发往【上海浦东转运中心】</div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 13:05</div>
+          <div>
+            <span class="tl-stage">运输中</span>
+          </div>
+          <div class="tl-text">快件已到达【杭州余杭转运中心】</div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 11:42</div>
+          <div>
+            <span class="tl-stage success">已揽收</span>
+          </div>
+          <div class="tl-text">快件已被快递员揽收</div>
+          <div class="tl-meta">
+            <span>揽件员：张师傅</span>
+            <a class="phone-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              138****0123
+            </a>
+          </div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 10:30</div>
+          <div>
+            <span class="tl-stage info">已发货</span>
+          </div>
+          <div class="tl-text">商家 <strong>京都中古工坊</strong> 已发货</div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 09:15</div>
+          <div>
+            <span class="tl-stage warn">鉴定签封</span>
+          </div>
+          <div class="tl-text">总部完成出库二次鉴定，已签封原盒（含证书 + 防伪封条）</div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-11 08:00</div>
+          <div>
+            <span class="tl-stage">商家备货</span>
+          </div>
+          <div class="tl-text">京都中古工坊开始备货</div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-10 23:42</div>
+          <div>
+            <span class="tl-stage success">已支付</span>
+          </div>
+          <div class="tl-text">订单已支付 <span class="price">¥252,000</span> · 微信支付</div>
+        </div>
+
+        <div class="tl-node history">
+          <div class="tl-dot"></div>
+          <div class="tl-time">2026-05-10 23:38</div>
+          <div>
+            <span class="tl-stage warn">已中拍</span>
+          </div>
+          <div class="tl-text">明拍 20260513002 · 用户代理出价中拍</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 平台保障 -->
+    <div class="guarantee-bar">
+      <div class="guard-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <div class="guard-text">
+        <strong>平台担保</strong> · 顺丰保价 ¥252,000 · 7 天质保期
+      </div>
+      <span class="guard-arrow">详情 ›</span>
+    </div>
+
+    <!-- Sticky bottom actions -->
+    <div class="bottom-actions">
+      <button class="ba-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        联系商家
+      </button>
+      <button class="ba-btn primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3v4zM3 19a2 2 0 0 0 2 2h1v-6H3v4z"/></svg>
+        联系客服
+      </button>
+      <button class="ba-btn danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        申请异常
+      </button>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

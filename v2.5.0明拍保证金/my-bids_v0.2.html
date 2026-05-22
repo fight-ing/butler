@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 我的竞拍 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.03); --border-strong: rgba(0,0,0,0.06);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF6F5;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF8EF;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF6EC;
+    --success: #2F855A; --success-bg: #EEF6F0;
+    --warning: #C05621; --warning-bg: #FFF8EF;
+    --danger: #C53030; --danger-bg: #FFF6F5;
+    --info: #2B6CB0; --info-bg: #F3F7FC;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --anpai-bg: #FFF8F7; --anpai-border: rgba(229,62,62,0.10);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-page);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-page);
+  }
+  .nav-back {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -4px;
+    color: var(--text-primary);
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; font-size: 17px; font-weight: 600;
+    color: var(--text-primary);
+  }
+  .nav-act {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .nav-act svg { width: 22px; height: 22px; }
+
+  /* Channel tabs */
+  .channel-tabs {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    display: flex;
+    gap: 24px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .ch-tab {
+    padding: 12px 0 11px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    position: relative;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .ch-tab .count {
+    color: var(--text-tertiary);
+    font-size: 11px;
+  }
+  .ch-tab.active {
+    color: var(--brand-700);
+    font-weight: 700;
+  }
+  .ch-tab.active .count {
+    color: var(--brand-500);
+    font-weight: 600;
+  }
+  .ch-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: -1px;
+    width: 28px; height: 3px;
+    background: linear-gradient(90deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+
+  /* Filter chips */
+  .filter-row {
+    background: var(--bg-page);
+    padding: 10px 12px 8px;
+    display: flex; gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 5px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+  }
+  .chip.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+    font-weight: 600;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    margin: 0 12px 10px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, var(--brand-50), var(--brand-100));
+    border: 1px solid var(--brand-200);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: space-around;
+    gap: 8px;
+  }
+  .stat {
+    text-align: center;
+    flex: 1;
+    position: relative;
+  }
+  .stat:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 1px; height: 22px;
+    background: var(--brand-200);
+  }
+  .stat .v {
+    font-size: 16px; font-weight: 700;
+    color: var(--brand-700);
+    line-height: 1.1;
+  }
+  .stat .v .u {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: 1px;
+  }
+  .stat .l {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+
+  /* Rule strip (暗拍说明) —— 去框，纯文字 */
+  .rule-strip {
+    margin: 4px 16px 8px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px;
+    color: var(--brand-700);
+  }
+  .rule-strip .ico {
+    width: 14px; height: 14px;
+    color: var(--brand-700);
+    flex-shrink: 0;
+  }
+  .rule-strip strong { color: var(--brand-700); font-weight: 700; }
+
+  /* List */
+  .list { padding: 0 12px; }
+
+  /* 二级筛选 chip */
+  .sub-filter {
+    display: flex; gap: 6px;
+    padding: 10px 0 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .sub-filter::-webkit-scrollbar { display: none; }
+  .sub-chip {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 5px 11px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    color: var(--text-secondary);
+    display: inline-flex; align-items: center; gap: 3px;
+    cursor: pointer;
+  }
+  .sub-chip .cnt {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .sub-chip.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+    font-weight: 600;
+  }
+  .sub-chip.active .cnt { color: var(--brand-900); }
+  .sub-chip.proxy {
+    border-color: rgba(107,70,193,0.30);
+    background: #FBFAFE;
+    color: #6B46C1;
+    font-weight: 600;
+  }
+  .sub-chip.proxy .cnt { color: #6B46C1; }
+  .sub-filter-hint {
+    padding: 4px 4px 8px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 5px;
+    line-height: 1.4;
+  }
+  .sub-filter-hint svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* Bid card */
+  .item {
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 10px;
+    display: flex;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .item.ended {
+    background: var(--bg-subtle);
+    opacity: 0.88;
+  }
+  .item.urgent {
+    background: var(--bg-card);
+    border: 0;
+  }
+  .item.urgent::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 14px; bottom: 14px;
+    width: 3px;
+    background: var(--danger);
+    border-radius: 0 2px 2px 0;
+  }
+  .item.leading {
+    border-left: 3px solid var(--success);
+  }
+  .item-img {
+    width: 100px; height: auto;
+    min-height: 132px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 34px;
+    position: relative;
+  }
+  .item.ended .item-img {
+    filter: grayscale(60%);
+    opacity: 0.7;
+  }
+  .lot-tag {
+    position: absolute; top: 5px; left: 5px;
+    background: var(--brand-900);
+    color: var(--brand-300);
+    font-size: 9px; font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+  .batch-tag {
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(255,255,255,0.92);
+    color: var(--brand-700);
+    font-size: 9px; font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .anpai-tag {
+    position: absolute; top: 5px; right: 5px;
+    background: var(--anpai-orange);
+    color: white;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .live-tag {
+    position: absolute; top: 5px; left: 5px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .live-tag::before {
+    content: ''; width: 4px; height: 4px;
+    background: white; border-radius: 50%;
+    animation: blink 1.4s infinite;
+  }
+  .time-tag {
+    position: absolute; bottom: 5px; left: 5px; right: 5px;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 9px;
+    padding: 1px 0;
+    text-align: center;
+    border-radius: 2px;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .item-info {
+    flex: 1;
+    padding: 8px 10px 8px 12px;
+    display: flex; flex-direction: column;
+    min-width: 0;
+    position: relative;
+  }
+  /* (v0.3:列表不显示单独品牌行 — 货品名一致即可) */
+  .item-brand { display: none; }
+  .item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin: 1px 0 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    padding-right: 60px;
+  }
+  .item.ended .item-name { color: var(--text-secondary); }
+  .item-meta {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .item-meta .dot { width: 2px; height: 2px; background: var(--text-tertiary); border-radius: 50%; }
+
+  /* Status badge —— 去框，纯文字 + 色点 */
+  .status-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .status-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .status-badge svg { width: 9px; height: 9px; display: none; }
+  .status-badge.agent { color: var(--brand-700); }
+  .status-badge.leading { color: var(--success); }
+  .status-badge.outbid { color: var(--danger); animation: pulseBlink 1.4s infinite; }
+  .status-badge.won { color: var(--success); }
+  .status-badge.lost { color: var(--text-tertiary); }
+  .status-badge.bid-mine { color: var(--brand-700); }
+  .status-badge.waiting { color: var(--info); }
+  .status-badge.live { color: var(--live-red); }
+  .status-badge.live::before { animation: pulseBlink 1.4s infinite; }
+  .status-badge.offline {
+    background: transparent;
+    color: var(--text-tertiary);
+  }
+  @keyframes pulseBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  /* Price block (3 cells) */
+  .price-grid {
+    display: flex; gap: 10px;
+    margin-top: auto;
+    padding-top: 4px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .price-cell {
+    display: flex; flex-direction: column;
+    line-height: 1.2;
+  }
+  .price-cell .pl {
+    font-size: 9px;
+    color: var(--text-tertiary);
+  }
+  .price-cell .pv {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 1px;
+  }
+  .price-cell .pv::before { content: '¥'; font-size: 9px; margin-right: 1px; }
+  .price-cell.now .pv {
+    color: var(--brand-700);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .price-cell.mine .pv {
+    color: var(--brand-700);
+    font-weight: 700;
+  }
+  .price-cell.mine.highlight .pv {
+    color: var(--anpai-orange);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .price-cell.hidden .pv {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .price-cell.hidden .pv::before {
+    content: '';
+    display: inline-block;
+    margin-right: 4px;
+    width: 10px; height: 10px;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'><rect x='3' y='11' width='18' height='11' rx='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>") center/contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'><rect x='3' y='11' width='18' height='11' rx='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>") center/contain no-repeat;
+    vertical-align: middle;
+  }
+  .price-cell.deal .pv {
+    color: var(--success);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .price-cell.lost-deal .pv {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  /* Agent strip —— 去框，纯文字 */
+  .agent-strip {
+    background: transparent;
+    border: 0;
+    color: var(--brand-700);
+    font-size: 10.5px;
+    padding: 2px 0 0;
+    margin-top: 3px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 6px;
+  }
+  .agent-strip.warn { color: var(--danger); }
+  .agent-strip strong { font-weight: 700; }
+  .agent-strip .action {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: 600;
+  }
+
+  /* Bid count strip */
+  .bid-count {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .bid-count strong { color: var(--brand-700); font-weight: 700; }
+
+  /* Source strip */
+  .live-source {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin: 3px 0 4px;
+    display: inline-flex; align-items: center; gap: 4px;
+    align-self: flex-start;
+  }
+  .live-source .dot {
+    width: 5px; height: 5px;
+    background: var(--live-red);
+    border-radius: 50%;
+  }
+  .live-source.offline .dot { background: var(--text-tertiary); }
+
+  /* Bottom row */
+  .bot-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 0;
+  }
+  .countdown {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .countdown svg { width: 11px; height: 11px; color: var(--brand-700); }
+  .countdown .time {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-weight: 600;
+    color: var(--brand-700);
+  }
+  .countdown.urgent .time { color: var(--danger); }
+  .countdown.urgent svg { color: var(--danger); }
+  .countdown.ended svg { color: var(--text-tertiary); }
+  .countdown.ended { color: var(--text-tertiary); }
+  .countdown.ended .time { color: var(--text-tertiary); font-weight: 500; }
+  .countdown.waiting .time { color: var(--info); }
+  .countdown.waiting svg { color: var(--info); }
+
+  .act-btn {
+    padding: 5px 12px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 12px; font-weight: 700;
+    border-radius: 6px;
+    border: none;
+    display: flex; align-items: center; gap: 3px;
+    box-shadow: 0 2px 4px rgba(255,128,0,0.25);
+  }
+  .act-btn.ghost {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    font-weight: 500;
+  }
+  .act-btn.primary-fill {
+    background: var(--brand-700);
+    color: white;
+    box-shadow: 0 2px 6px rgba(230,81,0,0.35);
+  }
+  .act-btn.green {
+    background: var(--success);
+    color: white;
+  }
+  .act-btn.danger-fill {
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 2px 6px rgba(197,48,48,0.35);
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+
+  /* ============ 暗拍专属(v0.2 替换) ============ */
+  .an-lvl2 {
+    background: var(--bg-card);
+    padding: 0 36px;
+    display: flex; justify-content: space-around;
+    border-bottom: 1px solid var(--border);
+  }
+  .an-l2-tab {
+    padding: 12px 6px 11px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    position: relative;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .an-l2-tab.active {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .an-l2-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 3px;
+    width: 32px; height: 3px;
+    background: var(--danger);
+    border-radius: 2px;
+  }
+  .an-session {
+    margin: 12px;
+    background: var(--anpai-bg);
+    border: 1px solid var(--anpai-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .an-session-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .an-session-title { font-size: 14px; font-weight: 700; }
+  .an-cd {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .an-cd .digit {
+    background: #2D2D2D; color: #FFFFFF;
+    font-size: 12px; font-weight: 700;
+    padding: 1px 5px; border-radius: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .an-cd .sep { color: #2D2D2D; font-weight: 700; }
+  .an-session-info {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .an-session-info b { color: var(--text-primary); }
+  .an-session-info .div { width: 1px; height: 11px; background: var(--border-strong); }
+  .an-session-info .price { color: var(--danger); font-weight: 700; }
+
+  .an-list { padding: 0 12px 80px; }
+  .an-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .an-row { display: flex; padding: 12px; gap: 12px; }
+  .an-img {
+    width: 88px; height: 88px;
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(180,140,100,0.6);
+    font-size: 36px;
+  }
+  .an-info { flex: 1; min-width: 0; }
+  .an-tags {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 4px; flex-wrap: wrap;
+  }
+  .an-tag-verified {
+    background: #FFFFFF; color: var(--text-primary);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 5px;
+    border: 1px solid #333;
+    border-radius: 3px;
+  }
+  .an-tag-grade {
+    background: #2D2D2D; color: #FFFFFF;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .an-name {
+    font-size: 13px; font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 200px;
+    vertical-align: middle;
+  }
+  .an-price-line {
+    font-size: 12px; color: var(--text-secondary);
+    margin-top: 5px; line-height: 1.6;
+  }
+  .an-price-line .seg { margin-right: 10px; }
+  .an-price-line .val { color: var(--text-primary); }
+  .an-my-bid {
+    font-size: 13px; font-weight: 600;
+    margin-top: 4px;
+  }
+  .an-my-bid .v { color: var(--danger); font-weight: 700; }
+  .an-final { font-size: 13px; margin-top: 4px; }
+  .an-final b { color: var(--danger); font-weight: 700; font-size: 14px; }
+
+  .an-status-row {
+    border-top: 1px solid var(--border);
+    padding: 9px 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .an-status-msg {
+    font-size: 12px; color: var(--danger);
+    flex: 1; line-height: 1.5;
+  }
+  .an-btn {
+    flex-shrink: 0;
+    background: #FFFFFF;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 13px;
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .an-btn.muted {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  .an-result-wrap {
+    display: flex; align-items: center;
+    padding: 0 12px 12px;
+    gap: 10px;
+  }
+  .an-result-msg-wrap {
+    flex: 1;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+  .an-result { font-size: 12px; line-height: 1.5; }
+  .an-result.save {
+    color: var(--danger);
+    background: var(--danger-bg);
+    padding: 5px 8px;
+    border-radius: 4px;
+  }
+  .an-result.precise {
+    color: var(--warning);
+    background: var(--warning-bg);
+    padding: 5px 8px;
+    border-radius: 4px;
+  }
+  .an-result.lost { color: var(--text-tertiary); }
+  .an-result b { font-weight: 700; }
+
+  .an-stamp {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 2.5px solid var(--danger);
+    color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    text-align: center; line-height: 1.2;
+    transform: rotate(-10deg);
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.92);
+    position: relative;
+  }
+  .an-stamp.lost {
+    border-color: var(--text-tertiary);
+    color: var(--text-tertiary);
+  }
+  .an-stamp::before, .an-stamp::after {
+    content: '★';
+    position: absolute;
+    font-size: 7px;
+  }
+  .an-stamp::before { top: 5px; left: 50%; transform: translateX(-50%); }
+  .an-stamp::after { bottom: 5px; left: 50%; transform: translateX(-50%); }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <div class="navbar">
+      <div class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">我的竞拍</div>
+      <div class="nav-act">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+    </div>
+
+    <!-- 渠道子 Tab(只保留明拍 / 暗拍,去掉直播) -->
+    <div class="channel-tabs">
+      <div class="ch-tab active" data-tab="mingpai">明拍<span class="count">18</span></div>
+      <div class="ch-tab" data-tab="anpai">暗拍<span class="count">12</span></div>
+    </div>
+
+    <!-- ========= 明拍列表 ========= -->
+    <div class="list" id="list-mingpai">
+
+      <!-- 二级筛选 chip -->
+      <div class="sub-filter">
+        <div class="sub-chip active">全部 <span class="cnt">18</span></div>
+        <div class="sub-chip proxy">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px;vertical-align:-1px;color:#6B46C1;"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+          代理出价 <span class="cnt">4</span>
+        </div>
+        <div class="sub-chip">我领先 <span class="cnt">6</span></div>
+        <div class="sub-chip">我被超 <span class="cnt">8</span></div>
+      </div>
+      <div class="sub-filter-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        代理出价:我设置的所有代理上限(进行中 + 已被超,不含已结拍)
+      </div>
+
+      <!-- 卡 1: 明拍 - 我领先 / 代理出价中 -->
+      <div class="item leading">
+        <div class="item-img">
+          ◆
+          <span class="lot-tag">20260513008</span>
+        </div>
+        <div class="item-info">
+          <div class="status-badge leading">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            我领先
+          </div>
+          <div class="item-brand">HERMÈS</div>
+          <div class="item-name">Birkin 25 Gold Togo PHW · 2023 全套</div>
+          <div class="item-meta">
+            <span>沪上中古集</span><span class="dot"></span><span>23 次出价</span>
+          </div>
+          <div class="price-grid">
+            <div class="price-cell"><span class="pl">起拍价</span><span class="pv">52,000</span></div>
+            <div class="price-cell now"><span class="pl">当前价</span><span class="pv">72,500</span></div>
+          </div>
+          <div class="agent-strip">
+            <span>代理上限 <strong>¥ 90,000</strong> · 系统加价中</span>
+            <span class="action">调整</span>
+          </div>
+          <div class="bot-row">
+            <span class="countdown" data-cd="00:42:18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time">00:42:18</span>
+            </span>
+            <button class="act-btn ghost">查看详情</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡 2: 明拍 - 我被超 / 倒计时紧急 -->
+      <div class="item urgent">
+        <div class="item-img">
+          ◆
+          <span class="lot-tag">20260513002</span>
+        </div>
+        <div class="item-info">
+          <div class="status-badge outbid">⚠ 我被超</div>
+          <div class="item-brand">ROLEX</div>
+          <div class="item-name">Daytona 116500LN 白盘陶瓷圈</div>
+          <div class="item-meta">
+            <span>京都中古工坊</span><span class="dot"></span><span>47 次出价</span>
+          </div>
+          <div class="price-grid">
+            <div class="price-cell"><span class="pl">我出价</span><span class="pv" style="color:var(--text-secondary);">252,000</span></div>
+            <div class="price-cell now"><span class="pl">当前价</span><span class="pv">256,000</span></div>
+          </div>
+          <div class="agent-strip warn">
+            <span>领先者比你高 <strong>¥ 4,000</strong> · 需提价</span>
+            <span class="action">立即加价</span>
+          </div>
+          <div class="bot-row">
+            <span class="countdown urgent" data-cd="00:38:24">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time">00:38:24</span>
+            </span>
+            <button class="act-btn danger-fill">出价 ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡 3: 明拍 - 预告等待开拍 -->
+      <div class="item">
+        <div class="item-img">
+          ◆
+          <span class="lot-tag">20260513033</span>
+        </div>
+        <div class="item-info">
+          <div class="status-badge waiting">等待开拍</div>
+          <div class="item-name">蓝气球 36mm 钢带 自动机芯</div>
+          <div class="item-meta">
+            <span>广州奢藏</span><span class="dot"></span><span>预约 38 人</span>
+          </div>
+          <div class="price-grid">
+            <div class="price-cell"><span class="pl">起拍价</span><span class="pv">35,000</span></div>
+            <div class="price-cell"><span class="pl">开拍</span><span class="pv" style="color:var(--info)">距 01:48</span></div>
+          </div>
+          <div class="agent-strip">
+            <span>已设代理上限 <strong>¥ 45,000</strong> · 开拍后激活</span>
+            <span class="action">修改</span>
+          </div>
+          <div class="bot-row">
+            <span class="countdown waiting">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="time">距开拍 01:48:00</span>
+            </span>
+            <button class="act-btn ghost">取消委托</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡 4: 明拍 - 已结束 中拍(无购物车/类似商品按钮) -->
+      <div class="item ended">
+        <div class="item-img">
+          ◆
+          <span class="lot-tag">20260513003</span>
+        </div>
+        <div class="item-info">
+          <div class="status-badge won">已中拍</div>
+          <div class="item-name">Speedy 30 Monogram 经典款 全套</div>
+          <div class="item-meta">
+            <span>沪上中古集</span><span class="dot"></span><span>已结拍</span>
+          </div>
+          <div class="price-grid">
+            <div class="price-cell"><span class="pl">起拍价</span><span class="pv">2,800</span></div>
+            <div class="price-cell deal"><span class="pl">中拍价</span><span class="pv">4,200</span></div>
+          </div>
+          <div class="bot-row">
+            <span class="countdown ended">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="time">已结束</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡 5: 明拍 - 已结束 未中(无查看类似商品按钮) -->
+      <div class="item ended">
+        <div class="item-img">
+          ◆
+          <span class="lot-tag">20260513015</span>
+        </div>
+        <div class="item-info">
+          <div class="status-badge lost">未中拍</div>
+          <div class="item-name">Classic Flap CF25 黑色金扣</div>
+          <div class="item-meta">
+            <span>广州奢藏</span><span class="dot"></span><span>差 ¥ 5,500</span>
+          </div>
+          <div class="price-grid">
+            <div class="price-cell lost-deal"><span class="pl">我最终出价</span><span class="pv">40,000</span></div>
+            <div class="price-cell"><span class="pl">中拍价</span><span class="pv" style="color:var(--text-secondary)">45,500</span></div>
+          </div>
+          <div class="bot-row">
+            <span class="countdown ended">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <span class="time">已结束</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡 6: 明拍 - 进行中 我被超 - 多次出价 -->
+      <div class="item">
+        <div class="item-img">
+          ◆
+          <span class="lot-tag">20260513047</span>
+        </div>
+        <div class="item-info">
+          <div class="status-badge outbid">⚠ 我被超</div>
+          <div class="item-brand">GUCCI</div>
+          <div class="item-name">GG Marmont 中号链条包 黑色</div>
+          <div class="item-meta">
+            <span>京都中古工坊</span><span class="dot"></span><span>我已 22 次出价</span>
+          </div>
+          <div class="price-grid">
+            <div class="price-cell"><span class="pl">我出价</span><span class="pv" style="color:var(--text-secondary);">3,000</span></div>
+            <div class="price-cell now"><span class="pl">当前价</span><span class="pv">3,500</span></div>
+          </div>
+          <div class="bid-count">已出价 <strong>22</strong> 次 · 距上次出价 3 分钟</div>
+          <div class="bot-row">
+            <span class="countdown" data-cd="00:18:42">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time">00:18:42</span>
+            </span>
+            <button class="act-btn primary-fill">再次出价 ›</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========= 暗拍列表(v0.2 替换: 正在参与 + 历史出价 二级 Tab) ========= -->
+    <div id="list-anpai" style="display:none;">
+
+      <!-- 二级 Tab -->
+      <div class="an-lvl2">
+        <div class="an-l2-tab active" data-an-tab="ongoing">正在参与</div>
+        <div class="an-l2-tab" data-an-tab="history">历史出价</div>
+      </div>
+
+      <!-- ===== 正在参与 ===== -->
+      <div id="an-pane-ongoing">
+
+        <div class="an-session">
+          <div class="an-session-head">
+            <div class="an-session-title">250524暗拍专场</div>
+            <div class="an-cd">
+              <svg style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              距结拍
+              <span class="digit">59</span><span class="sep">:</span>
+              <span class="digit">57</span><span class="sep">:</span>
+              <span class="digit">57</span>
+            </div>
+          </div>
+          <div class="an-session-info">
+            本场暗拍出价 <b>3</b> 件,合计 <span class="price">¥ 220000</span>
+          </div>
+        </div>
+
+        <div class="an-list">
+
+          <!-- 卡 1: 17 点后出价 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士…</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 8500</span></span>
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                </div>
+                <div class="an-my-bid">出价: <span class="v">¥ 8500</span></div>
+              </div>
+            </div>
+            <div class="an-status-row">
+              <span class="an-status-msg">17 点后出价,不参与竞价排名</span>
+              <button class="an-btn">改价</button>
+            </div>
+          </div>
+
+          <!-- 卡 2: 排名第 3 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士…</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 8500</span></span>
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                </div>
+                <div class="an-my-bid">出价: <span class="v">¥ 8500</span></div>
+              </div>
+            </div>
+            <div class="an-status-row">
+              <span class="an-status-msg">截止 17 点,你的排名第 3 名,可适当调整出价</span>
+              <button class="an-btn">改价</button>
+            </div>
+          </div>
+
+          <!-- 卡 3: 未出价 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士…</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 8500</span></span>
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                </div>
+                <div class="an-my-bid" style="color:var(--text-tertiary);font-weight:500;">暂未出价</div>
+              </div>
+            </div>
+            <div class="an-status-row">
+              <span class="an-status-msg">由于您在 17 点未出价,暂未参与排名</span>
+              <button class="an-btn muted">出价</button>
+            </div>
+          </div>
+
+          <!-- 卡 4: 排名未进入前三 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士…</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 8500</span></span>
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                </div>
+                <div class="an-my-bid">出价: <span class="v">¥ 8500</span></div>
+              </div>
+            </div>
+            <div class="an-status-row">
+              <span class="an-status-msg">截止 17 点,你的排名未进入前三名,建议提高出价</span>
+              <button class="an-btn">改价</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===== 历史出价 ===== -->
+      <div id="an-pane-history" style="display:none;">
+
+        <div class="an-session">
+          <div class="an-session-head">
+            <div class="an-session-title">250524暗拍专场</div>
+            <div style="font-size:11px;color:var(--text-secondary);">2025-05-24 11:00~18:00</div>
+          </div>
+          <div class="an-session-info">
+            本场暗拍出价 <b>3</b> 件 <span class="div"></span> 竞得 <b>2</b> 件
+          </div>
+        </div>
+
+        <div class="an-list">
+
+          <!-- 卡 1: 节省 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士女</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 85000</span></span>
+                  <span class="seg">第 2 名 <span class="val">¥ 8500</span></span>
+                </div>
+                <div class="an-price-line" style="margin-top:2px;">
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                  <span class="seg">您出价 <span class="val">¥ 8700</span></span>
+                </div>
+                <div class="an-final">中拍价: <b>¥ 8700</b></div>
+              </div>
+            </div>
+            <div class="an-result-wrap">
+              <div class="an-result-msg-wrap">
+                <div class="an-result save">本次暗拍为您节省了 <b>¥ 200</b> 元</div>
+              </div>
+              <div class="an-stamp">竞拍<br>成功</div>
+            </div>
+          </div>
+
+          <!-- 卡 2: 精准 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士女</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 85000</span></span>
+                  <span class="seg">第 2 名 <span class="val">¥ 8500</span></span>
+                </div>
+                <div class="an-price-line" style="margin-top:2px;">
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                  <span class="seg">您出价 <span class="val">¥ 8700</span></span>
+                </div>
+                <div class="an-final">中拍价: <b>¥ 8700</b></div>
+              </div>
+            </div>
+            <div class="an-result-wrap">
+              <div class="an-result-msg-wrap">
+                <div class="an-result precise">恭喜老板!本次暗拍<b>精准出价</b></div>
+              </div>
+              <div class="an-stamp">竞拍<br>成功</div>
+            </div>
+          </div>
+
+          <!-- 卡 3: 失败 -->
+          <div class="an-card">
+            <div class="an-row">
+              <div class="an-img">◆</div>
+              <div class="an-info">
+                <div class="an-tags">
+                  <span class="an-tag-verified">已验</span>
+                  <span class="an-tag-grade">S 级</span>
+                  <span class="an-name">香奈儿女士单肩包香奈儿女士女</span>
+                </div>
+                <div class="an-price-line">
+                  <span class="seg">起拍价 <span class="val">¥ 85000</span></span>
+                  <span class="seg">第 2 名 <span class="val">¥ 8500</span></span>
+                </div>
+                <div class="an-price-line" style="margin-top:2px;">
+                  <span class="seg">加价幅度 <span class="val">¥ 200</span></span>
+                  <span class="seg">您出价 <span class="val">¥ 8700</span></span>
+                </div>
+                <div class="an-final" style="color:var(--text-secondary);">您出价: <b style="color:var(--text-tertiary);font-size:13px;">¥ 8700</b></div>
+              </div>
+            </div>
+            <div class="an-result-wrap">
+              <div class="an-result-msg-wrap">
+                <div class="an-result lost">您的出价比别人低,请再接再厉</div>
+              </div>
+              <div class="an-stamp lost">竞拍<br>失败</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // 子 Tab 切换(支持 URL 参数 ?tab=anpai 进入指定渠道,便于 anpai-compare 嵌入)
+  (function() {
+    const tabs = document.querySelectorAll('.ch-tab');
+    const lists = {
+      mingpai: document.getElementById('list-mingpai'),
+      anpai: document.getElementById('list-anpai')
+    };
+    function activate(name) {
+      if (!lists[name]) return;
+      tabs.forEach(x => x.classList.toggle('active', x.dataset.tab === name));
+      Object.entries(lists).forEach(([k, l]) => l.style.display = (k === name ? 'block' : 'none'));
+    }
+    tabs.forEach(t => {
+      t.addEventListener('click', () => activate(t.dataset.tab));
+    });
+    // URL 参数初始化
+    const urlTab = new URLSearchParams(location.search).get('tab');
+    if (urlTab) activate(urlTab);
+  })();
+
+  // 倒计时
+  (function() {
+    function fmt(total) {
+      const h = String(Math.floor(total/3600)).padStart(2,'0');
+      const m = String(Math.floor((total%3600)/60)).padStart(2,'0');
+      const s = String(total%60).padStart(2,'0');
+      return `${h}:${m}:${s}`;
+    }
+    function parse(str) {
+      const [h, m, s] = str.split(':').map(Number);
+      return h*3600 + m*60 + s;
+    }
+    const counters = [];
+    document.querySelectorAll('.countdown[data-cd]').forEach(el => {
+      const timeEl = el.querySelector('.time');
+      counters.push({ el, timeEl, total: parse(el.dataset.cd) });
+    });
+    setInterval(() => {
+      counters.forEach(c => {
+        c.total = Math.max(0, c.total - 1);
+        c.timeEl.textContent = fmt(c.total);
+      });
+    }, 1000);
+  })();
+
+  // 暗拍二级 Tab(正在参与 / 历史出价)切换
+  (function() {
+    const tabs = document.querySelectorAll('.an-l2-tab');
+    const panes = {
+      ongoing: document.getElementById('an-pane-ongoing'),
+      history: document.getElementById('an-pane-history')
+    };
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        Object.values(panes).forEach(p => p.style.display = 'none');
+        panes[t.dataset.anTab].style.display = 'block';
+      });
+    });
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

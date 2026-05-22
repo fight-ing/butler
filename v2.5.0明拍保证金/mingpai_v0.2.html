@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 明拍 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --success: #2F855A; --danger: #C53030; --info: #2B6CB0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 130px;
+  }
+
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    color: white;
+    position: relative; z-index: 10;
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    margin-top: -44px;
+    height: 220px;
+    background: linear-gradient(135deg, #FF8000 0%, #E65100 55%, #B34700 100%);
+    padding-top: 44px;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '◆';
+    position: absolute;
+    right: -40px; top: 30px;
+    font-size: 200px;
+    color: rgba(255,213,79,0.12);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(180deg, transparent, var(--bg-page));
+    z-index: 1;
+  }
+  .hero-nav {
+    padding: 8px 16px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; z-index: 2;
+  }
+  .hero-nav .btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+  }
+  .hero-nav .btn svg { width: 18px; height: 18px; }
+  .hero-spacer { flex: 1; }
+  .hero-content {
+    padding: 4px 20px 0;
+    position: relative; z-index: 2;
+    color: white;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,213,79,0.95);
+    color: var(--brand-900);
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--brand-900);
+    border-radius: 50%;
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .hero-title {
+    font-size: 22px; font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .hero-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.9);
+  }
+
+  /* Pulse cards */
+  .pulse-board {
+    margin: -36px 12px 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: var(--shadow-md);
+    position: relative; z-index: 3;
+    border: 1px solid var(--brand-200);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .pb-item { text-align: center; }
+  .pb-icon {
+    width: 28px; height: 28px;
+    margin: 0 auto 4px;
+    background: var(--brand-100);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-700);
+  }
+  .pb-icon svg { width: 16px; height: 16px; }
+  .pb-icon.alert {
+    background: var(--brand-700);
+    color: white;
+    animation: pulse 1.4s infinite;
+  }
+  .pb-value {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .pb-value.deep { color: var(--brand-700); }
+  .pb-label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* Section tabs */
+  /* sticky 公共头(日期带 + Tabs) */
+  .sticky-head {
+    position: sticky; top: 0; z-index: 8;
+  }
+  .sticky-head.mingpai .today-bar {
+    background: linear-gradient(95deg, var(--brand-700) 0%, var(--brand-500) 50%, var(--brand-300) 100%);
+  }
+  .today-bar {
+    padding: 7px 14px;
+    color: white;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .today-bar .day {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .today-bar .day .num {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 2px;
+    line-height: 1;
+  }
+  .today-bar .divider {
+    width: 1px; height: 12px;
+    background: rgba(255,255,255,0.40);
+  }
+  .today-bar .label {
+    flex: 1;
+    opacity: 0.95;
+  }
+  .today-bar .badge {
+    background: rgba(255,255,255,0.22);
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+
+  .tabs-row {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+    padding: 0 16px;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-row::-webkit-scrollbar { display: none; }
+  .tab-link {
+    padding: 12px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    position: relative;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tab-link .count {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .tab-link.active {
+    color: var(--brand-700);
+    font-weight: 700;
+  }
+  .tab-link.active::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 0;
+    width: 24px; height: 3px;
+    background: linear-gradient(90deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+
+  /* Tab panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Intro / Rules 文档卡片 */
+  .doc-section {
+    margin: 4px 12px 0;
+  }
+  .doc-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 14px 14px;
+    margin-bottom: 10px;
+  }
+  .doc-hero {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFEED0 100%);
+    border: 1px solid var(--brand-200);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-hero::after {
+    content: '◆';
+    position: absolute;
+    right: -16px; bottom: -28px;
+    font-size: 110px;
+    color: rgba(255,213,79,0.35);
+  }
+  .doc-hero-tag {
+    display: inline-block;
+    background: var(--brand-700);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+  .doc-hero-title {
+    font-size: 17px; font-weight: 700;
+    color: var(--brand-900);
+    line-height: 1.35;
+    margin-bottom: 4px;
+    position: relative; z-index: 1;
+  }
+  .doc-hero-sub {
+    font-size: 12px;
+    color: var(--brand-900);
+    opacity: 0.78;
+    line-height: 1.5;
+    position: relative; z-index: 1;
+  }
+
+  .doc-block {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-block:last-child { border-bottom: 0; padding-bottom: 2px; }
+  .doc-block:first-child { padding-top: 2px; }
+  .doc-block-ico {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .doc-block-ico svg { width: 16px; height: 16px; }
+  .doc-block-body { flex: 1; min-width: 0; }
+  .doc-block-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .doc-block-title .pill {
+    font-size: 10px; font-weight: 700;
+    background: var(--brand-700);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .doc-block-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .doc-block-desc strong {
+    color: var(--brand-700);
+    font-weight: 700;
+  }
+
+  /* Rules list */
+  .doc-rules-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 6px 14px 10px;
+    margin-bottom: 10px;
+  }
+  .doc-rule {
+    display: flex; gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-rule:last-child { border-bottom: 0; }
+  .doc-rule-num {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-radius: 50%;
+    font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+    box-shadow: 0 1px 3px rgba(255,128,0,0.25);
+  }
+  .doc-rule-body { flex: 1; min-width: 0; }
+  .doc-rule-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .doc-rule-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .doc-rule-desc strong {
+    color: var(--brand-700);
+    font-weight: 700;
+  }
+  .doc-section-head {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    padding: 12px 4px 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .doc-section-head::before {
+    content: '';
+    width: 3px; height: 11px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .doc-tip {
+    margin: 4px 12px 12px;
+    padding: 10px 12px;
+    background: var(--brand-50);
+    border: 1px dashed var(--brand-200);
+    border-radius: 10px;
+    font-size: 11.5px;
+    color: var(--brand-900);
+    line-height: 1.5;
+    display: flex; gap: 6px;
+  }
+  .doc-tip svg {
+    width: 14px; height: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--brand-700);
+  }
+
+  /* 二级 sticky 容器(批次筛选 + 视图切换) */
+  .sub-bar {
+    position: sticky;
+    top: 80px;  /* today-bar (32) + tabs-row (~46) ≈ 78 + 安全 */
+    z-index: 6;
+    background: var(--bg-page);
+    padding-top: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 8px -4px rgba(0,0,0,0.05);
+  }
+  .sub-bar .batch-filter { padding-bottom: 4px; }
+
+  /* Batch filter */
+  .batch-filter {
+    padding: 0 12px 10px;
+    display: flex; gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .batch-filter::-webkit-scrollbar { display: none; }
+  .bf-chip {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 5px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text-secondary);
+  }
+  .bf-chip.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+    font-weight: 600;
+  }
+  .bf-chip.urgent {
+    background: var(--brand-700);
+    color: white;
+    border-color: var(--brand-700);
+    font-weight: 600;
+  }
+
+  /* 视图切换条 */
+  .view-toggle {
+    margin: 6px 12px 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+  }
+  .view-toggle .vt-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-right: 2px;
+  }
+  .view-toggle .vt-btn {
+    width: 30px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .view-toggle .vt-btn svg { width: 14px; height: 14px; }
+  .view-toggle .vt-btn:first-of-type { border-radius: 6px 0 0 6px; border-right: 0; }
+  .view-toggle .vt-btn:last-of-type  { border-radius: 0 6px 6px 0; }
+  .view-toggle .vt-btn.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+  }
+
+  /* Lot list - 单品独立 */
+  .lot-list {
+    padding: 0 12px;
+  }
+  /* Grid 模式 */
+  .lot-list.grid-mode {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .lot-list.grid-mode .lot {
+    display: block;
+    margin-bottom: 0;
+  }
+  .lot-list.grid-mode .lot-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    flex: none;
+  }
+  .lot-list.grid-mode .lot-info {
+    padding: 8px 10px 10px;
+  }
+  .lot-list.grid-mode .lot-tags { display: none; }       /* Grid 收纳:隐藏标签行 */
+  .lot-list.grid-mode .my-bid-strip { display: none; }   /* Grid 收纳:隐藏代理细条 */
+  .lot-list.grid-mode .upcoming-banner {
+    padding: 4px 6px;
+    font-size: 10px;
+    margin-top: 4px;
+  }
+  .lot-list.grid-mode .upcoming-banner .remind-btn {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+  .lot-list.grid-mode .lot-price-row {
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .lot-list.grid-mode .price-box {
+    width: 100%;
+    text-align: left !important;
+  }
+  .lot-list.grid-mode .price-box .label { font-size: 10px; }
+  .lot-list.grid-mode .price-box .value { font-size: 15px; }
+  .lot-list.grid-mode .price-status {
+    margin-top: 3px;
+    font-size: 10px;
+    padding: 1px 5px;
+  }
+  .lot-list.grid-mode .lot-bottom-row {
+    margin-top: 6px;
+    padding: 0;
+  }
+  .lot-list.grid-mode .countdown-mini { font-size: 11px; }
+  .lot-list.grid-mode .bid-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  .lot-list.grid-mode .lot-name {
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lot {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 10px;
+    display: flex;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .lot.ending {
+    background: var(--bg-card);
+    border: 0;
+  }
+  /* (v0.3:红色竖线已去除) */
+  .lot-img {
+    width: 130px; height: 130px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* (v0.3:.lot-tag-top / .batch-tag 已隐藏 — 拍品编号与批次不在列表显示) */
+  .lot-tag-top, .batch-tag { display: none !important; }
+  /* 收藏按钮:图片右上角 ♡ */
+  .star-btn {
+    position: absolute; top: 6px; right: 6px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    z-index: 2;
+  }
+  .star-btn.on { color: var(--danger); }
+  .star-btn svg { width: 15px; height: 15px; }
+  /* 图片底部:倒计时浮层 */
+  .img-countdown {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0));
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 14px 6px 6px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    z-index: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .img-countdown .lbl {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+  .img-countdown .t {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-weight: 700;
+  }
+  .img-countdown.urgent .t { color: #FF8A8A; animation: pulse 1.4s infinite; }
+  .img-countdown.upcoming .t { color: #93C5FD; }
+  .img-countdown.ended {
+    background: rgba(0,0,0,0.55);
+    color: rgba(255,255,255,0.78);
+    font-weight: 500;
+  }
+  .img-countdown.ended .t { color: rgba(255,255,255,0.78); font-family: inherit; font-weight: 500; }
+
+  .lot-info {
+    flex: 1;
+    padding: 10px 12px;
+    display: flex; flex-direction: column;
+    min-width: 0;
+  }
+  /* (v0.3:.lot-brand 已隐藏 — 列表只显示货品名称,品牌可融进名字首词) */
+  .lot-brand { display: none; }
+  .lot-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin: 0 0 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  /* (v0.3:.lot-tags 隐藏 — 列表只显示货品名称,鉴定/新旧标签下沉到详情页) */
+  .lot-tags { display: none !important; }
+
+  /* (v0.3) 失效样式:已结拍 + 流拍 整卡灰阶 */
+  .lot.ended-card {
+    filter: grayscale(0.45);
+    opacity: 0.78;
+  }
+  .lot.ended-card .lot-img { filter: grayscale(0.6); }
+  .lot.ended-card .img-countdown.ended {
+    background: rgba(0,0,0,0.62);
+  }
+  /* 结果徽章(已中拍 / 未中 / 流拍 → 浮在 lot-name 行) */
+  .ended-tag {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .ended-tag::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .ended-tag.won    { background: var(--success-bg); color: var(--success); }
+  .ended-tag.lost   { background: var(--bg-subtle); color: var(--text-tertiary); }
+  .ended-tag.flow   { background: var(--bg-subtle); color: var(--text-tertiary); }
+
+  /* 笔记 strip 在 lot 内的样式 */
+  .lot-note {
+    margin-top: 4px;
+    padding: 5px 8px;
+    background: var(--brand-50);
+    border: 1px dashed var(--brand-200);
+    border-radius: 5px;
+    font-size: 11px;
+    color: var(--brand-900);
+    display: flex; align-items: flex-start; gap: 5px;
+    line-height: 1.4;
+  }
+  .lot-note .nico {
+    color: var(--brand-700);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .lot-note .nico svg { width: 11px; height: 11px; }
+  .lot-note .ntxt { flex: 1; }
+  .lot-tags {
+    display: flex; gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .lot-tag {
+    font-size: 9px;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .lot-tag.cert { background: var(--brand-100); color: var(--brand-700); font-weight: 500; }
+
+  .lot-price-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-top: auto;
+    padding-top: 6px;
+    border-top: 0;
+  }
+  .price-box .label {
+    font-size: 10px; color: var(--text-tertiary);
+  }
+  .price-box .value {
+    font-size: 15px; font-weight: 700;
+    color: var(--brand-700);
+  }
+  .price-box .value::before { content: '¥'; font-size: 10px; }
+  .price-box.start .value { color: var(--text-secondary); font-weight: 600; }
+
+  /* 当前价旁状态徽章(标记是否当前用户出价 & 状态) */
+  .price-status {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .price-status svg { width: 11px; height: 11px; }
+  .ps-leading        { background: #DCFCE7; color: #15803D; }   /* 我领先(手动)*/
+  .ps-proxy-leading  { background: #EDE9FE; color: #6B46C1; }   /* 代理领先 */
+  .ps-outbid         { background: #FEE2E2; color: #B91C1C; }   /* 我被超 */
+  .ps-proxy-out      { background: #FEE2E2; color: #B91C1C; border: 1px dashed #FCA5A5; }  /* 代理被超 */
+  .ps-mine           { background: #FEF3C7; color: #92400E; }   /* 我已出价但非最高 */
+  .ps-none           { background: var(--bg-subtle); color: var(--text-tertiary); }  /* 未参与 */
+  .ps-won            { background: #DCFCE7; color: #15803D; }   /* 已中拍 */
+  .ps-reserve-met    { background: #DCFCE7; color: #15803D; }   /* 已达保留价 */
+  .ps-reserve-not    { background: var(--bg-subtle); color: var(--text-tertiary); }
+
+  /* 即将开拍预告卡 - 增强 */
+  .lot.upcoming .lot-img {
+    background: linear-gradient(135deg, #E8EAF6, #C5CAE9);
+  }
+  .lot.upcoming .upcoming-banner {
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: linear-gradient(95deg, #EEF2FF, #E0E7FF);
+    border: 1px solid #C7D2FE;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: #4338CA;
+  }
+  .lot.upcoming .upcoming-banner svg { width: 13px; height: 13px; }
+  .lot.upcoming .upcoming-banner b { color: #312E81; font-weight: 700; }
+  .lot.upcoming .remind-btn {
+    background: #4338CA;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(67,56,202,0.25);
+  }
+  .lot.upcoming .remind-btn.on {
+    background: #DCFCE7;
+    color: #15803D;
+    box-shadow: none;
+  }
+
+  .lot-bottom-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 0;
+  }
+  /* (v0.3:.countdown-mini 已下沉到图片浮层 .img-countdown,bot-row 不再显示倒计时) */
+  .countdown-mini {
+    display: none !important;
+  }
+  .countdown-mini svg { width: 12px; height: 12px; color: var(--brand-700); }
+  .countdown-mini .time {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-weight: 600;
+    color: var(--brand-700);
+  }
+  .countdown-mini.urgent .time {
+    color: var(--danger);
+    animation: pulse 1.4s infinite;
+  }
+  .bid-btn {
+    padding: 5px 12px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 12px; font-weight: 700;
+    border-radius: 14px;
+    border: none;
+    display: flex; align-items: center; gap: 3px;
+    box-shadow: 0 2px 4px rgba(255,128,0,0.25);
+  }
+  .bid-btn svg { width: 11px; height: 11px; }
+
+  .my-bid-strip {
+    background: transparent;
+    color: var(--brand-700);
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 0 0;
+    margin-top: 4px;
+    border-radius: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 8px;
+  }
+  .my-bid-strip .agent {
+    font-size: 10px; font-weight: 500;
+    color: var(--brand-700);
+  }
+  .delay-tag {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--danger);
+    color: white;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 2;
+    animation: pulse 1.4s infinite;
+  }
+
+  /* 批次预告区 */
+  .batch-preview-section {
+    margin: 18px 12px 12px;
+  }
+  .bps-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px 10px;
+  }
+  .bps-title {
+    font-size: 15px; font-weight: 700;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .bps-title::before {
+    content: '';
+    width: 3px; height: 14px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .bps-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .bps-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .bps-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bps-card.live {
+    opacity: 0.6;
+    background: var(--bg-subtle);
+  }
+  .bps-card.upcoming {
+    border: 1.5px solid var(--brand-300);
+    background: linear-gradient(135deg, #FFF8E1 0%, var(--bg-card) 70%);
+  }
+  .bps-time {
+    display: flex; align-items: baseline; gap: 4px;
+    margin-bottom: 6px;
+  }
+  .bps-hour {
+    font-size: 22px; font-weight: 800;
+    color: var(--brand-700);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .bps-card.live .bps-hour { color: var(--text-tertiary); }
+  .bps-state {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .bps-state.ongoing {
+    background: var(--text-tertiary);
+    color: white;
+  }
+  .bps-state.next {
+    background: var(--brand-700);
+    color: white;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .bps-state.next::before {
+    content: '';
+    width: 5px; height: 5px;
+    background: #FFD54F;
+    border-radius: 50%;
+    animation: pulse 1.4s infinite;
+  }
+  .bps-count {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .bps-count strong {
+    font-size: 18px;
+    color: var(--brand-700);
+    font-weight: 800;
+  }
+  .bps-card.live .bps-count strong { color: var(--text-tertiary); }
+  .bps-cd {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .bps-cd strong {
+    color: var(--brand-700);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .bps-btn {
+    width: 100%;
+    padding: 7px;
+    border-radius: 14px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .bps-btn.disabled {
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+  }
+  .bps-btn.book {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    box-shadow: 0 2px 4px rgba(255,128,0,0.25);
+  }
+
+  /* Sticky bottom */
+  .sticky-bar {
+    position: absolute;
+    bottom: 60px; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  }
+  .bond-info {
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+  .bond-info .label { font-size: 10px; color: var(--text-tertiary); }
+  .bond-info .value {
+    font-size: 14px; font-weight: 700;
+    color: var(--brand-700);
+  }
+  .bond-info .value::before { content: '¥'; font-size: 10px; }
+  .bond-info .value .checked {
+    font-size: 11px; color: var(--success);
+    margin-left: 2px;
+  }
+  .my-count {
+    flex: 1;
+    display: flex; gap: 12px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding-left: 8px;
+  }
+  .my-count .num {
+    color: var(--brand-700);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .agent-btn {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 13px; font-weight: 700;
+    border-radius: 18px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(255,128,0,0.3);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .agent-btn svg { width: 12px; height: 12px; }
+
+  /* 右下角浮动按钮组(我的竞拍 / 分享) */
+  .fab-stack {
+    position: absolute;
+    right: 14px; bottom: 78px;  /* 60px tabbar + 18 间距 */
+    display: flex; flex-direction: column;
+    gap: 10px;
+    z-index: 5;
+  }
+  .fab {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    position: relative;
+    color: var(--text-primary);
+  }
+  .fab svg { width: 18px; height: 18px; }
+  .fab .lbl {
+    font-size: 9px;
+    color: var(--text-secondary);
+    margin-top: 1px;
+    font-weight: 500;
+  }
+  .fab.primary {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(230,81,0,0.30);
+  }
+  .fab.primary .lbl { color: rgba(255,255,255,0.95); }
+  .fab .badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 18px; height: 18px;
+    padding: 0 5px;
+    background: var(--danger);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg-card);
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="hero">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+      </div>
+
+      <div class="hero-nav">
+        <div class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="hero-spacer"></div>
+        <div class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+      </div>
+
+      <div class="hero-content">
+        <span class="hero-tag">2026/05/12 · 进行中</span>
+        <div class="hero-title">今日明拍 · 进行中</div>
+        <div class="hero-sub">已上拍 32 件 · 正在出价 47 件 · 即将截拍 12 件</div>
+      </div>
+    </div>
+
+    <!-- Pulse board -->
+    <div class="pulse-board">
+      <div class="pb-item">
+        <div class="pb-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="pb-value">60</div>
+        <div class="pb-label">今日总数</div>
+      </div>
+      <div class="pb-item">
+        <div class="pb-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <div class="pb-value">28</div>
+        <div class="pb-label">即将开拍</div>
+      </div>
+      <div class="pb-item">
+        <div class="pb-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="pb-value deep">32</div>
+        <div class="pb-label">正在出价</div>
+      </div>
+      <div class="pb-item">
+        <div class="pb-icon alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="pb-value deep">12</div>
+        <div class="pb-label">即将截拍</div>
+      </div>
+    </div>
+
+    <!-- sticky 公共头(日期带 + Tabs)-->
+    <div class="sticky-head mingpai">
+      <div class="today-bar">
+        <span class="day">2026 / 5 / <span class="num">13</span></span>
+        <span class="divider"></span>
+        <span class="label">周三</span>
+        <span class="badge">每件独立结拍</span>
+      </div>
+      <!-- Tabs -->
+      <div class="tabs-row">
+        <div class="tab-link active" data-tab="catalog">拍品图录<span class="count">60</span></div>
+        <div class="tab-link" data-tab="intro">明拍介绍</div>
+        <div class="tab-link" data-tab="rules">拍卖规则</div>
+      </div>
+    </div>
+
+    <!-- Tab 1: 拍品图录 -->
+    <div class="tab-panel active" data-panel="catalog">
+
+    <!-- 二级 sticky:筛选 + 视图切换 -->
+    <div class="sub-bar">
+      <!-- Batch filter -->
+      <div class="batch-filter">
+        <div class="bf-chip active">全部 60</div>
+        <div class="bf-chip">竞价中 28</div>
+        <div class="bf-chip urgent">即将结拍 12</div>
+        <div class="bf-chip">即将开拍 2</div>
+        <div class="bf-chip">已结束 18</div>
+      </div>
+
+      <!-- 视图切换 -->
+      <div class="view-toggle">
+        <span class="vt-label">视图</span>
+        <button class="vt-btn active" id="vtList" title="通栏列表">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <button class="vt-btn" id="vtGrid" title="Grid 网格">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Lot list -->
+    <div class="lot-list" id="lotList">
+
+      <!-- 即将结拍 + 我代理领先 -->
+      <div class="lot ending">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown urgent">
+            <span class="lbl">距结拍</span>
+            <span class="t" id="lot1cd">00:04:12</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-brand">HERMÈS</div>
+          <div class="lot-name">Birkin 25 Gold Togo PHW · 2023 全套</div>
+          <div class="lot-tags">
+            <span class="lot-tag cert">官方鉴定</span>
+            <span class="lot-tag">9.5 新</span>
+          </div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">当前价</div>
+              <div class="value">72,500</div>
+              <span class="price-status ps-proxy-leading">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+                我代理领先
+              </span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 68,000</div>
+            </div>
+          </div>
+          <div class="my-bid-strip">
+            <span>我代理出价 上限 ¥ 90,000</span>
+            <span class="agent">系统自动加价中</span>
+          </div>
+          <div class="lot-bottom-row">
+            <span class="countdown-mini urgent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time" id="lot1cd">00:04:12</span>
+            </span>
+            <button class="bid-btn">
+              出价 ›
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 竞价中 -->
+      <div class="lot">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown">
+            <span class="lbl">距结拍</span>
+            <span class="t" id="lot2cd">00:38:24</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-brand">ROLEX</div>
+          <div class="lot-name">Daytona 116500LN 熊猫盘</div>
+          <div class="lot-tags">
+            <span class="lot-tag cert">官方鉴定</span>
+            <span class="lot-tag">98 新</span>
+            <span class="lot-tag">原票</span>
+          </div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">当前价</div>
+              <div class="value">252,000</div>
+              <span class="price-status ps-none">未参与</span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 240,000</div>
+            </div>
+          </div>
+          <div class="lot-bottom-row">
+            <span class="countdown-mini">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time" id="lot2cd">00:38:24</span>
+            </span>
+            <button class="bid-btn">出价 ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 即将开拍 1 (今日 16:00) -->
+      <div class="lot upcoming">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown upcoming">
+            <span class="lbl">距开拍</span>
+            <span class="t">02:14:33</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-brand">CARTIER</div>
+          <div class="lot-name">蓝气球 36mm 钢带 自动机芯 全套</div>
+          <div class="lot-tags">
+            <span class="lot-tag cert">GIA</span>
+            <span class="lot-tag">95 新</span>
+          </div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">起拍价</div>
+              <div class="value">35,000</div>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">开拍</div>
+              <div class="value" style="font-size:13px;color:var(--upcoming);">今日 16:00</div>
+            </div>
+          </div>
+          <div class="upcoming-banner">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              开拍时间 <b>今日 16:00</b>
+            </span>
+            <button class="remind-btn">+ 提醒我</button>
+          </div>
+          <div class="lot-bottom-row" style="margin-top:6px;">
+            <span style="font-size:11px;color:var(--text-tertiary);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;vertical-align:-2px;margin-right:3px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              加笔记
+            </span>
+            <span style="font-size:11px;color:#4338CA;font-weight:600;">收藏 ›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 即将开拍 2 (明日 14:00) -->
+      <div class="lot upcoming">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown upcoming">
+            <span class="lbl">距开拍</span>
+            <span class="t">22:14:33</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-brand">LOUIS VUITTON</div>
+          <div class="lot-name">Capucines MM 山羊皮 限量配色</div>
+          <div class="lot-tags">
+            <span class="lot-tag cert">官方鉴定</span>
+            <span class="lot-tag">99 新</span>
+          </div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">起拍价</div>
+              <div class="value">52,000</div>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">开拍</div>
+              <div class="value" style="font-size:13px;color:var(--upcoming);">明日 14:00</div>
+            </div>
+          </div>
+          <div class="upcoming-banner">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              开拍时间 <b>明日 14:00</b>
+            </span>
+            <button class="remind-btn on">✓ 已提醒</button>
+          </div>
+          <div class="lot-bottom-row" style="margin-top:6px;">
+            <span style="font-size:11px;color:var(--brand-700);">
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px;vertical-align:-2px;margin-right:3px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>
+              我的笔记:<i>关注 limited 配色,预计 65k 拿下</i>
+            </span>
+            <span style="font-size:11px;color:#4338CA;font-weight:600;">已收藏 ›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 即将结拍 + 我被超 -->
+      <div class="lot ending">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown urgent">
+            <span class="lbl">距结拍</span>
+            <span class="t">00:02:35</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-brand">CHANEL</div>
+          <div class="lot-name">Classic Flap CF25 黑色金扣</div>
+          <div class="lot-tags">
+            <span class="lot-tag cert">官方鉴定</span>
+            <span class="lot-tag">8.5 新</span>
+          </div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">当前价</div>
+              <div class="value">42,500</div>
+              <span class="price-status ps-proxy-out">⚠ 代理被超</span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 38,000</div>
+            </div>
+          </div>
+          <div class="my-bid-strip" style="color:var(--danger);">
+            <span>⚠ 我的代理上限 ¥ 42,000 · 已被超过</span>
+            <span style="color:var(--danger);">需要提价</span>
+          </div>
+          <div class="lot-bottom-row">
+            <span class="countdown-mini urgent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time">00:02:35</span>
+            </span>
+            <button class="bid-btn">出价 ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 竞价中 + 我被超 -->
+      <div class="lot">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown">
+            <span class="lbl">距结拍</span>
+            <span class="t">00:42:18</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-brand">VAN CLEEF &amp; ARPELS</div>
+          <div class="lot-name">Vintage Alhambra 五花项链 18K 玫瑰金</div>
+          <div class="lot-tags">
+            <span class="lot-tag cert">NGTC</span>
+            <span class="lot-tag">99 新</span>
+          </div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">当前价</div>
+              <div class="value">45,000</div>
+              <span class="price-status ps-outbid">我被超</span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 42,000</div>
+            </div>
+          </div>
+          <div class="my-bid-strip" style="color:var(--danger);">
+            <span>我手动出价 ¥ 43,500 · 被超</span>
+            <span style="color:var(--danger);">需加价</span>
+          </div>
+          <div class="lot-bottom-row">
+            <span class="countdown-mini">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="time">00:42:18</span>
+            </span>
+            <button class="bid-btn">出价 ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已结拍·已中拍 + 笔记 组合样式 -->
+      <div class="lot ended-card">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown ended">
+            <span class="lbl">已结拍</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-name"><span class="ended-tag won">已中拍</span>Speedy 30 Monogram 经典款 全套</div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">中拍价</div>
+              <div class="value">4,200</div>
+              <span class="price-status ps-won">恭喜中拍</span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 2,800</div>
+            </div>
+          </div>
+          <div class="lot-note">
+            <span class="nico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
+            <span class="ntxt">老花 Speedy 经典款 · 等回家自留 — 已自动加入购物袋</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已结拍·未中 + 笔记 组合样式 -->
+      <div class="lot ended-card">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown ended">
+            <span class="lbl">已结拍</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-name"><span class="ended-tag lost">未中拍</span>Datejust 36 银盘三珠链带</div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">成交价</div>
+              <div class="value" style="color:var(--text-secondary);">48,500</div>
+              <span class="price-status ps-none">我最高 ¥42,000 · 差 ¥6,500</span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 35,000</div>
+            </div>
+          </div>
+          <div class="lot-note">
+            <span class="nico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
+            <span class="ntxt">银盘成色一般 · 上限 4.2 万不再加 — 下次再战</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已结拍·流拍 组合样式 -->
+      <div class="lot ended-card">
+        <div class="lot-img">
+          ◆
+          <span class="star-btn on">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <div class="img-countdown ended">
+            <span class="lbl">已结拍</span>
+          </div>
+        </div>
+        <div class="lot-info">
+          <div class="lot-name"><span class="ended-tag flow">流拍</span>Galleria 中号手提包 黑色 Saffiano</div>
+          <div class="lot-price-row">
+            <div class="price-box">
+              <div class="label">最高出价</div>
+              <div class="value" style="color:var(--text-secondary);">12,800</div>
+              <span class="price-status ps-none">未达起拍价</span>
+            </div>
+            <div class="price-box start" style="text-align:right;">
+              <div class="label">起拍价</div>
+              <div class="value">¥ 15,000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    </div>
+    <!-- /tab-panel catalog -->
+
+    <!-- Tab 2: 明拍介绍 -->
+    <div class="tab-panel" data-panel="intro">
+      <div class="doc-section">
+        <div class="doc-hero">
+          <span class="doc-hero-tag">明拍 · MINGPAI</span>
+          <div class="doc-hero-title">透明竞价 · 价高者得</div>
+          <div class="doc-hero-sub">所有人可见当前最高价与加价记录，结拍时间统一，竞争充分。适合判断行情、抢稀缺好货。</div>
+        </div>
+
+        <div class="doc-card">
+          <div class="doc-block">
+            <div class="doc-block-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="doc-block-body">
+              <div class="doc-block-title">什么是明拍</div>
+              <div class="doc-block-desc">公开透明的竞价模式。所有商家在同一时间窗口内对同一件拍品出价，<strong>当前最高价、出价者代号、加价记录全部公开可见</strong>。</div>
+            </div>
+          </div>
+
+          <div class="doc-block">
+            <div class="doc-block-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+            </div>
+            <div class="doc-block-body">
+              <div class="doc-block-title">明拍 vs 暗拍</div>
+              <div class="doc-block-desc">暗拍是封闭出价，仅看自己；<strong>明拍可见全场动态</strong>：当前价、出价手数、加价幅度都透明。出价节奏快、需实时跟进。</div>
+            </div>
+          </div>
+
+          <div class="doc-block">
+            <div class="doc-block-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="doc-block-body">
+              <div class="doc-block-title">上新与结拍 <span class="pill">每件独立</span></div>
+              <div class="doc-block-desc">每件商品<strong>独立开拍与结拍时间</strong>,无统一批次。预告期可看货 + 收藏 + 设代理上限,到开拍时间正式进入竞价,到结拍时间(含延时)自动落槌。</div>
+            </div>
+          </div>
+
+          <div class="doc-block">
+            <div class="doc-block-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="doc-block-body">
+              <div class="doc-block-title">代理出价机制</div>
+              <div class="doc-block-desc">设置一个 <strong>最高心理价</strong>（仅自己可见），系统按平台加价幅度 <strong>逐手</strong>替您出价 —— 始终只比当前对手高 1 手，<strong>未触及上限不会一次报出</strong>。</div>
+            </div>
+          </div>
+
+          <div class="doc-block">
+            <div class="doc-block-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 13 10 21 10"/><path d="M21 13.1A8.5 8.5 0 1 1 10.9 3"/></svg>
+            </div>
+            <div class="doc-block-body">
+              <div class="doc-block-title">2 → 5 分延时机制</div>
+              <div class="doc-block-desc">单品结拍前 <strong>2 分钟内</strong>有新出价，结拍时间自动<strong>顺延 5 分钟</strong>，给所有人公平响应空间；无新出价则按时结拍。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-tip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>建议商家先看历史成交参考，<strong>设代理上限</strong>更省心，不必盯到结拍。</span>
+        </div>
+      </div>
+    </div>
+    <!-- /tab-panel intro -->
+
+    <!-- Tab 3: 拍卖规则 -->
+    <div class="tab-panel" data-panel="rules">
+      <div class="doc-section">
+        <div class="doc-hero">
+          <span class="doc-hero-tag">RULES · 7 条核心</span>
+          <div class="doc-hero-title">参拍前请阅读完整规则</div>
+          <div class="doc-hero-sub">所有中拍订单即视为已同意以下条款，违约将按规则扣除保证金并记录信用。</div>
+        </div>
+
+        <div class="doc-section-head">竞价规则</div>
+        <div class="doc-rules-card">
+          <div class="doc-rule">
+            <div class="doc-rule-num">1</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">加价幅度</div>
+              <div class="doc-rule-desc">由平台按价位段统一设定（如基础加价 <strong>¥500 / ¥1,000 / ¥2,000</strong>），不同档位拍品对应不同加价幅度，单品页明示。</div>
+            </div>
+          </div>
+          <div class="doc-rule">
+            <div class="doc-rule-num">2</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">代理出价</div>
+              <div class="doc-rule-desc">设置上限后系统自动应战，<strong>仅比当前对手高 1 手</strong>。代理上限平台不公开，未达上限前不会一次报出。</div>
+            </div>
+          </div>
+          <div class="doc-rule">
+            <div class="doc-rule-num">3</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">5 分钟延时</div>
+              <div class="doc-rule-desc">结拍前 <strong>2 分钟内</strong>有新出价，本件自动延时 <strong>5 分钟</strong>；无新出价则按时结拍。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-section-head">付款与违约</div>
+        <div class="doc-rules-card">
+          <div class="doc-rule">
+            <div class="doc-rule-num">4</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">付款时限</div>
+              <div class="doc-rule-desc">中拍后 <strong>4 小时</strong>内付款（购物车独立倒计时），同一会话可合并支付保证金一次性结算。</div>
+            </div>
+          </div>
+          <div class="doc-rule">
+            <div class="doc-rule-num">5</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">超时违约</div>
+              <div class="doc-rule-desc">逾期未付按商品金额 <strong>1%</strong> 扣除保证金（最低 <strong>¥100</strong>，最高 <strong>¥2,000</strong>），并记录信用 1 次。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-section-head">售后与流拍</div>
+        <div class="doc-rules-card">
+          <div class="doc-rule">
+            <div class="doc-rule-num">6</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">7 天质保 · 鉴定保障</div>
+              <div class="doc-rule-desc">商品支持 <strong>7 天质保</strong>，鉴定结论不符可申请退货，运费由平台承担。</div>
+            </div>
+          </div>
+          <div class="doc-rule">
+            <div class="doc-rule-num">7</div>
+            <div class="doc-rule-body">
+              <div class="doc-rule-title">流拍处理</div>
+              <div class="doc-rule-desc">未达起拍价或无人出价的商品，平台保留<strong>转入下一批 / 下调起拍 / 转销售渠道</strong>等处理权。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-tip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>完整版本及最新调整以平台公告为准，发生争议时以平台仲裁为最终判定。</span>
+        </div>
+      </div>
+    </div>
+    <!-- /tab-panel rules -->
+
+    <!-- 右下角浮动按钮组 -->
+    <div class="fab-stack">
+      <div class="fab primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="lbl">我的竞拍</span>
+        <span class="badge">3</span>
+      </div>
+      <div class="fab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span class="lbl">分享</span>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // Tab 切换
+  (function() {
+    const tabs = document.querySelectorAll('.tab-link[data-tab]');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        const key = t.getAttribute('data-tab');
+        tabs.forEach(x => x.classList.toggle('active', x === t));
+        panels.forEach(p => p.classList.toggle('active', p.getAttribute('data-panel') === key));
+        // 切换 Tab 时滚到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  })();
+  // 个体倒计时（示意）
+  (function() {
+    let t1 = 4*60 + 12;
+    setInterval(() => {
+      t1 = Math.max(0, t1 - 1);
+      const m = String(Math.floor(t1/60)).padStart(2,'0');
+      const s = String(t1%60).padStart(2,'0');
+      const el = document.getElementById('lot1cd');
+      if (el) el.textContent = `00:${m}:${s}`;
+    }, 1000);
+  })();
+  // 16:00 批次倒计时
+  (function() {
+    let total = 2*3600 + 14*60 + 33;
+    const el = document.getElementById('bpsCd');
+    if (!el) return;
+    setInterval(() => {
+      total = Math.max(0, total - 1);
+      const h = String(Math.floor(total/3600)).padStart(2,'0');
+      const m = String(Math.floor((total%3600)/60)).padStart(2,'0');
+      const s = String(total%60).padStart(2,'0');
+      el.textContent = `${h}:${m}:${s}`;
+    }, 1000);
+  })();
+
+  // 视图切换:List vs Grid
+  (function() {
+    const list = document.getElementById('lotList');
+    const btnList = document.getElementById('vtList');
+    const btnGrid = document.getElementById('vtGrid');
+    if (!list || !btnList || !btnGrid) return;
+    btnList.addEventListener('click', () => {
+      list.classList.remove('grid-mode');
+      btnList.classList.add('active');
+      btnGrid.classList.remove('active');
+    });
+    btnGrid.addEventListener('click', () => {
+      list.classList.add('grid-mode');
+      btnGrid.classList.add('active');
+      btnList.classList.remove('active');
+    });
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

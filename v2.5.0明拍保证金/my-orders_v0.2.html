@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 我的订单 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF0E0;
+    --success: #2F855A; --success-bg: #E6F4EA;
+    --warning: #C05621; --warning-bg: #FFF4E5;
+    --danger: #C53030; --danger-bg: #FFF1F0;
+    --info: #2B6CB0; --info-bg: #EBF4FB;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-page);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-page);
+  }
+  .nav-back {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -4px;
+    color: var(--text-primary);
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; font-size: 17px; font-weight: 600;
+    color: var(--text-primary);
+  }
+  .nav-act {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .nav-act svg { width: 22px; height: 22px; }
+
+  /* Tabs (sticky) */
+  .order-tabs {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0 14px;
+    display: flex;
+    gap: 18px;
+    position: sticky; top: 0; z-index: 5;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .order-tabs::-webkit-scrollbar { display: none; }
+  .o-tab {
+    padding: 12px 0 11px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 4px;
+    flex-shrink: 0;
+  }
+  .o-tab .count {
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 0 5px;
+    border-radius: 8px;
+    min-width: 16px;
+    height: 15px;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .o-tab.active {
+    color: var(--brand-700);
+    font-weight: 700;
+  }
+  .o-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: -1px;
+    width: 24px; height: 3px;
+    background: linear-gradient(90deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+
+  /* Rule strip */
+  .rule-strip {
+    margin: 10px 12px 0;
+    padding: 8px 12px;
+    background: var(--brand-100);
+    border: 1px solid var(--brand-200);
+    border-radius: 8px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    color: var(--brand-900);
+  }
+  .rule-strip .ico {
+    width: 14px; height: 14px;
+    color: var(--brand-700);
+    flex-shrink: 0;
+  }
+  .rule-strip strong { color: var(--brand-700); font-weight: 700; }
+  .rule-strip.warn {
+    background: var(--warning-bg);
+    border-color: rgba(192,86,33,0.20);
+    color: var(--warning);
+  }
+  .rule-strip.warn .ico { color: var(--warning); }
+
+  /* List */
+  .list { padding: 10px 12px 0; }
+
+  /* Order card */
+  .order {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  /* (v0.3:订单不再用红框/红边 — 超时提示集中到顶部 banner) */
+  .order.urgent {
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .order.refunded {
+    opacity: 0.88;
+  }
+
+  /* Order head: 订单号 + 状态 + 来源 */
+  .order-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .order-no {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', Menlo, monospace;
+    flex-shrink: 0;
+  }
+  .head-right {
+    display: flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .source-pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: white;
+  }
+  .source-pill.mingpai { background: var(--mingpai-deep); }
+  .source-pill.anpai { background: var(--anpai-orange); }
+  .source-pill.live { background: var(--live-red); }
+
+  .status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .status-pill.pay { background: var(--danger); color: white; }
+  .status-pill.ship { background: var(--brand-700); color: white; }
+  .status-pill.receive { background: var(--info); color: white; }
+  .status-pill.done { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+  .status-pill.refund { background: var(--bg-subtle); color: var(--text-tertiary); border: 1px solid var(--border-strong); }
+
+  /* Body */
+  .order-body {
+    display: flex;
+    padding: 12px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .order-img {
+    width: 80px; height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 28px;
+  }
+  .order.refunded .order-img {
+    filter: grayscale(70%);
+    opacity: 0.7;
+  }
+  .order-info {
+    flex: 1;
+    min-width: 0;
+    display: flex; flex-direction: column;
+    line-height: 1.3;
+  }
+  .order-brand {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .order-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 1px 0 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .order-tags {
+    display: flex; gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .tag-sm {
+    font-size: 9px;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .tag-sm.cert { background: var(--brand-100); color: var(--brand-700); font-weight: 500; }
+  .order-price {
+    margin-top: auto;
+    padding-top: 4px;
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .order-price .pl {
+    font-size: 10px;
+    color: var(--text-tertiary);
+  }
+  .order-price .pv {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand-700);
+  }
+  .order-price .pv::before { content: '¥'; font-size: 11px; font-weight: 600; margin-right: 1px; }
+  .order.refunded .order-price .pv {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+    font-size: 15px;
+  }
+
+  /* Status detail strip */
+  .status-detail {
+    padding: 8px 12px;
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .status-detail .left {
+    display: flex; align-items: center; gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .status-detail .left svg {
+    width: 13px; height: 13px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .status-detail.urgent {
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+  .status-detail.urgent .left svg { color: var(--danger); }
+  .status-detail .cd {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-weight: 700;
+    color: var(--danger);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .status-detail.warm {
+    background: var(--warning-bg);
+    color: var(--warning);
+  }
+  .status-detail.warm .left svg { color: var(--warning); }
+  .status-detail.warm .cd {
+    color: var(--brand-700);
+  }
+  .status-detail.success {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  .status-detail.success .left svg { color: var(--success); }
+  .status-detail.info {
+    background: var(--info-bg);
+    color: var(--info);
+  }
+  .status-detail.info .left svg { color: var(--info); }
+
+  /* Action row */
+  .act-row {
+    display: flex; gap: 8px; justify-content: flex-end;
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .act-btn {
+    padding: 7px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  }
+  .act-btn.primary {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(255,128,0,0.25);
+  }
+  .act-btn.primary-fill {
+    background: var(--brand-700);
+    color: white;
+    border-color: var(--brand-700);
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(230,81,0,0.3);
+  }
+  .act-btn.danger-fill {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(197,48,48,0.3);
+  }
+  .act-btn.brand-light {
+    background: var(--brand-100);
+    color: var(--brand-700);
+    border-color: var(--brand-200);
+    font-weight: 600;
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <div class="navbar">
+      <div class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">我的订单</div>
+      <div class="nav-act">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="order-tabs">
+      <div class="o-tab active">全部</div>
+      <div class="o-tab">待付款<span class="count">2</span></div>
+      <div class="o-tab">待发货<span class="count">5</span></div>
+      <div class="o-tab">待收货<span class="count">3</span></div>
+      <div class="o-tab">已完成</div>
+      <div class="o-tab">退款售后</div>
+    </div>
+
+    <!-- 顶部统一提示(v0.3:超时扣保证金集中在此 — 列表卡不再重复) -->
+    <div class="rule-strip warn">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>订单超时未付款取消，将按规则扣除保证金</div>
+    </div>
+
+    <!-- List -->
+    <div class="list">
+
+      <!-- 1: 待付款 · 暗拍 · 紧急 -->
+      <div class="order urgent">
+        <div class="order-head">
+          <span class="order-no">OD20260511004</span>
+          <span class="head-right">
+            <span class="source-pill anpai">暗拍</span>
+            <span class="status-pill pay">待付款</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">CHANEL</div>
+            <div class="order-name">Classic Flap CF25 Caviar 黑色金扣</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">官方鉴定</span>
+              <span class="tag-sm">8.5 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">中拍价</span>
+              <span class="pv">42,500</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail urgent">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>付款倒计时</span>
+          </span>
+          <span class="cd" data-cd="00:18:23">00:18:23</span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">查看详情</button>
+          <button class="act-btn danger-fill">立即支付</button>
+        </div>
+      </div>
+
+      <!-- 2: 待付款 · 明拍 · 倒计时充裕 -->
+      <div class="order">
+        <div class="order-head">
+          <span class="order-no">OD20260511008</span>
+          <span class="head-right">
+            <span class="source-pill mingpai">明拍</span>
+            <span class="status-pill pay">待付款</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">HERMÈS</div>
+            <div class="order-name">Birkin 25 Gold Togo PHW · 2023 全套</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">官方鉴定</span>
+              <span class="tag-sm">9.5 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">中拍价</span>
+              <span class="pv">72,500</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail warm">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>付款倒计时</span>
+          </span>
+          <span class="cd" data-cd="03:45:12">03:45:12</span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">查看详情</button>
+          <button class="act-btn primary">立即支付</button>
+        </div>
+      </div>
+
+      <!-- 3: 待发货 · 直播 -->
+      <div class="order">
+        <div class="order-head">
+          <span class="order-no">OD20260511LV03</span>
+          <span class="head-right">
+            <span class="source-pill live">直播</span>
+            <span class="status-pill ship">待发货</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">LOUIS VUITTON</div>
+            <div class="order-name">Speedy 30 Monogram 经典款 全套</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">官方鉴定</span>
+              <span class="tag-sm">9 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">已支付</span>
+              <span class="pv">4,200</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail info">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span>已支付 1h 前 · 商家备货中</span>
+          </span>
+          <span>沪上中古集</span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">订单详情</button>
+          <button class="act-btn brand-light">联系商家</button>
+        </div>
+      </div>
+
+      <!-- 4: 待发货 · 明拍 -->
+      <div class="order">
+        <div class="order-head">
+          <span class="order-no">OD20260511002</span>
+          <span class="head-right">
+            <span class="source-pill mingpai">明拍</span>
+            <span class="status-pill ship">待发货</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">ROLEX</div>
+            <div class="order-name">Daytona 116500LN 白盘陶瓷圈</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">官方鉴定</span>
+              <span class="tag-sm">98 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">已支付</span>
+              <span class="pv">252,000</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail info">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span>已支付 12h 前 · 等待发货</span>
+          </span>
+          <span>京都中古工坊</span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">订单详情</button>
+          <button class="act-btn brand-light">联系商家</button>
+        </div>
+      </div>
+
+      <!-- 5: 待收货 · 暗拍 -->
+      <div class="order">
+        <div class="order-head">
+          <span class="order-no">OD20260510023</span>
+          <span class="head-right">
+            <span class="source-pill anpai">暗拍</span>
+            <span class="status-pill receive">待收货</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">GUCCI</div>
+            <div class="order-name">GG Marmont 中号链条包 黑色</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">官方鉴定</span>
+              <span class="tag-sm">8.5 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">已支付</span>
+              <span class="pv">3,200</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail info">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>顺丰运输中 · 预计明日送达</span>
+          </span>
+          <span>SF1234567890</span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">订单详情</button>
+          <button class="act-btn primary">查看物流</button>
+        </div>
+      </div>
+
+      <!-- 6: 已完成 · 暗拍 · 7 天质保中 -->
+      <div class="order">
+        <div class="order-head">
+          <span class="order-no">OD20260504018</span>
+          <span class="head-right">
+            <span class="source-pill anpai">暗拍</span>
+            <span class="status-pill done">已完成</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">HERMÈS</div>
+            <div class="order-name">Birkin 30 Etoupe Togo PHW · 2022 全套</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">官方鉴定</span>
+              <span class="tag-sm">9 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">已签收</span>
+              <span class="pv">68,000</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail success">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>已签收 5/9 · 7 天质保中，剩 2 天</span>
+          </span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">订单详情</button>
+          <button class="act-btn">申请售后</button>
+          <button class="act-btn primary">评价</button>
+        </div>
+      </div>
+
+      <!-- 7: 已完成 · 明拍 · 已超质保 -->
+      <div class="order">
+        <div class="order-head">
+          <span class="order-no">OD20260411055</span>
+          <span class="head-right">
+            <span class="source-pill mingpai">明拍</span>
+            <span class="status-pill done">已完成</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">CARTIER</div>
+            <div class="order-name">蓝气球 33mm 玫瑰金钢带</div>
+            <div class="order-tags">
+              <span class="tag-sm cert">GIA</span>
+              <span class="tag-sm">95 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl">已签收</span>
+              <span class="pv">35,000</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>已签收 30 天 · 质保期已结束</span>
+          </span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">订单详情</button>
+          <button class="act-btn brand-light">再次购买类似</button>
+        </div>
+      </div>
+
+      <!-- 8: 已退款 · 直播 -->
+      <div class="order refunded">
+        <div class="order-head">
+          <span class="order-no" style="text-decoration:line-through;">OD20260508LV12</span>
+          <span class="head-right">
+            <span class="source-pill live">直播</span>
+            <span class="status-pill refund">已退款</span>
+          </span>
+        </div>
+        <div class="order-body">
+          <div class="order-img">◆</div>
+          <div class="order-info">
+            <div class="order-brand">DIOR</div>
+            <div class="order-name">Lady Dior Medium 黑色羊皮金扣</div>
+            <div class="order-tags">
+              <span class="tag-sm">8 新</span>
+            </div>
+            <div class="order-price">
+              <span class="pl" style="color:var(--text-tertiary);">原价</span>
+              <span class="pv">8,500</span>
+            </div>
+          </div>
+        </div>
+        <div class="status-detail">
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10c0 2 1 3 3 3h12c2 0 3-1 3-3V7"/><path d="M3 7l3-4h12l3 4"/><line x1="3" y1="7" x2="21" y2="7"/><path d="M10 12h4"/></svg>
+            <span>申请退款已通过 · 5/10 · 款项已原路退回</span>
+          </span>
+        </div>
+        <div class="act-row">
+          <button class="act-btn">查看详情</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // Tab 切换
+  (function() {
+    const tabs = document.querySelectorAll('.o-tab');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+      });
+    });
+  })();
+
+  // 倒计时
+  (function() {
+    function fmt(total) {
+      const h = String(Math.floor(total/3600)).padStart(2,'0');
+      const m = String(Math.floor((total%3600)/60)).padStart(2,'0');
+      const s = String(total%60).padStart(2,'0');
+      return `${h}:${m}:${s}`;
+    }
+    function parse(str) {
+      const [h, m, s] = str.split(':').map(Number);
+      return h*3600 + m*60 + s;
+    }
+    const counters = [];
+    document.querySelectorAll('.cd[data-cd]').forEach(el => {
+      counters.push({ el, total: parse(el.dataset.cd) });
+    });
+    setInterval(() => {
+      counters.forEach(c => {
+        c.total = Math.max(0, c.total - 1);
+        c.el.textContent = fmt(c.total);
+      });
+    }, 1000);
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

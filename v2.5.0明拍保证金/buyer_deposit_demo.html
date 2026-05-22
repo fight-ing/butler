@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中古优品 · 买家保证金 H5 演示</title>
+<style>
+:root{
+  --brand-yellow:#FFD100;
+  --brand-yellow-dark:#FFC400;
+  --brand-orange:#FF6B35;
+  --text-1:#1F1F1F;
+  --text-2:#666;
+  --text-3:#999;
+  --text-disabled:#CCC;
+  --line:#EEE;
+  --bg-page:#F5F5F7;
+  --bg-card:#FFF;
+  --success:#06A87D;
+  --danger:#F5222D;
+  --warning:#FA8C16;
+  --info:#1677FF;
+  --gold:#B8860B;
+  --shadow-card:0 2px 8px rgba(0,0,0,0.04);
+  --shadow-pop:0 4px 16px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;
+  background:#E8EAED;
+  color:var(--text-1);
+  font-size:14px;
+  line-height:1.5;
+  padding:24px 16px 60px;
+}
+
+/* ===== 顶部导航 ===== */
+.doc-head{max-width:1600px;margin:0 auto 24px;text-align:center}
+.doc-head h1{font-size:24px;font-weight:700;margin-bottom:8px}
+.doc-head p{color:var(--text-2);font-size:13px}
+.doc-head .meta{margin-top:8px;font-size:12px;color:var(--text-3)}
+.doc-head .legend{margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.doc-head .legend span{
+  background:#fff;padding:6px 12px;border-radius:14px;font-size:12px;color:var(--text-2);
+  box-shadow:var(--shadow-card)
+}
+
+/* ===== 画布：9 张手机平铺 ===== */
+.canvas{
+  max-width:1600px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(390px, 1fr));
+  gap:32px;justify-items:center
+}
+
+/* ===== 手机外框 ===== */
+.phone{
+  width:390px;
+  background:var(--bg-page);
+  border-radius:36px;
+  box-shadow:var(--shadow-pop), 0 0 0 1px rgba(0,0,0,0.05);
+  overflow:hidden;
+  position:relative;
+  height:780px;
+  display:flex;flex-direction:column
+}
+.phone .label{
+  position:absolute;top:-32px;left:0;right:0;text-align:center;
+  font-size:13px;font-weight:600;color:var(--text-1)
+}
+.phone .label small{color:var(--text-3);font-weight:400;margin-left:6px}
+
+/* ===== 状态栏 + 导航栏 ===== */
+.statusbar{
+  height:44px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;font-size:14px;font-weight:600;background:#fff;
+  flex-shrink:0
+}
+.statusbar .icons{display:flex;gap:6px;align-items:center}
+.statusbar .icons span{font-size:12px}
+.navbar{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  background:#fff;border-bottom:1px solid var(--line);
+  position:relative;flex-shrink:0
+}
+.navbar .back{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--text-1)
+}
+.navbar .right{
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:var(--text-2)
+}
+.navbar h2{font-size:16px;font-weight:600}
+
+/* ===== 滚动区 ===== */
+.scroll{flex:1;overflow-y:auto;background:var(--bg-page)}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ===== 通用 ===== */
+.card{
+  background:var(--bg-card);
+  border-radius:12px;
+  padding:16px;
+  margin:12px;
+  box-shadow:var(--shadow-card)
+}
+.card-tight{padding:0;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between}
+.cell{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--line);font-size:14px
+}
+.cell:last-child{border-bottom:none}
+.cell .left{color:var(--text-1)}
+.cell .right{color:var(--text-2);font-size:13px;display:flex;align-items:center;gap:4px}
+.cell .right.strong{color:var(--text-1);font-weight:500}
+.arrow::after{content:"›";font-size:18px;color:var(--text-3);margin-left:4px;font-weight:300}
+
+/* ===== 按钮 ===== */
+.btn{
+  display:flex;align-items:center;justify-content:center;
+  height:48px;border-radius:24px;font-size:16px;font-weight:600;
+  cursor:pointer;border:none;width:100%
+}
+.btn-primary{background:var(--brand-yellow);color:var(--text-1)}
+.btn-secondary{background:#fff;color:var(--text-1);border:1px solid var(--line)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-disabled{background:#F0F0F0;color:var(--text-disabled)}
+.btn-ghost{background:transparent;color:var(--info);border:1px solid var(--info)}
+
+/* ===== 底部固定操作栏 ===== */
+.sticky-bottom{
+  flex-shrink:0;background:#fff;padding:12px 16px 24px;
+  border-top:1px solid var(--line);box-shadow:0 -2px 8px rgba(0,0,0,0.04)
+}
+
+/* ===== 标签 ===== */
+.tag{
+  display:inline-flex;align-items:center;
+  font-size:11px;padding:2px 8px;border-radius:8px;
+  font-weight:500
+}
+.tag-active{background:#E8F8F2;color:var(--success)}
+.tag-restricted{background:#FFF7E6;color:var(--warning)}
+.tag-frozen{background:#FFF1F0;color:var(--danger)}
+.tag-info{background:#E6F4FF;color:var(--info)}
+.tag-gold{background:#FFF8E1;color:var(--gold)}
+
+/* ====== 页 1：保证金主页 ====== */
+.hero{
+  background:linear-gradient(135deg, #FFD100 0%, #FFB800 100%);
+  margin:12px;border-radius:16px;padding:20px;color:#1F1F1F;
+  position:relative;overflow:hidden
+}
+.hero::after{
+  content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;
+  background:radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%);
+  border-radius:50%
+}
+.hero .hero-label{font-size:13px;opacity:0.7;margin-bottom:6px}
+.hero .balance{font-size:36px;font-weight:700;letter-spacing:-1px;font-family:"SF Pro Display",sans-serif}
+.hero .balance small{font-size:18px;font-weight:500;margin-left:4px}
+.hero .hero-status{margin-top:8px}
+.hero-actions{display:flex;gap:8px;margin-top:16px}
+.hero-actions button{
+  flex:1;height:36px;border-radius:18px;font-size:13px;font-weight:600;border:none;cursor:pointer;
+  background:rgba(0,0,0,0.08);color:#1F1F1F
+}
+.hero-actions button.primary{background:#1F1F1F;color:#FFD100}
+
+/* 额度环形图 */
+.quota-card{margin:12px;background:#fff;border-radius:16px;padding:16px}
+.quota-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.quota-head h3{font-size:14px;font-weight:600}
+.quota-ring-wrap{display:flex;align-items:center;gap:16px}
+.quota-ring{width:96px;height:96px;flex-shrink:0;position:relative}
+.quota-ring svg{transform:rotate(-90deg)}
+.quota-ring-text{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center
+}
+.quota-ring-text .pct{font-size:18px;font-weight:700;line-height:1}
+.quota-ring-text .label{font-size:10px;color:var(--text-3);margin-top:2px}
+.quota-info{flex:1;display:flex;flex-direction:column;gap:8px}
+.quota-info .item{font-size:12px;color:var(--text-2)}
+.quota-info .item .num{font-size:15px;font-weight:600;color:var(--text-1);display:block}
+.quota-info .item .num.danger{color:var(--danger)}
+.quota-info .item .num.success{color:var(--success)}
+
+/* 网格菜单 */
+.grid4{
+  margin:12px;background:#fff;border-radius:16px;padding:16px 0;
+  display:grid;grid-template-columns:repeat(4, 1fr);gap:0
+}
+.grid4 .item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.grid4 .icon{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:20px
+}
+.grid4 .icon.yellow{background:#FFF8DB;color:#B88200}
+.grid4 .icon.orange{background:#FFEFE6;color:#FF6B35}
+.grid4 .icon.blue{background:#E6F4FF;color:var(--info)}
+.grid4 .icon.green{background:#E8F8F2;color:var(--success)}
+.grid4 .label{font-size:12px;color:var(--text-1)}
+
+/* 提示横幅 */
+.banner{
+  margin:12px;border-radius:12px;padding:12px 16px;
+  background:#FFF8E6;border:1px solid #FFE69C;
+  display:flex;align-items:center;gap:8px
+}
+.banner.warning{background:#FFF7E6;border-color:#FFD591}
+.banner.danger{background:#FFF1F0;border-color:#FFCCC7}
+.banner-icon{font-size:18px}
+.banner .text{flex:1;font-size:13px;color:var(--text-1);line-height:1.4}
+.banner .text strong{color:var(--danger)}
+.banner .text .l{display:block;color:var(--text-2);font-size:12px;margin-top:2px}
+.banner .action{font-size:13px;color:var(--info);font-weight:500}
+
+/* ===== 页 2：充值 ===== */
+.deposit-pkg{
+  margin:12px;background:#fff;border-radius:16px;padding:24px 20px;
+  border:2px solid var(--brand-yellow);position:relative
+}
+.deposit-pkg .recommend{
+  position:absolute;top:-1px;right:16px;background:var(--brand-yellow);color:#1F1F1F;
+  font-size:11px;font-weight:600;padding:2px 8px;border-radius:0 0 8px 8px
+}
+.deposit-pkg .price{font-size:40px;font-weight:700;color:var(--text-1);text-align:center;margin-bottom:4px}
+.deposit-pkg .price small{font-size:18px;color:var(--text-2);margin-right:4px;font-weight:500}
+.deposit-pkg .desc{text-align:center;font-size:13px;color:var(--text-2);margin-bottom:16px}
+.benefit-list{padding:0 4px}
+.benefit-list .b-item{
+  display:flex;gap:8px;align-items:flex-start;padding:8px 0;font-size:13px
+}
+.benefit-list .b-item .check{
+  flex-shrink:0;width:18px;height:18px;border-radius:50%;background:var(--brand-yellow);
+  color:#1F1F1F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700
+}
+.benefit-list .b-item span{color:var(--text-1)}
+.benefit-list .b-item span strong{color:var(--brand-orange);font-weight:600}
+
+/* 协议勾选 */
+.agree-row{
+  margin:12px;padding:12px 16px;background:#fff;border-radius:12px;
+  display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-2);line-height:1.6
+}
+.agree-row .checkbox{
+  width:16px;height:16px;border-radius:50%;background:var(--brand-yellow);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#1F1F1F;font-weight:700;margin-top:2px
+}
+.agree-row a{color:var(--info)}
+
+/* 支付方式 */
+.pay-list{margin:12px;background:#fff;border-radius:12px;overflow:hidden}
+.pay-list .row{padding:14px 16px;border-bottom:1px solid var(--line)}
+.pay-list .row:last-child{border-bottom:none}
+.pay-list .row .left{display:flex;align-items:center;gap:10px}
+.pay-list .pay-icon{
+  width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff
+}
+.pay-list .pay-icon.alipay{background:#1677FF}
+.pay-list .pay-icon.wechat{background:#06A87D}
+.pay-list .pay-icon.bank{background:#FA8C16}
+.radio{
+  width:18px;height:18px;border-radius:50%;border:1.5px solid var(--text-disabled);
+  display:flex;align-items:center;justify-content:center
+}
+.radio.active{border-color:var(--brand-orange)}
+.radio.active::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--brand-orange)}
+
+/* ===== 页 3：额度详情 ===== */
+.quota-big{margin:12px;background:#fff;border-radius:16px;padding:24px 20px;text-align:center}
+.quota-big .total{font-size:32px;font-weight:700;color:var(--brand-orange)}
+.quota-big .total small{font-size:14px;color:var(--text-2);margin-right:4px;font-weight:500}
+.quota-big .label{font-size:13px;color:var(--text-2);margin-top:4px}
+.quota-big .reset{font-size:11px;color:var(--text-3);margin-top:8px}
+.bar-wrap{padding:0 20px 16px}
+.bar{height:8px;background:#F0F0F0;border-radius:4px;overflow:hidden}
+.bar-fill{
+  height:100%;background:linear-gradient(90deg, #FFD100 0%, #FF6B35 100%);
+  border-radius:4px;transition:width 0.3s
+}
+.bar-info{display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);margin-top:6px}
+
+.formula{
+  margin:12px;padding:16px;background:#FFFEF5;border:1px dashed #FFD100;border-radius:12px;
+  font-size:12px;color:var(--text-2);line-height:1.8
+}
+.formula code{
+  display:block;background:#fff;padding:8px 12px;border-radius:6px;
+  font-family:"SF Mono",Menlo,monospace;font-size:11px;color:var(--text-1);margin-top:6px
+}
+.formula .hl{color:var(--brand-orange);font-weight:600}
+
+/* 列表项（占用明细） */
+.list-section-head{padding:12px 16px 6px;font-size:12px;color:var(--text-3);font-weight:500}
+.usage-item{
+  margin:0 12px 8px;background:#fff;border-radius:10px;padding:12px 14px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.usage-item .info .title{font-size:13px;color:var(--text-1);font-weight:500;margin-bottom:4px}
+.usage-item .info .meta{font-size:11px;color:var(--text-3)}
+.usage-item .price{font-weight:700;color:var(--brand-orange);font-size:15px}
+.usage-item .price.success{color:var(--success)}
+
+/* ===== 页 4：流水 ===== */
+.tab-bar{
+  display:flex;background:#fff;padding:0 8px;
+  border-bottom:1px solid var(--line);height:40px
+}
+.tab-bar .t{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--text-2);position:relative
+}
+.tab-bar .t.active{color:var(--text-1);font-weight:600}
+.tab-bar .t.active::after{
+  content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:24px;height:3px;background:var(--brand-yellow);border-radius:2px
+}
+
+.ledger-item{
+  background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--line)
+}
+.ledger-item .info .title{font-size:14px;color:var(--text-1);margin-bottom:4px}
+.ledger-item .info .time{font-size:11px;color:var(--text-3)}
+.ledger-item .amount{font-weight:600;font-size:15px}
+.ledger-item .amount.in{color:var(--success)}
+.ledger-item .amount.out{color:var(--danger)}
+.ledger-item .amount small{font-size:11px;color:var(--text-3);font-weight:400;display:block;text-align:right;margin-top:2px}
+
+/* ===== 页 5：违约记录 ===== */
+.summary-bar{
+  margin:12px;background:#fff;border-radius:12px;padding:16px;
+  display:flex;justify-content:space-around;text-align:center
+}
+.summary-bar .item .num{font-size:22px;font-weight:700;color:var(--text-1)}
+.summary-bar .item .num.danger{color:var(--danger)}
+.summary-bar .item .num.warning{color:var(--warning)}
+.summary-bar .item .label{font-size:11px;color:var(--text-3);margin-top:4px}
+
+.violation-item{
+  margin:0 12px 10px;background:#fff;border-radius:12px;padding:14px;
+  border-left:3px solid var(--danger)
+}
+.violation-item .head{display:flex;justify-content:space-between;margin-bottom:6px}
+.violation-item .type{font-size:14px;color:var(--text-1);font-weight:600}
+.violation-item .penalty{color:var(--danger);font-size:14px;font-weight:700}
+.violation-item .meta{font-size:11px;color:var(--text-3);margin-bottom:8px}
+.violation-item .ref{
+  font-size:12px;color:var(--text-2);background:#FAFAFA;padding:6px 10px;border-radius:6px;
+  display:flex;justify-content:space-between
+}
+
+/* ===== 页 6：提现 ===== */
+.withdraw-amount{
+  margin:12px;padding:32px 20px;background:linear-gradient(135deg,#fff,#FAFAFA);
+  border-radius:16px;text-align:center
+}
+.withdraw-amount .small{font-size:13px;color:var(--text-2);margin-bottom:8px}
+.withdraw-amount .num{font-size:48px;font-weight:700;letter-spacing:-2px;color:var(--text-1)}
+.withdraw-amount .num small{font-size:20px;color:var(--text-2);margin-right:4px;font-weight:500}
+
+.check-list{margin:12px;background:#fff;border-radius:12px;padding:8px 0}
+.check-list .row{padding:10px 16px;font-size:13px;color:var(--text-1);justify-content:flex-start;gap:8px}
+.check-list .check{
+  width:18px;height:18px;border-radius:50%;background:var(--success);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0
+}
+.check-list .right-text{color:var(--text-2);margin-left:auto;font-size:12px}
+
+.warn-tip{
+  margin:12px;padding:14px 16px;background:#FFF7E6;border-radius:12px;
+  font-size:12px;color:var(--text-2);line-height:1.6
+}
+.warn-tip strong{color:var(--warning)}
+
+/* ===== 页 7：提现进度 ===== */
+.timeline{margin:12px;background:#fff;border-radius:12px;padding:16px}
+.timeline-row{display:flex;gap:12px;position:relative}
+.timeline-row:not(:last-child){padding-bottom:20px}
+.timeline-row:not(:last-child)::before{
+  content:"";position:absolute;left:8px;top:20px;bottom:0;width:1px;background:var(--line)
+}
+.timeline-row .dot{
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  border:2px solid var(--text-disabled);flex-shrink:0;margin-top:2px;z-index:1
+}
+.timeline-row.done .dot{background:var(--success);border-color:var(--success)}
+.timeline-row.current .dot{background:var(--brand-yellow);border-color:var(--brand-yellow);box-shadow:0 0 0 4px rgba(255,209,0,0.2)}
+.timeline-row .content .title{font-size:13px;color:var(--text-1);font-weight:500}
+.timeline-row .content .time{font-size:11px;color:var(--text-3);margin-top:2px}
+
+.countdown-card{
+  margin:12px;background:linear-gradient(135deg, #FFD100 0%, #FFB800 100%);
+  border-radius:16px;padding:20px;text-align:center;color:var(--text-1)
+}
+.countdown-card .label{font-size:12px;opacity:0.7;margin-bottom:6px}
+.countdown-card .num{font-size:32px;font-weight:700;font-family:"SF Mono",monospace}
+.countdown-card .sub{font-size:11px;opacity:0.6;margin-top:6px}
+
+/* ===== 页 8：冻结提示 ===== */
+.frozen-hero{
+  margin:12px;padding:32px 24px;background:#fff;border-radius:16px;text-align:center
+}
+.frozen-hero .icon-big{
+  width:80px;height:80px;margin:0 auto 16px;border-radius:50%;
+  background:#FFF1F0;display:flex;align-items:center;justify-content:center;font-size:36px
+}
+.frozen-hero h2{font-size:20px;font-weight:700;color:var(--danger);margin-bottom:8px}
+.frozen-hero p{font-size:13px;color:var(--text-2);line-height:1.6}
+
+.reason-box{margin:12px;background:#fff;border-radius:12px;padding:0;overflow:hidden}
+.reason-box h4{
+  padding:14px 16px;font-size:13px;color:var(--text-3);font-weight:500;
+  border-bottom:1px solid var(--line)
+}
+.reason-list{padding:6px 16px}
+.reason-list .item{
+  padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;
+  display:flex;justify-content:space-between
+}
+.reason-list .item:last-child{border-bottom:none}
+.reason-list .item .label{color:var(--text-1)}
+.reason-list .item .val{color:var(--text-2)}
+.reason-list .item .val.danger{color:var(--danger);font-weight:600}
+
+/* ===== 页 9：规则说明 ===== */
+.rule-section{margin:12px;background:#fff;border-radius:12px;overflow:hidden}
+.rule-row{
+  padding:14px 16px;border-bottom:1px solid var(--line);
+  font-size:14px;color:var(--text-1);display:flex;justify-content:space-between;align-items:center;cursor:pointer
+}
+.rule-row:last-child{border-bottom:none}
+.rule-row .icon-arrow::after{content:"›";font-size:18px;color:var(--text-3);font-weight:300}
+.rule-content{
+  padding:0 16px 14px;font-size:13px;color:var(--text-2);line-height:1.7;background:#FAFAFA
+}
+.rule-content strong{color:var(--text-1)}
+.rule-content table{width:100%;font-size:12px;margin-top:8px;border-collapse:collapse}
+.rule-content table th, .rule-content table td{
+  padding:6px 8px;border:1px solid var(--line);text-align:left
+}
+.rule-content table th{background:#F5F5F7;font-weight:600;color:var(--text-1)}
+
+</style>
+</head>
+<body>
+
+<div class="doc-head">
+  <h1>买家保证金 H5 演示 · v0.1</h1>
+  <p>中古优品 B2B 平台 · Mobile-First H5 · 美团风格</p>
+  <div class="meta">2026-05-09 · 9 张核心页 · 配套文档：<code>docs/plans/2026-05-09-buyer-deposit-design.md</code></div>
+  <div class="legend">
+    <span>🟡 充值开通</span>
+    <span>📊 额度透明</span>
+    <span>⚠️ 违约扣款</span>
+    <span>💸 提现 T+7</span>
+    <span>🚫 冻结申诉</span>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <!-- ============ 页 1：保证金主页 ============ -->
+  <div class="phone">
+    <div class="label">① 我的保证金 <small>主入口</small></div>
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span>
+    </div>
+    <div class="navbar">
+      <div class="back">‹</div>
+      <h2>保证金钱包</h2>
+      <div class="right">规则</div>
+    </div>
+    <div class="scroll">
+      <div class="hero">
+        <div class="hero-label">账户余额（元）</div>
+        <div class="balance"><small>¥</small>5,000.00</div>
+        <div class="hero-status"><span class="tag tag-active">●  正常</span></div>
+        <div class="hero-actions">
+          <button>提现</button>
+          <button class="primary">充值</button>
+        </div>
+      </div>
+
+      <div class="quota-card">
+        <div class="quota-head">
+          <h3>今日拍卖额度</h3>
+          <span style="font-size:11px;color:var(--text-3);">每日 0:00 重置</span>
+        </div>
+        <div class="quota-ring-wrap">
+          <div class="quota-ring">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r="40" fill="none" stroke="#F0F0F0" stroke-width="8"/>
+              <circle cx="48" cy="48" r="40" fill="none" stroke="url(#g1)" stroke-width="8"
+                stroke-dasharray="251" stroke-dashoffset="138" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#FFD100"/>
+                  <stop offset="100%" stop-color="#FF6B35"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="quota-ring-text">
+              <div class="pct">45%</div>
+              <div class="label">已使用</div>
+            </div>
+          </div>
+          <div class="quota-info">
+            <div class="item">已占用 <span class="num danger">¥112,500</span></div>
+            <div class="item">可用额度 <span class="num success">¥137,500</span></div>
+            <div class="item">总额度 <span class="num">¥250,000</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid4">
+        <div class="item"><div class="icon yellow">📊</div><div class="label">额度详情</div></div>
+        <div class="item"><div class="icon orange">📋</div><div class="label">流水记录</div></div>
+        <div class="item"><div class="icon blue">⚠️</div><div class="label">违约记录</div></div>
+        <div class="item"><div class="icon green">📖</div><div class="label">规则说明</div></div>
+      </div>
+
+      <div class="banner warning">
+        <span class="banner-icon">⚠️</span>
+        <div class="text">您 90 天内已有 <strong>1 次</strong>违约
+          <span class="l">第 3 次将冻结账号 · 余额 < ¥2,000 也将冻结</span>
+        </div>
+        <span class="action">查看 ›</span>
+      </div>
+
+      <div class="card card-tight">
+        <div class="cell">
+          <span class="left">充值开通时间</span>
+          <span class="right">2026-04-12 14:32</span>
+        </div>
+        <div class="cell">
+          <span class="left">累计充值</span>
+          <span class="right strong">¥5,000.00</span>
+        </div>
+        <div class="cell arrow">
+          <span class="left">参拍渠道权限</span>
+          <span class="right">明拍 · 暗拍 · 直播 · 线下</span>
+        </div>
+        <div class="cell arrow">
+          <span class="left">联系客服</span>
+          <span class="right">9:00-21:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 页 2：充值开通 ============ -->
+  <div class="phone">
+    <div class="label">② 充值开通 <small>5,000 套餐</small></div>
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span>
+    </div>
+    <div class="navbar">
+      <div class="back">‹</div>
+      <h2>开通保证金</h2>
+    </div>
+    <div class="scroll">
+      <div class="deposit-pkg">
+        <div class="recommend">推荐</div>
+        <div class="price"><small>¥</small>5,000</div>
+        <div class="desc">B2B 拍卖资格保证金 · 终身一次</div>
+        <div class="benefit-list">
+          <div class="b-item">
+            <div class="check">✓</div>
+            <span>解锁 <strong>明拍 / 暗拍 / 直播 / 线下</strong> 全部 4 个渠道参拍权限</span>
+          </div>
+          <div class="b-item">
+            <div class="check">✓</div>
+            <span>每日享 <strong>¥250,000</strong> 出价/中标累计额度（1:50）</span>
+          </div>
+          <div class="b-item">
+            <div class="check">✓</div>
+            <span>违约扣款封顶 <strong>¥2,000</strong>，从余额扣除</span>
+          </div>
+          <div class="b-item">
+            <div class="check">✓</div>
+            <span>不参拍时 <strong>T+7 锁定期</strong>后可全额提现</span>
+          </div>
+          <div class="b-item">
+            <div class="check">✓</div>
+            <span>原路退回支付宝/微信/银行卡，不计利息</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-section-head">支付方式</div>
+      <div class="pay-list">
+        <div class="row">
+          <div class="left"><div class="pay-icon alipay">支</div><span>支付宝</span></div>
+          <div class="radio active"></div>
+        </div>
+        <div class="row">
+          <div class="left"><div class="pay-icon wechat">微</div><span>微信支付</span></div>
+          <div class="radio"></div>
+        </div>
+        <div class="row">
+          <div class="left"><div class="pay-icon bank">银</div><span>对公银行转账</span></div>
+          <div class="radio"></div>
+        </div>
+      </div>
+
+      <div class="agree-row">
+        <div class="checkbox">✓</div>
+        <div>我已阅读并同意 <a>《买家保证金服务协议》</a>、<a>《违约扣罚说明》</a>、<a>《提现规则》</a>，承诺真实交易、不刷单、不串拍</div>
+      </div>
+    </div>
+    <div class="sticky-bottom">
+      <button class="btn btn-primary">支付 ¥5,000 立即开通</button>
+    </div>
+  </div>
+
+  <!-- ============ 页 3：额度详情 ============ -->
+  <div class="phone">
+    <div class="label">③ 今日额度详情 <small>1:50 透明化</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>今日拍卖额度</h2></div>
+    <div class="scroll">
+      <div class="quota-big">
+        <div class="small">剩余可用额度</div>
+        <div class="num"><small>¥</small>137,500</div>
+        <div class="bar-wrap" style="padding:16px 0 0">
+          <div class="bar"><div class="bar-fill" style="width:45%"></div></div>
+          <div class="bar-info">
+            <span>已用 ¥112,500</span>
+            <span>总额 ¥250,000</span>
+          </div>
+        </div>
+        <div class="reset">距下次重置：14 小时 19 分</div>
+      </div>
+
+      <div class="formula">
+        <strong>额度算法</strong>
+        <code>当日可用 = <span class="hl">5,000 × 50</span> − 当日已占用</code>
+        <code>已占用 = 当前领先出价 + 已中标未付款</code>
+        <span style="font-size:11px;display:block;margin-top:6px;color:var(--text-3)">被反超的旧出价立即回收 · 付款后立即释放 · 跨日次日 0:00 重置</span>
+      </div>
+
+      <div class="list-section-head">已占用明细 · 5 条</div>
+
+      <div class="usage-item">
+        <div class="info">
+          <div class="title">🟡 LV Speedy 30 · 暗拍</div>
+          <div class="meta">领先 · 出价时间 08:42</div>
+        </div>
+        <div class="price">¥45,000</div>
+      </div>
+      <div class="usage-item">
+        <div class="info">
+          <div class="title">🔥 GUCCI 古驰耳钉 · 明拍</div>
+          <div class="meta">领先 · 当前价 ¥18,500</div>
+        </div>
+        <div class="price">¥18,500</div>
+      </div>
+      <div class="usage-item">
+        <div class="info">
+          <div class="title">⏰ Hermès Kelly 28 · 已中标</div>
+          <div class="meta">待付款 · 剩 32:14:08</div>
+        </div>
+        <div class="price">¥35,000</div>
+      </div>
+      <div class="usage-item">
+        <div class="info">
+          <div class="title">📡 Cartier 项链 · 直播</div>
+          <div class="meta">领先 · 当前价 ¥12,000</div>
+        </div>
+        <div class="price">¥12,000</div>
+      </div>
+      <div class="usage-item">
+        <div class="info">
+          <div class="title">💍 Tiffany 戒指 · 暗拍</div>
+          <div class="meta">领先 · 出价时间 09:10</div>
+        </div>
+        <div class="price">¥2,000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 页 4：流水记录 ============ -->
+  <div class="phone">
+    <div class="label">④ 保证金流水 <small>明细全记录</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>流水记录</h2><div class="right">筛选</div></div>
+    <div class="tab-bar">
+      <div class="t active">全部</div>
+      <div class="t">充值</div>
+      <div class="t">扣款</div>
+      <div class="t">退款</div>
+    </div>
+    <div class="scroll">
+      <div class="ledger-item">
+        <div class="info">
+          <div class="title">违约金扣款 · 中标逾期</div>
+          <div class="time">2026-05-08 18:30 · 单号 ORD20260507892</div>
+        </div>
+        <div class="amount out">-¥500<small>余额 ¥4,500</small></div>
+      </div>
+      <div class="ledger-item">
+        <div class="info">
+          <div class="title">违约金补缴</div>
+          <div class="time">2026-05-08 18:31 · 支付宝</div>
+        </div>
+        <div class="amount in">+¥500<small>余额 ¥5,000</small></div>
+      </div>
+      <div class="ledger-item">
+        <div class="info">
+          <div class="title">额度占用</div>
+          <div class="time">2026-05-08 14:20 · LV 老花包·中标</div>
+        </div>
+        <div class="amount out" style="color:var(--text-3)">¥35,000<small>占用</small></div>
+      </div>
+      <div class="ledger-item">
+        <div class="info">
+          <div class="title">额度释放</div>
+          <div class="time">2026-05-07 16:45 · 付款完成</div>
+        </div>
+        <div class="amount in" style="color:var(--text-3)">¥28,000<small>释放</small></div>
+      </div>
+      <div class="ledger-item">
+        <div class="info">
+          <div class="title">首次充值开通</div>
+          <div class="time">2026-04-12 14:32 · 支付宝</div>
+        </div>
+        <div class="amount in">+¥5,000<small>余额 ¥5,000</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 页 5：违约记录 ============ -->
+  <div class="phone">
+    <div class="label">⑤ 违约记录 <small>90 天滚动窗口</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>违约记录</h2></div>
+    <div class="scroll">
+      <div class="banner danger">
+        <span class="banner-icon">⚠️</span>
+        <div class="text">距离冻结仅剩 <strong>2 次</strong>
+          <span class="l">90 天内累计 3 次违约将自动冻结账号</span>
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <div class="item">
+          <div class="num warning">1</div>
+          <div class="label">90 天违约</div>
+        </div>
+        <div class="item">
+          <div class="num danger">¥500</div>
+          <div class="label">累计扣款</div>
+        </div>
+        <div class="item">
+          <div class="num">¥0</div>
+          <div class="label">争议中</div>
+        </div>
+      </div>
+
+      <div class="list-section-head">违约明细</div>
+
+      <div class="violation-item">
+        <div class="head">
+          <div class="type">A · 中标逾期未付款</div>
+          <div class="penalty">-¥500</div>
+        </div>
+        <div class="meta">2026-05-08 18:30 · 暗拍 · 第 1 次</div>
+        <div class="ref">
+          <span>LV 老花 Speedy 30</span>
+          <span style="color:var(--brand-orange)">落槌 ¥50,000</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-secondary" style="height:32px;font-size:12px;flex:1;border-radius:6px">查看详情</button>
+          <button class="btn btn-ghost" style="height:32px;font-size:12px;flex:1;border-radius:6px">申诉</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin:12px;font-size:12px;color:var(--text-2);line-height:1.6">
+        <div style="font-weight:600;color:var(--text-1);margin-bottom:8px">违约金计算公式</div>
+        违约金 = clamp(<span style="color:var(--brand-orange)">落槌价 × 1%</span>, 100, 2000)<br>
+        本次：50,000 × 1% = 500 元（区间内不封顶）
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 页 6：申请提现 ============ -->
+  <div class="phone">
+    <div class="label">⑥ 申请提现 <small>T+7 锁定</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>申请提现</h2></div>
+    <div class="scroll">
+      <div class="withdraw-amount">
+        <div class="small">提现金额（不可修改）</div>
+        <div class="num"><small>¥</small>5,000.00</div>
+      </div>
+
+      <div class="list-section-head">前置校验</div>
+      <div class="check-list">
+        <div class="row"><div class="check">✓</div>账号状态正常 <span class="right-text">已通过</span></div>
+        <div class="row"><div class="check">✓</div>无领先中的出价 <span class="right-text">已通过</span></div>
+        <div class="row"><div class="check">✓</div>无未付款的中标订单 <span class="right-text">已通过</span></div>
+        <div class="row"><div class="check">✓</div>无争议中的违约金 <span class="right-text">已通过</span></div>
+      </div>
+
+      <div class="list-section-head">退款方式</div>
+      <div class="card card-tight">
+        <div class="cell">
+          <span class="left">原路退回</span>
+          <span class="right strong">支付宝 ***138@163.com</span>
+        </div>
+        <div class="cell">
+          <span class="left">预计到账</span>
+          <span class="right strong" style="color:var(--brand-orange)">2026-05-16</span>
+        </div>
+      </div>
+
+      <div class="warn-tip">
+        <strong>⚠️ 提现锁定期 7 天</strong><br>
+        申请后将进入 <strong>T+7 锁定</strong>期，期间账号无法参拍。可在锁定期内随时撤回，撤回后账号立即恢复。
+      </div>
+    </div>
+    <div class="sticky-bottom">
+      <button class="btn btn-primary">确认申请提现</button>
+    </div>
+  </div>
+
+  <!-- ============ 页 7：提现进度 ============ -->
+  <div class="phone">
+    <div class="label">⑦ 提现进度 <small>倒计时</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>提现进度</h2></div>
+    <div class="scroll">
+      <div class="countdown-card">
+        <div class="label">距离到账还剩</div>
+        <div class="num">5 天 14:23:08</div>
+        <div class="sub">2026-05-16 09:00 自动到账</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-row done">
+          <div class="dot"></div>
+          <div class="content">
+            <div class="title">✓ 提现申请已受理</div>
+            <div class="time">2026-05-09 09:00</div>
+          </div>
+        </div>
+        <div class="timeline-row done">
+          <div class="dot"></div>
+          <div class="content">
+            <div class="title">✓ 前置校验通过</div>
+            <div class="time">2026-05-09 09:00</div>
+          </div>
+        </div>
+        <div class="timeline-row current">
+          <div class="dot"></div>
+          <div class="content">
+            <div class="title">⏳ T+7 锁定期中</div>
+            <div class="time">期间可撤回 · 账户暂不可参拍</div>
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="dot"></div>
+          <div class="content">
+            <div class="title">退款发起</div>
+            <div class="time">预计 2026-05-16 09:00</div>
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="dot"></div>
+          <div class="content">
+            <div class="title">资金到账</div>
+            <div class="time">支付宝实时 · 银行卡 1-3 工作日</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-tight">
+        <div class="cell">
+          <span class="left">提现编号</span>
+          <span class="right strong">WD20260509000123</span>
+        </div>
+        <div class="cell">
+          <span class="left">提现金额</span>
+          <span class="right strong">¥5,000.00</span>
+        </div>
+        <div class="cell">
+          <span class="left">退款账户</span>
+          <span class="right">支付宝 ***138@163.com</span>
+        </div>
+      </div>
+    </div>
+    <div class="sticky-bottom">
+      <button class="btn btn-secondary">撤回提现申请</button>
+    </div>
+  </div>
+
+  <!-- ============ 页 8：账号冻结 ============ -->
+  <div class="phone">
+    <div class="label">⑧ 账号冻结 <small>触达警戒线</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>账号状态</h2></div>
+    <div class="scroll">
+      <div class="frozen-hero">
+        <div class="icon-big">🚫</div>
+        <h2>账户已冻结</h2>
+        <p>您 90 天内累计违约 3 次，账户已被自动冻结。<br>
+        所有渠道暂停参拍权限，可通过申诉恢复。</p>
+        <span class="tag tag-frozen" style="margin-top:12px">● 冻结中</span>
+      </div>
+
+      <div class="reason-box">
+        <h4>冻结详情</h4>
+        <div class="reason-list">
+          <div class="item"><span class="label">冻结时间</span><span class="val">2026-05-09 18:42</span></div>
+          <div class="item"><span class="label">触发规则</span><span class="val danger">90 天内违约 ≥ 3 次</span></div>
+          <div class="item"><span class="label">违约次数</span><span class="val danger">3 / 3</span></div>
+          <div class="item"><span class="label">累计扣款</span><span class="val">¥850</span></div>
+          <div class="item"><span class="label">余额</span><span class="val">¥4,150</span></div>
+        </div>
+      </div>
+
+      <div class="warn-tip" style="background:#FFF1F0">
+        <strong style="color:var(--danger)">⚠️ 冻结后影响</strong><br>
+        · 所有渠道（明拍/暗拍/直播/线下）暂停参拍<br>
+        · 已领先的出价保留至该 Lot 结束<br>
+        · 已中标待付款订单<strong>仍需履约</strong>，否则进入永久封号流程<br>
+        · 累计 5 次违约（终身计）将永久封号
+      </div>
+    </div>
+    <div class="sticky-bottom" style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1">联系客服</button>
+      <button class="btn btn-primary" style="flex:1">立即申诉</button>
+    </div>
+  </div>
+
+  <!-- ============ 页 9：规则说明 ============ -->
+  <div class="phone">
+    <div class="label">⑨ 保证金规则 <small>展开式说明</small></div>
+    <div class="statusbar"><span>9:41</span><span class="icons"><span>📶</span><span>📡</span><span>🔋</span></span></div>
+    <div class="navbar"><div class="back">‹</div><h2>保证金规则</h2></div>
+    <div class="scroll">
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>充值开通</span>
+          <span class="icon-arrow"></span>
+        </div>
+        <div class="rule-content">
+          <strong>充值额：</strong>¥5,000 元（v1 固定）<br>
+          <strong>适用范围：</strong>解锁明拍 / 暗拍 / 直播 / 线下 4 个渠道参拍权限<br>
+          <strong>资金归属：</strong>独立子账户，不与货款混用<br>
+          <strong>计息：</strong>不计息
+        </div>
+      </div>
+
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>拍卖额度（1:50）</span>
+          <span style="color:var(--brand-orange);font-weight:600;font-size:13px">¥250,000/日</span>
+        </div>
+        <div class="rule-content">
+          <strong>公式：</strong>每日累计可用 = 5,000 × 50 − 当日已占用<br>
+          <strong>占用口径：</strong>领先中的出价 + 已中标未付款<br>
+          <strong>释放：</strong>被反超 / 付款完成 / 24:00 重置
+        </div>
+      </div>
+
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>违约扣款</span>
+          <span style="color:var(--danger);font-size:13px">1% · [100, 2000]</span>
+        </div>
+        <div class="rule-content">
+          <strong>公式：</strong>违约金 = 落槌价 × 1%，区间 [100, 2000]<br>
+          <strong>余额警戒线：</strong>余额 < 2,000 元自动冻结，需补足至 5,000 才能恢复<br>
+          <strong>违约类型：</strong>
+          <table>
+            <tr><th>类型</th><th>定义</th></tr>
+            <tr><td>A</td><td>中标逾期未付款</td></tr>
+            <tr><td>B</td><td>中标后买家申请取消</td></tr>
+            <tr><td>C</td><td>报名后开拍 6h 内撤回</td></tr>
+            <tr><td>D</td><td>直播/线下违规叫价</td></tr>
+            <tr><td>E</td><td>议价成交后反悔</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>违约升级</span>
+          <span class="icon-arrow"></span>
+        </div>
+        <div class="rule-content">
+          <table>
+            <tr><th>累计</th><th>处置</th></tr>
+            <tr><td>1 次</td><td>扣款 + 警告</td></tr>
+            <tr><td>2 次</td><td>扣款 + 7 天冷静期</td></tr>
+            <tr><td>3 次</td><td>扣款 + <strong style="color:var(--danger)">冻结账号</strong></td></tr>
+            <tr><td>5 次（终身）</td><td><strong style="color:var(--danger)">永久封号</strong></td></tr>
+          </table>
+          <div style="margin-top:6px">90 天滚动窗口计数</div>
+        </div>
+      </div>
+
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>提现规则</span>
+          <span style="color:var(--brand-orange);font-size:13px">T+7</span>
+        </div>
+        <div class="rule-content">
+          <strong>前置：</strong>无在拍出价 + 无未付款订单 + 无争议扣款<br>
+          <strong>锁定期：</strong>7 天，期间可撤回<br>
+          <strong>到账：</strong>原路退回 90 天内充值通道，超期人工汇款
+        </div>
+      </div>
+
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>申诉与解冻</span>
+          <span class="icon-arrow"></span>
+        </div>
+        <div class="rule-content">
+          <strong>渠道：</strong>App 内提交 / 客服热线 9:00-21:00<br>
+          <strong>材料：</strong>违约说明 + 证据截图 + 改进承诺<br>
+          <strong>SLA：</strong>5 个工作日<br>
+          <strong>结果：</strong>通过则解冻，违约记录保留但不计入下次累计
+        </div>
+      </div>
+
+      <div class="rule-section">
+        <div class="rule-row">
+          <span>《买家保证金服务协议》</span>
+          <span class="icon-arrow"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ======================================================== -->
+<!--                状态机 + 业务流程图                       -->
+<!-- ======================================================== -->
+
+<div style="max-width:1600px;margin:60px auto 0;">
+
+  <div style="text-align:center;margin-bottom:24px">
+    <h2 style="font-size:22px;margin-bottom:6px">状态机 & 业务流程</h2>
+    <p style="color:var(--text-2);font-size:13px">用于业务讨论 · 工程师对照实现</p>
+  </div>
+
+  <!-- 关键参数面板 -->
+  <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:32px;
+              max-width:1200px;margin-left:auto;margin-right:auto">
+    <div style="background:#fff;border-radius:12px;padding:16px;text-align:center;
+                box-shadow:var(--shadow-card)">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">充值额</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text-1)">¥5,000</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:16px;text-align:center;
+                box-shadow:var(--shadow-card)">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">每日额度</div>
+      <div style="font-size:24px;font-weight:700;color:var(--brand-orange)">¥250,000</div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:2px">5,000 × 50</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:16px;text-align:center;
+                box-shadow:var(--shadow-card)">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">违约金</div>
+      <div style="font-size:24px;font-weight:700;color:var(--danger)">1%</div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:2px">[100, 2000]</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:16px;text-align:center;
+                box-shadow:var(--shadow-card)">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">死亡线</div>
+      <div style="font-size:24px;font-weight:700;color:var(--warning)">¥2,000</div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:2px">< 即冻结</div>
+    </div>
+  </div>
+
+  <!-- 扣款梯度示例表 -->
+  <div style="background:#fff;border-radius:16px;padding:20px;margin-bottom:32px;
+              box-shadow:var(--shadow-card);max-width:1200px;margin-left:auto;margin-right:auto">
+    <h3 style="font-size:16px;margin-bottom:12px">违约金计算示例（1% · 上下限封顶）</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:#FAFAFA">
+          <th style="padding:10px;text-align:left;border-bottom:1px solid var(--line)">落槌价</th>
+          <th style="padding:10px;text-align:right;border-bottom:1px solid var(--line)">1% 计算值</th>
+          <th style="padding:10px;text-align:right;border-bottom:1px solid var(--line)">实际违约金</th>
+          <th style="padding:10px;text-align:left;border-bottom:1px solid var(--line)">说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid var(--line)">¥5,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);border-bottom:1px solid var(--line)">¥50</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;color:var(--warning);border-bottom:1px solid var(--line)">¥100</td>
+            <td style="padding:8px 10px;color:var(--text-2);border-bottom:1px solid var(--line)">触下限</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid var(--line)">¥10,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);border-bottom:1px solid var(--line)">¥100</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:1px solid var(--line)">¥100</td>
+            <td style="padding:8px 10px;color:var(--text-2);border-bottom:1px solid var(--line)">临界（下限）</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid var(--line)">¥50,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);border-bottom:1px solid var(--line)">¥500</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:1px solid var(--line)">¥500</td>
+            <td style="padding:8px 10px;color:var(--text-2);border-bottom:1px solid var(--line)">区间内</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid var(--line)">¥100,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);border-bottom:1px solid var(--line)">¥1,000</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:1px solid var(--line)">¥1,000</td>
+            <td style="padding:8px 10px;color:var(--text-2);border-bottom:1px solid var(--line)">区间内</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid var(--line)">¥200,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);border-bottom:1px solid var(--line)">¥2,000</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:1px solid var(--line)">¥2,000</td>
+            <td style="padding:8px 10px;color:var(--text-2);border-bottom:1px solid var(--line)">临界（上限）</td></tr>
+        <tr><td style="padding:8px 10px;border-bottom:1px solid var(--line)">¥300,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);border-bottom:1px solid var(--line)">¥3,000</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;color:var(--danger);border-bottom:1px solid var(--line)">¥2,000</td>
+            <td style="padding:8px 10px;color:var(--text-2);border-bottom:1px solid var(--line)">触上限</td></tr>
+        <tr><td style="padding:8px 10px;">¥1,000,000</td>
+            <td style="padding:8px 10px;text-align:right;color:var(--text-3);">¥10,000</td>
+            <td style="padding:8px 10px;text-align:right;font-weight:600;color:var(--danger);">¥2,000</td>
+            <td style="padding:8px 10px;color:var(--text-2);">触上限</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:12px;background:#FFF8E6;border-radius:8px;font-size:12px;color:var(--text-2);line-height:1.7">
+      <strong>余额演进示例：</strong>初始 ¥5,000 →
+      第 1 次违约（10万落槌） -¥1,000 → 余额 ¥4,000 <span style="color:var(--success)">NORMAL</span> →
+      第 2 次违约（5万落槌） -¥500 → 余额 ¥3,500 <span style="color:var(--success)">NORMAL</span> →
+      第 3 次违约（30万落槌，触上限） -¥2,000 → 余额 ¥1,500 <strong style="color:var(--danger)">触发 INSUFFICIENT</strong> → 必须补 ¥3,500 至 5,000 恢复
+    </div>
+  </div>
+
+  <!-- 状态机 -->
+  <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:32px;
+              box-shadow:var(--shadow-card)">
+    <h3 style="font-size:16px;margin-bottom:8px">📐 钱包状态机（7 状态）</h3>
+    <p style="font-size:12px;color:var(--text-2);margin-bottom:20px">权威源：<code>deposit_wallet.status</code> · 通过 <code>WalletStateMachine.transition()</code> 服务方法变更</p>
+    <div class="mermaid">
+stateDiagram-v2
+    [*] --> UNINITIALIZED: 注册买家
+    UNINITIALIZED --> NORMAL: 首次充值 5,000
+
+    NORMAL --> INSUFFICIENT: 违约扣款致<br/>余额 < 2,000
+    INSUFFICIENT --> NORMAL: 补足至 ≥ 5,000
+
+    NORMAL --> WITHDRAWING: 申请提现<br/>(无在拍/无未付款)
+    WITHDRAWING --> NORMAL: 锁定期内撤回
+    WITHDRAWING --> CLOSED: T+7 自动到账
+
+    NORMAL --> FROZEN: 90 天违约 ≥ 3<br/>或 风控触发
+    INSUFFICIENT --> FROZEN: 90 天违约 ≥ 3<br/>或 风控触发
+    FROZEN --> NORMAL: 申诉通过
+
+    NORMAL --> BANNED: 累计违约 ≥ 5<br/>或 重大违规
+    FROZEN --> BANNED: 申诉驳回<br/>+ 重大违规
+
+    CLOSED --> [*]
+    BANNED --> [*]
+    </div>
+
+    <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px">
+      <div style="padding:12px;background:#F5F5F7;border-radius:8px">
+        <div style="font-size:12px;color:var(--text-3)">UNINITIALIZED</div>
+        <div style="font-size:13px;color:var(--text-1);margin-top:4px">未开通 · 仅可充值</div>
+      </div>
+      <div style="padding:12px;background:#E8F8F2;border-radius:8px">
+        <div style="font-size:12px;color:var(--success)">NORMAL ✅</div>
+        <div style="font-size:13px;color:var(--text-1);margin-top:4px">正常 · 全功能</div>
+      </div>
+      <div style="padding:12px;background:#FFF7E6;border-radius:8px">
+        <div style="font-size:12px;color:var(--warning)">INSUFFICIENT ⚠️</div>
+        <div style="font-size:13px;color:var(--text-1);margin-top:4px">余额不足 · 自助补缴</div>
+      </div>
+      <div style="padding:12px;background:#E6F4FF;border-radius:8px">
+        <div style="font-size:12px;color:var(--info)">WITHDRAWING ⏳</div>
+        <div style="font-size:13px;color:var(--text-1);margin-top:4px">提现中 · T+7 锁定</div>
+      </div>
+      <div style="padding:12px;background:#FFF1F0;border-radius:8px">
+        <div style="font-size:12px;color:var(--danger)">FROZEN 🚫</div>
+        <div style="font-size:13px;color:var(--text-1);margin-top:4px">冻结 · 申诉解锁</div>
+      </div>
+      <div style="padding:12px;background:#1F1F1F;border-radius:8px">
+        <div style="font-size:12px;color:#FFA39E">BANNED ⛔</div>
+        <div style="font-size:13px;color:#fff;margin-top:4px">永久封号</div>
+      </div>
+      <div style="padding:12px;background:#F5F5F7;border-radius:8px">
+        <div style="font-size:12px;color:var(--text-3)">CLOSED</div>
+        <div style="font-size:13px;color:var(--text-1);margin-top:4px">已退出 · 可重开</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 端到端业务流程 -->
+  <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:32px;
+              box-shadow:var(--shadow-card)">
+    <h3 style="font-size:16px;margin-bottom:8px">🔄 端到端业务流程：充值 → 参拍 → 中标 → 付款/违约</h3>
+    <p style="font-size:12px;color:var(--text-2);margin-bottom:20px">覆盖买家全生命周期 · 关键决策点已标注</p>
+    <div class="mermaid">
+flowchart TD
+    Start([买家入驻]):::role --> Has{已开通保证金?}
+    Has -->|否| Pay[/充值 ¥5,000<br/>支付宝/微信/银行/]:::action
+    Pay --> Active[NORMAL<br/>余额 5,000]:::ok
+    Has -->|是| Active
+
+    Active --> WantBid[点击 +1 加价 / 投暗拍 / 直播报价]
+    WantBid --> QChk{当日额度<br/>占用 < 25万?}
+    QChk -->|否| Reject[拒绝 + 提示<br/>额度已满]:::warn
+    QChk -->|是| BidOk[出价成功<br/>占用额度]:::ok
+
+    BidOk --> Outcome{专场/拍品结束}
+    Outcome -->|被反超| Release1[释放该笔占用]:::ok
+    Release1 --> Active
+    Outcome -->|未中标| Release2[释放占用]:::ok
+    Release2 --> Active
+    Outcome -->|中标落槌| Hammer[生成订单<br/>状态 待付款]:::ok
+
+    Hammer --> Pay48{48h 内付款?}
+    Pay48 -->|是| Done([订单完成<br/>释放占用]):::ok
+    Pay48 -->|否| Violate[违约 A:中标逾期]:::danger
+
+    Violate --> CalcFee[计算违约金<br/>= clamp price × 1%, 100, 2000]:::warn
+    CalcFee --> Deduct[从余额扣款]:::warn
+    Deduct --> Eval{评估状态<br/>按优先级}
+    Eval -->|余额 ≥ 2000<br/>违约 < 3| Active
+    Eval -->|余额 < 2000| Insuf[INSUFFICIENT<br/>禁止参拍]:::warn
+    Eval -->|违约 ≥ 3| Frozen[FROZEN<br/>需申诉]:::danger
+
+    Insuf --> Recharge[/补足至 5,000/]:::action
+    Recharge --> Active
+
+    Frozen --> Appeal{申诉<br/>5个工作日}
+    Appeal -->|通过| Active
+    Appeal -->|驳回| Wait[30 天后<br/>可再申诉]
+    Wait --> Frozen
+    Appeal -->|驳回+重大违规| Banned([BANNED<br/>永久封号]):::ban
+
+    classDef ok fill:#E8F8F2,stroke:#06A87D,color:#1F1F1F
+    classDef warn fill:#FFF7E6,stroke:#FA8C16,color:#1F1F1F
+    classDef danger fill:#FFF1F0,stroke:#F5222D,color:#1F1F1F
+    classDef ban fill:#1F1F1F,stroke:#000,color:#fff
+    classDef action fill:#FFFEF5,stroke:#FFD100,color:#1F1F1F
+    classDef role fill:#E6F4FF,stroke:#1677FF,color:#1F1F1F
+    </div>
+  </div>
+
+  <!-- 提现 + 申诉 子流程 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+
+    <div style="background:#fff;border-radius:16px;padding:24px;box-shadow:var(--shadow-card)">
+      <h3 style="font-size:16px;margin-bottom:8px">💸 提现子流程</h3>
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:16px">T+7 锁定期 · 可撤回 · 原路退回</p>
+      <div class="mermaid">
+flowchart TD
+    A[NORMAL]:::ok --> B{前置校验}
+    B -->|无在拍<br/>无未付款<br/>无争议| C[/申请提现 ¥5,000/]:::action
+    B -->|不通过| Bx[拒绝 + 提示]:::warn
+    C --> D[WITHDRAWING<br/>T+7 锁定]:::info
+    D --> E{用户撤回?}
+    E -->|是| A
+    E -->|否| F[T+7 到达]
+    F --> G[原路退回]:::action
+    G --> H([CLOSED]):::end1
+
+    classDef ok fill:#E8F8F2,stroke:#06A87D
+    classDef warn fill:#FFF7E6,stroke:#FA8C16
+    classDef info fill:#E6F4FF,stroke:#1677FF
+    classDef action fill:#FFFEF5,stroke:#FFD100
+    classDef end1 fill:#F5F5F7,stroke:#999
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:16px;padding:24px;box-shadow:var(--shadow-card)">
+      <h3 style="font-size:16px;margin-bottom:8px">🛡️ 申诉子流程</h3>
+      <p style="font-size:12px;color:var(--text-2);margin-bottom:16px">FROZEN → 解锁 / BANNED 三向出口</p>
+      <div class="mermaid">
+flowchart TD
+    F[FROZEN]:::danger --> S[/提交申诉<br/>说明+证据+承诺/]:::action
+    S --> R[运营审核<br/>SLA 5个工作日]:::info
+    R -->|通过| OK[NORMAL<br/>违约保留<br/>不计入下次]:::ok
+    R -->|驳回| Wait[30 天后<br/>再申诉]
+    R -->|驳回+重大| Ban([BANNED]):::ban
+    Wait --> S
+
+    classDef ok fill:#E8F8F2,stroke:#06A87D
+    classDef danger fill:#FFF1F0,stroke:#F5222D
+    classDef info fill:#E6F4FF,stroke:#1677FF
+    classDef ban fill:#1F1F1F,stroke:#000,color:#fff
+    classDef action fill:#FFFEF5,stroke:#FFD100
+      </div>
+    </div>
+  </div>
+
+  <!-- 直播线下违规子流程 -->
+  <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:32px;box-shadow:var(--shadow-card)">
+    <h3 style="font-size:16px;margin-bottom:8px">📡 直播 / 线下违规判罚（v1 人工审核）</h3>
+    <p style="font-size:12px;color:var(--text-2);margin-bottom:16px">v2 计划接入直播录像回放 + AI 仲裁</p>
+    <div class="mermaid">
+flowchart LR
+    A[现场违规<br/>拍卖师/记录员发现]:::role --> B[/填违规单<br/>类型 D + 落槌价 + 凭证/]:::action
+    B --> C[运营当日审核]:::info
+    C -->|确认| D[触发扣款流程<br/>同主流程 Violate 节点]:::warn
+    C -->|驳回| E[关闭工单]:::ok
+
+    classDef role fill:#E6F4FF,stroke:#1677FF
+    classDef action fill:#FFFEF5,stroke:#FFD100
+    classDef info fill:#F0F5FF,stroke:#2F54EB
+    classDef warn fill:#FFF7E6,stroke:#FA8C16
+    classDef ok fill:#E8F8F2,stroke:#06A87D
+    </div>
+  </div>
+
+  <!-- 待您拍板 -->
+  <div style="background:#FFFEF5;border:1px dashed #FFD100;border-radius:16px;padding:24px;margin-bottom:48px">
+    <h3 style="font-size:16px;margin-bottom:12px">⚠️ 待您拍板（v0.1 → v0.2）</h3>
+    <ol style="margin-left:20px;line-height:2;font-size:13px;color:var(--text-1)">
+      <li><strong>直播/线下违规判定主体</strong> —— 默认现场拍卖师手填，是否考虑录像仲裁？</li>
+      <li><strong>冻结后已中标订单</strong> —— v1 强制履约，是否允许"放弃保证金换免履约"？合规风险大</li>
+      <li><strong>VIP 阶梯档</strong>（1万/2万/5万 → 1:50/1:80/1:100）—— v2 是否要做？</li>
+      <li><strong>保证金计息</strong> —— T+7 锁定期内是否给微利息？默认不计</li>
+      <li><strong>跨子账号保证金</strong>（一公司多操作员）—— 共享 vs 独立？默认独立</li>
+    </ol>
+  </div>
+
+</div>
+
+<!-- mermaid CDN -->
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#FFD100',
+    primaryTextColor: '#1F1F1F',
+    primaryBorderColor: '#FFC400',
+    lineColor: '#999',
+    secondaryColor: '#FFF8E6',
+    tertiaryColor: '#FAFAFA',
+    fontFamily: '-apple-system, "PingFang SC", sans-serif',
+    fontSize: '13px'
+  },
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+  stateDiagram: { useMaxWidth: true }
+});
+</script>
+
+<script>
+// 简单的 demo 交互（点击切换 tab，仅视觉）
+document.querySelectorAll('.tab-bar').forEach(tb=>{
+  tb.querySelectorAll('.t').forEach(t=>{
+    t.addEventListener('click',()=>{
+      tb.querySelectorAll('.t').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+});
+document.querySelectorAll('.pay-list .row').forEach(r=>{
+  r.addEventListener('click',()=>{
+    const list = r.closest('.pay-list');
+    list.querySelectorAll('.radio').forEach(x=>x.classList.remove('active'));
+    r.querySelector('.radio').classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

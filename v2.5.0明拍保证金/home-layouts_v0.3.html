@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>中古优品 · 首页布局对比稿 v0.3</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E;
+    --anpai-red: #C62828; --anpai-red-soft: #FF6B6B;
+    --mingpai-deep: #E65100;
+    --listing-blue: #2B6CB0;
+    --proxy-purple: #6B46C1;
+    --upcoming: #4338CA;
+    --ink: #1A1A1A;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #ECECEA;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 60px;
+  }
+
+  .page-head {
+    text-align: center;
+    margin-bottom: 24px;
+    max-width: 900px;
+  }
+  .page-title {
+    font-size: 22px; font-weight: 700; margin: 0 0 6px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .quadrant {
+    display: flex; gap: 22px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 16px;
+    max-width: 100vw;
+  }
+  .quadrant::-webkit-scrollbar { height: 10px; }
+  .quadrant::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 5px; }
+
+  .phone-wrap {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .badge {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .badge .b-title {
+    font-size: 13px; font-weight: 700;
+  }
+  .badge .b-tag {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .badge .b-tag b { color: var(--brand-700); }
+
+  .phone {
+    width: 375px;
+    height: 780px;
+    background: var(--bg-page);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  .status-bar {
+    height: 30px; padding: 0 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 600;
+    background: transparent;
+    color: white;
+    z-index: 10;
+    position: relative;
+  }
+  .status-bar.dark { color: var(--text-primary); }
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Tab bar 共享 */
+  .tabbar {
+    height: 54px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    flex-shrink: 0;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    font-size: 10px;
+  }
+  .tab svg { width: 20px; height: 20px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+
+  /* ===== 方案 A:杂志大图 Editorial ===== */
+  .a .hero-cover {
+    height: 380px;
+    background: linear-gradient(180deg,
+      rgba(26,26,26,0.45) 0%,
+      rgba(26,26,26,0.05) 30%,
+      rgba(26,26,26,0.10) 70%,
+      rgba(26,26,26,0.85) 100%),
+      linear-gradient(135deg, #6B5239 0%, #4A3826 45%, #2A1F15 100%);
+    position: relative;
+    color: white;
+    padding: 40px 24px 28px;
+    display: flex; flex-direction: column;
+  }
+  .a .hero-cover::after {
+    content: '◆';
+    position: absolute;
+    right: -20px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 280px;
+    color: rgba(255,200,120,0.10);
+    z-index: 0;
+  }
+  .a .cover-top {
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 1;
+  }
+  .a .cover-date {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .a .cover-tabs {
+    display: flex; gap: 16px;
+    font-size: 13px;
+  }
+  .a .cover-tabs .t {
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+  }
+  .a .cover-tabs .t.on {
+    color: white;
+    font-weight: 700;
+    border-bottom: 2px solid white;
+    padding-bottom: 2px;
+  }
+  .a .cover-icons {
+    display: flex; gap: 8px;
+    align-items: center;
+  }
+  .a .cover-icons svg { width: 18px; height: 18px; color: rgba(255,255,255,0.85); }
+  .a .cover-body {
+    margin-top: auto;
+    z-index: 1;
+  }
+  .a .cover-eyebrow {
+    font-size: 11px;
+    color: var(--brand-300);
+    font-weight: 700;
+    letter-spacing: 2.5px;
+  }
+  .a .cover-title {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 6px 0 10px;
+    letter-spacing: -0.5px;
+  }
+  .a .cover-sub {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.55;
+    max-width: 280px;
+  }
+  .a .cover-cta {
+    margin-top: 16px;
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.30);
+    color: white;
+    padding: 7px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    width: fit-content;
+  }
+  /* A: channel-rail 大图卡 */
+  .a .channel-rail {
+    padding: 18px 16px 14px;
+  }
+  .a .ch-row {
+    display: flex; gap: 10px;
+  }
+  .a .ch-card {
+    flex: 1;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px;
+    padding: 12px 12px;
+    color: white;
+    display: flex; flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .a .ch-card.mp { background: linear-gradient(155deg, #FFC300 0%, #FF8000 50%, #E65100 100%); }
+  .a .ch-card.ap { background: linear-gradient(155deg, #FF6B6B 0%, #E63946 50%, #C62828 100%); }
+  .a .ch-card.lv { background: linear-gradient(155deg, #FFB199 0%, #FF6B6B 50%, #E53E3E 100%); }
+  .a .ch-name {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .a .ch-meta {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.85);
+    margin-top: 2px;
+  }
+  .a .ch-bottom {
+    margin-top: auto;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .a .ch-bottom .n {
+    font-size: 18px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .a .reco-section {
+    padding: 4px 16px 18px;
+  }
+  .a .reco-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 6px 0 10px;
+  }
+  .a .reco-title {
+    font-size: 16px; font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .a .reco-more {
+    font-size: 11px; color: var(--text-tertiary);
+  }
+  .a .reco-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .a .reco-item {
+    background: var(--bg-card);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .a .reco-thumb {
+    width: 100%; aspect-ratio: 1/1;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(180,140,100,0.55);
+    font-size: 36px;
+    position: relative;
+  }
+  .a .reco-thumb.alt { background: linear-gradient(135deg, #DDE7F0, #B8C6D6); }
+  .a .reco-pill {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: white;
+  }
+  .a .reco-pill.mp { background: var(--mingpai-deep); }
+  .a .reco-pill.ap { background: var(--anpai-red); }
+  .a .reco-info { padding: 8px 10px; }
+  .a .reco-brand { font-size: 9.5px; color: var(--text-tertiary); letter-spacing: 0.5px; font-weight: 600; }
+  .a .reco-name { font-size: 12px; margin-top: 1px; overflow:hidden; text-overflow:ellipsis; white-space: nowrap; }
+  .a .reco-price { margin-top: 5px; font-size: 14px; font-weight: 700; color: var(--brand-700); }
+  .a .reco-price::before { content: '¥'; font-size: 10px; }
+
+  /* ===== 方案 B:数据驱动 Dashboard ===== */
+  .b .hero-card {
+    margin: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%);
+    border-radius: 14px;
+    color: white;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .b .hero-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .b .hero-info { flex: 1; line-height: 1.3; }
+  .b .hero-name {
+    font-size: 15px; font-weight: 700;
+  }
+  .b .hero-tag {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 2px;
+  }
+  .b .hero-tag span {
+    display: inline-block;
+    padding: 1px 7px;
+    background: rgba(255,255,255,0.12);
+    color: #FFD54F;
+    border-radius: 8px;
+    margin-right: 4px;
+    font-weight: 600;
+  }
+  .b .hero-bag {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--brand-500);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    position: relative;
+  }
+  .b .hero-bag svg { width: 18px; height: 18px; }
+  .b .hero-bag .num {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 18px; height: 18px;
+    background: white;
+    color: var(--brand-900);
+    font-size: 10px; font-weight: 700;
+    border-radius: 9px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .b .data-strip {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--border);
+  }
+  .b .ds-item {
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .b .ds-item:last-child { border-right: none; }
+  .b .ds-v {
+    font-size: 17px; font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .b .ds-v .u { font-size: 10px; font-weight: 500; color: var(--text-tertiary); margin-left: 1px; }
+  .b .ds-l {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .b .ds-item.hot .ds-v { color: var(--danger, #DC2626); }
+  .b .ds-item.hot .ds-l { color: var(--brand-700); font-weight: 600; }
+
+  .b .quick-row {
+    margin: 0 12px 12px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .b .quick {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 12px 0 10px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid var(--border);
+  }
+  .b .quick .ico {
+    width: 30px; height: 30px;
+    margin: 0 auto 4px;
+    border-radius: 10px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .b .quick.alt .ico { background: #FFF1F0; color: var(--anpai-red); }
+  .b .quick.bl .ico { background: #EBF4FB; color: var(--listing-blue); }
+  .b .quick.pp .ico { background: #EDE9FE; color: var(--proxy-purple); }
+  .b .quick .ico svg { width: 16px; height: 16px; }
+  .b .quick .lbl { font-size: 11px; }
+
+  .b .live-strip {
+    margin: 0 12px 14px;
+    background: linear-gradient(95deg, var(--brand-900) 0%, var(--brand-700) 100%);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: white;
+    display: flex; align-items: center;
+    gap: 12px;
+  }
+  .b .live-icon {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    color: #FFD54F;
+    flex-shrink: 0;
+    animation: pulse-live 1.5s infinite;
+  }
+  @keyframes pulse-live { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+  .b .live-icon svg { width: 18px; height: 18px; }
+  .b .live-info { flex: 1; line-height: 1.4; }
+  .b .live-title { font-size: 13px; font-weight: 700; }
+  .b .live-sub { font-size: 11px; color: rgba(255,255,255,0.78); margin-top: 1px; }
+  .b .live-cd {
+    font-size: 16px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: rgba(0,0,0,0.30);
+    padding: 3px 9px;
+    border-radius: 6px;
+  }
+
+  .b .reco-section { padding: 0 12px 14px; }
+  .b .reco-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 0 10px;
+  }
+  .b .reco-title { font-size: 14px; font-weight: 700; }
+  .b .reco-chips {
+    display: flex; gap: 6px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .b .reco-chips::-webkit-scrollbar { display: none; }
+  .b .reco-chip {
+    flex-shrink: 0;
+    padding: 4px 12px;
+    border-radius: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    font-size: 11.5px;
+  }
+  .b .reco-chip.on {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+    font-weight: 600;
+  }
+  .b .reco-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .b .reco-item {
+    background: var(--bg-card);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .b .reco-thumb {
+    width: 100%; aspect-ratio: 1/1;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(180,140,100,0.55); font-size: 36px;
+    position: relative;
+  }
+  .b .reco-thumb.alt { background: linear-gradient(135deg, #DDE7F0, #B8C6D6); }
+  .b .reco-pill {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 3px; color: white;
+  }
+  .b .reco-pill.mp { background: var(--mingpai-deep); }
+  .b .reco-pill.ap { background: var(--anpai-red); }
+  .b .reco-info { padding: 7px 10px 9px; }
+  .b .reco-name { font-size: 12px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .b .reco-price {
+    margin-top: 4px;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .b .reco-price .v {
+    font-size: 14px; font-weight: 700;
+    color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+  .b .reco-price .v::before { content: '¥'; font-size: 10px; }
+  .b .reco-price .small {
+    font-size: 10px; color: var(--text-tertiary);
+  }
+
+  /* ===== 方案 C:iOS Today 风 ===== */
+  .c {
+    background: #F2F1ED;
+  }
+  .c .top-row {
+    padding: 14px 16px 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .c .top-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .c .top-greet {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .c .top-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFE0B2, #FFD180);
+    display: flex; align-items: center; justify-content: center;
+    color: #B66A1A; font-weight: 700;
+  }
+  .c .today-card {
+    margin: 12px 16px 16px;
+    height: 280px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(155deg, #6B46C1 0%, #4338CA 50%, #312E81 100%);
+    color: white;
+    padding: 20px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.20);
+  }
+  .c .today-card::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: -40px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .c .today-eyebrow {
+    font-size: 10px; font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+  .c .today-title {
+    margin-top: 6px;
+    font-size: 26px; font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+  .c .today-sub {
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.55;
+    max-width: 240px;
+  }
+  .c .today-bottom {
+    margin-top: auto;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 1; position: relative;
+  }
+  .c .today-cta {
+    background: rgba(255,255,255,0.92);
+    color: #312E81;
+    padding: 9px 18px;
+    border-radius: 18px;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .c .today-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .c .cards-section {
+    padding: 0 16px 14px;
+  }
+  .c .s-title {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    padding: 4px 0 12px;
+  }
+  .c .s-title .meta {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .c .ch-tile {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .c .ch-tile-icon {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+  }
+  .c .ch-tile-icon.mp { background: linear-gradient(135deg, var(--brand-300), var(--brand-700)); }
+  .c .ch-tile-icon.ap { background: linear-gradient(135deg, var(--anpai-red-soft), var(--anpai-red)); }
+  .c .ch-tile-icon svg { width: 26px; height: 26px; }
+  .c .ch-tile-info { flex: 1; line-height: 1.4; }
+  .c .ch-tile-name { font-size: 16px; font-weight: 700; }
+  .c .ch-tile-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+  .c .ch-tile-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .c .ch-tile-num .small {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  /* ===== 方案 D:日历时间轴 ===== */
+  .d .top {
+    padding: 14px 16px 8px;
+    background: var(--bg-card);
+  }
+  .d .top-row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .d .top-date {
+    font-size: 11px; color: var(--text-tertiary);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+  }
+  .d .top-date b {
+    color: var(--text-primary);
+    font-size: 17px;
+    font-weight: 800;
+    margin-right: 3px;
+  }
+  .d .top-bag {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .d .top-bag svg { width: 16px; height: 16px; }
+  .d .top-bag .num {
+    position: absolute;
+    margin: -22px 0 0 16px;
+    background: var(--brand-500);
+    color: white;
+    font-size: 9px; font-weight: 700;
+    border-radius: 9px; padding: 0 5px;
+    min-width: 14px; height: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .d .top-week {
+    margin-top: 12px;
+    display: flex; justify-content: space-between;
+    background: var(--bg-page);
+    border-radius: 10px;
+    padding: 8px 4px;
+  }
+  .d .day {
+    flex: 1;
+    text-align: center;
+    padding: 4px 0;
+    border-radius: 7px;
+  }
+  .d .day.today {
+    background: var(--ink);
+    color: white;
+  }
+  .d .day .dw {
+    font-size: 10px;
+    color: inherit;
+    opacity: 0.65;
+  }
+  .d .day .dn {
+    font-size: 14px; font-weight: 700;
+    color: inherit;
+    margin-top: 1px;
+  }
+  .d .day .dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--brand-500);
+    margin: 3px auto 0;
+  }
+  .d .day.today .dot { background: white; }
+
+  /* 时间轴 */
+  .d .timeline {
+    padding: 14px 16px 8px;
+  }
+  .d .tl-title {
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .d .tl-title svg { width: 15px; height: 15px; color: var(--brand-700); }
+  .d .tl-list {
+    position: relative;
+    padding-left: 22px;
+  }
+  .d .tl-list::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 5px; bottom: 5px;
+    width: 2px;
+    background: var(--border-strong);
+  }
+  .d .tl-event {
+    position: relative;
+    padding-bottom: 12px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .d .tl-event::before {
+    content: '';
+    position: absolute;
+    left: -22px; top: 4px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border-strong);
+  }
+  .d .tl-event.now::before {
+    background: var(--brand-500);
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 4px rgba(255,128,0,0.15);
+    animation: pulse-d 1.5s infinite;
+  }
+  @keyframes pulse-d { 0%,100% {box-shadow: 0 0 0 4px rgba(255,128,0,0.15);} 50% {box-shadow: 0 0 0 8px rgba(255,128,0,0.05);} }
+  .d .tl-event.done::before { background: var(--text-tertiary); border-color: var(--text-tertiary); }
+  .d .tl-event.up::before { background: var(--bg-card); border-color: var(--upcoming); }
+  .d .tl-card {
+    flex: 1;
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+  }
+  .d .tl-event.now .tl-card {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
+    border-color: var(--brand-300);
+    box-shadow: 0 2px 8px rgba(255,128,0,0.10);
+  }
+  .d .tl-event.done .tl-card { opacity: 0.55; }
+  .d .tl-time {
+    font-size: 12px; font-weight: 700;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .d .tl-time .pill {
+    font-size: 9.5px; font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: white;
+  }
+  .d .tl-time .pill.mp { background: var(--mingpai-deep); }
+  .d .tl-time .pill.ap { background: var(--anpai-red); }
+  .d .tl-time .pill.lv { background: var(--live-red); }
+  .d .tl-time .status {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .d .tl-time .status.now-tag { background: var(--brand-100); color: var(--brand-700); }
+  .d .tl-time .status.up-tag { background: var(--bg-subtle); color: var(--text-secondary); }
+  .d .tl-time .status.done-tag { background: var(--bg-subtle); color: var(--text-tertiary); }
+  .d .tl-desc {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .d .tl-desc b { color: var(--text-primary); font-weight: 600; }
+  .d .tl-cd {
+    margin-top: 6px;
+    font-size: 12px; font-weight: 700;
+    color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* hot strip — D */
+  .d .hot-strip {
+    margin: 6px 16px 14px;
+    padding: 12px 14px;
+    background: var(--ink);
+    color: white;
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .d .hot-strip-info { flex: 1; line-height: 1.4; }
+  .d .hot-strip-title { font-size: 13px; font-weight: 700; }
+  .d .hot-strip-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .d .hot-strip-arrow {
+    background: rgba(255,255,255,0.18);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .d .hot-strip-arrow svg { width: 14px; height: 14px; }
+
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1 class="page-title">首页布局对比稿 · 4 种风格</h1>
+    <p class="page-sub">
+      <b>方案 A 杂志大图(Editorial)</b> ↔ <b>方案 B 数据驱动(Dashboard)</b> ↔
+      <b>方案 C iOS Today 风</b> ↔ <b>方案 D 日历时间轴</b><br>
+      不改现有 home_v0.2;评审用,挑一个或融合元素
+    </p>
+  </div>
+
+  <div class="quadrant">
+
+    <!-- ============ 方案 A:杂志大图 ============ -->
+    <div class="phone-wrap">
+      <div class="badge">
+        <div class="b-title">方案 A · 杂志大图</div>
+        <div class="b-tag">Editorial · 沉浸式 · <b>设计感优先</b></div>
+      </div>
+      <div class="phone a">
+        <div class="status-bar"><span>9:41</span><span>●●● 📶 🔋</span></div>
+
+        <div class="scroll">
+        <!-- Hero 大图 -->
+        <div class="hero-cover">
+          <div class="cover-top">
+            <span class="cover-date">2026.05.14</span>
+            <div class="cover-icons">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+            </div>
+          </div>
+          <div class="cover-body">
+            <div class="cover-eyebrow">TODAY · 春日精选</div>
+            <div class="cover-title">爱马仕<br>·珠宝周·</div>
+            <div class="cover-sub">今日明拍 14:00 / 16:00 两批上新,32 件标志性单品。当前最高价、出价记录全公开。</div>
+            <div class="cover-cta">进入今日明拍 ›</div>
+          </div>
+        </div>
+
+        <!-- 3 渠道大图卡 -->
+        <div class="channel-rail">
+          <div class="ch-row">
+            <div class="ch-card mp">
+              <div class="ch-name">明拍</div>
+              <div class="ch-meta">实时竞价</div>
+              <div class="ch-bottom">
+                <span class="n">32</span>件待开拍
+              </div>
+            </div>
+            <div class="ch-card ap">
+              <div class="ch-name">暗拍</div>
+              <div class="ch-meta">盲投捡漏</div>
+              <div class="ch-bottom">
+                <span class="n">247</span>件在拍
+              </div>
+            </div>
+            <div class="ch-card lv">
+              <div class="ch-name">直播</div>
+              <div class="ch-meta">主播带拍</div>
+              <div class="ch-bottom">
+                <span class="n">3</span>场进行
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 精选推荐 -->
+        <div class="reco-section">
+          <div class="reco-head">
+            <div class="reco-title">编辑精选</div>
+            <span class="reco-more">查看 ›</span>
+          </div>
+          <div class="reco-grid">
+            <div class="reco-item">
+              <div class="reco-thumb">◆ <span class="reco-pill mp">明拍</span></div>
+              <div class="reco-info">
+                <div class="reco-brand">HERMÈS</div>
+                <div class="reco-name">Birkin 25 Gold</div>
+                <div class="reco-price">72,500</div>
+              </div>
+            </div>
+            <div class="reco-item">
+              <div class="reco-thumb alt">◆ <span class="reco-pill ap">暗拍</span></div>
+              <div class="reco-info">
+                <div class="reco-brand">CHANEL</div>
+                <div class="reco-name">Classic Flap CF25</div>
+                <div class="reco-price">38,000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="tabbar">
+          <div class="tab active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>首页</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>我的竞拍</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>购物袋</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>我的</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 方案 B:数据驱动 ============ -->
+    <div class="phone-wrap">
+      <div class="badge">
+        <div class="b-title">方案 B · 数据驱动</div>
+        <div class="b-tag">Dashboard · 信息密度高 · <b>B 端友好</b></div>
+      </div>
+      <div class="phone b">
+        <div class="status-bar dark"><span>9:41</span><span>●●● 📶 🔋</span></div>
+
+        <div class="scroll">
+        <!-- Hero 黑色用户卡 -->
+        <div class="hero-card">
+          <div class="hero-avatar">沪</div>
+          <div class="hero-info">
+            <div class="hero-name">沪上中古集</div>
+            <div class="hero-tag"><span>认证</span>保证金 ¥5,000 · 信用 100</div>
+          </div>
+          <div class="hero-bag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>
+            <span class="num">3</span>
+          </div>
+        </div>
+
+        <!-- 数据条 -->
+        <div class="data-strip">
+          <div class="ds-item"><div class="ds-v">60<span class="u">件</span></div><div class="ds-l">今日明拍</div></div>
+          <div class="ds-item"><div class="ds-v">247<span class="u">件</span></div><div class="ds-l">暗拍在拍</div></div>
+          <div class="ds-item hot"><div class="ds-v">12<span class="u">件</span></div><div class="ds-l">即将截拍</div></div>
+          <div class="ds-item"><div class="ds-v">5<span class="u">件</span></div><div class="ds-l">我的关注</div></div>
+        </div>
+
+        <!-- 4 快捷入口 -->
+        <div class="quick-row">
+          <div class="quick">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div class="lbl">明拍</div>
+          </div>
+          <div class="quick alt">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="lbl">暗拍</div>
+          </div>
+          <div class="quick bl">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M5 9V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/></svg></div>
+            <div class="lbl">挂售</div>
+          </div>
+          <div class="quick pp">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg></div>
+            <div class="lbl">代理</div>
+          </div>
+        </div>
+
+        <!-- 直播实时条 -->
+        <div class="live-strip">
+          <div class="live-icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg></div>
+          <div class="live-info">
+            <div class="live-title">张鉴定师爱马仕专场 · 直播中</div>
+            <div class="live-sub">主播 张鉴定师 · 156 人在线观看</div>
+          </div>
+          <div class="live-cd">02:14</div>
+        </div>
+
+        <!-- 推荐 -->
+        <div class="reco-section">
+          <div class="reco-head"><div class="reco-title">热门拍卖</div></div>
+          <div class="reco-chips">
+            <div class="reco-chip on">全部</div>
+            <div class="reco-chip">即将截拍</div>
+            <div class="reco-chip">高热度</div>
+            <div class="reco-chip">高价标</div>
+          </div>
+          <div class="reco-grid">
+            <div class="reco-item">
+              <div class="reco-thumb">◆<span class="reco-pill mp">明拍</span></div>
+              <div class="reco-info">
+                <div class="reco-name">Birkin 25 Gold</div>
+                <div class="reco-price"><span class="v">72,500</span><span class="small">当前</span></div>
+              </div>
+            </div>
+            <div class="reco-item">
+              <div class="reco-thumb alt">◆<span class="reco-pill ap">暗拍</span></div>
+              <div class="reco-info">
+                <div class="reco-name">CF25 黑色金扣</div>
+                <div class="reco-price"><span class="v">38,000</span><span class="small">起拍</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>首页</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>我的竞拍</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>购物袋</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>我的</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 方案 C:iOS Today 风 ============ -->
+    <div class="phone-wrap">
+      <div class="badge">
+        <div class="b-title">方案 C · iOS Today 风</div>
+        <div class="b-tag">大字体 · 大留白 · <b>高端感</b></div>
+      </div>
+      <div class="phone c">
+        <div class="status-bar dark"><span>9:41</span><span>●●● 📶 🔋</span></div>
+
+        <div class="scroll">
+        <div class="top-row">
+          <div>
+            <div class="top-date">WED · 5月 14</div>
+            <div class="top-greet">早安,沪上</div>
+          </div>
+          <div class="top-avatar">沪</div>
+        </div>
+
+        <!-- Today 主卡 -->
+        <div class="today-card">
+          <div class="today-eyebrow">TODAY · 明拍精选</div>
+          <div class="today-title">今日 14:00<br>爱马仕 · 珠宝周</div>
+          <div class="today-sub">32 件标志性单品 · 估价总值 ¥186 万 · 单件独立结拍 · 5 分钟延时</div>
+          <div class="today-bottom">
+            <div class="today-cta">立即预约</div>
+            <div class="today-meta">距开拍 02:14:33</div>
+          </div>
+        </div>
+
+        <!-- 渠道大图块 -->
+        <div class="cards-section">
+          <div class="s-title">参拍渠道 <span class="meta">3 种玩法</span></div>
+
+          <div class="ch-tile">
+            <div class="ch-tile-icon mp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div class="ch-tile-info">
+              <div class="ch-tile-name">明拍</div>
+              <div class="ch-tile-meta">实时竞价 · 14:00 / 16:00 上新</div>
+            </div>
+            <div class="ch-tile-num">60<div class="small">在售</div></div>
+          </div>
+
+          <div class="ch-tile">
+            <div class="ch-tile-icon ap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="ch-tile-info">
+              <div class="ch-tile-name">暗拍</div>
+              <div class="ch-tile-meta">盲投捡漏 · 11:00 / 18:00 截标</div>
+            </div>
+            <div class="ch-tile-num">247<div class="small">在拍</div></div>
+          </div>
+
+          <div class="ch-tile">
+            <div class="ch-tile-icon" style="background:linear-gradient(135deg, var(--anpai-red-soft), var(--live-red));">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7" fill="currentColor"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <div class="ch-tile-info">
+              <div class="ch-tile-name">直播</div>
+              <div class="ch-tile-meta">主播带拍 · 现在 3 场进行中</div>
+            </div>
+            <div class="ch-tile-num">3<div class="small">在播</div></div>
+          </div>
+        </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>首页</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>我的竞拍</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>购物袋</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>我的</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 方案 D:日历时间轴 ============ -->
+    <div class="phone-wrap">
+      <div class="badge">
+        <div class="b-title">方案 D · 日历时间轴</div>
+        <div class="b-tag">日程感 · <b>对标日本 KOMEHYO</b> · 老 B 端</div>
+      </div>
+      <div class="phone d">
+        <div class="status-bar dark"><span>9:41</span><span>●●● 📶 🔋</span></div>
+
+        <div class="scroll">
+        <div class="top">
+          <div class="top-row">
+            <div class="top-date">2026年 5月 <b>14</b> 日 · 周三</div>
+            <div class="top-bag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>
+              <span class="num">3</span>
+            </div>
+          </div>
+          <div class="top-week">
+            <div class="day"><div class="dw">一</div><div class="dn">12</div><div class="dot"></div></div>
+            <div class="day"><div class="dw">二</div><div class="dn">13</div><div class="dot"></div></div>
+            <div class="day today"><div class="dw">三</div><div class="dn">14</div><div class="dot"></div></div>
+            <div class="day"><div class="dw">四</div><div class="dn">15</div><div class="dot"></div></div>
+            <div class="day"><div class="dw">五</div><div class="dn">16</div><div class="dot"></div></div>
+            <div class="day"><div class="dw">六</div><div class="dn">17</div></div>
+            <div class="day"><div class="dw">日</div><div class="dn">18</div></div>
+          </div>
+        </div>
+
+        <!-- 时间轴 -->
+        <div class="timeline">
+          <div class="tl-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            今日开拍时刻表
+          </div>
+          <div class="tl-list">
+
+            <div class="tl-event done">
+              <div class="tl-card">
+                <div class="tl-time"><span class="pill ap">暗拍</span> 11:00 开场 <span class="status done-tag">已结束</span></div>
+                <div class="tl-desc">白天场 · 截标 <b>17:00</b> · 已开标 · 156 件成交</div>
+              </div>
+            </div>
+
+            <div class="tl-event now">
+              <div class="tl-card">
+                <div class="tl-time"><span class="pill mp">明拍</span> 14:00 上新 <span class="status now-tag">进行中</span></div>
+                <div class="tl-desc">爱马仕 · 珠宝周 · <b>32 件</b> · 单件独立结拍 + 5 分钟延时</div>
+                <div class="tl-cd">⚡ 距 16:00 上新 02:14:33</div>
+              </div>
+            </div>
+
+            <div class="tl-event up">
+              <div class="tl-card">
+                <div class="tl-time"><span class="pill mp">明拍</span> 16:00 上新 <span class="status up-tag">即将</span></div>
+                <div class="tl-desc">钟表 · 配饰 · <b>28 件</b> · 估价 ¥1.2k - ¥50k</div>
+              </div>
+            </div>
+
+            <div class="tl-event up">
+              <div class="tl-card">
+                <div class="tl-time"><span class="pill ap">暗拍</span> 18:00 开场 <span class="status up-tag">即将</span></div>
+                <div class="tl-desc">晚场 · 截标 <b>明日 10:30</b> · 16.5 小时窗 · 长尾捡漏</div>
+              </div>
+            </div>
+
+            <div class="tl-event up">
+              <div class="tl-card">
+                <div class="tl-time"><span class="pill lv">直播</span> 19:00 开播 <span class="status up-tag">已预约</span></div>
+                <div class="tl-desc">张鉴定师爱马仕专场 · <b>预约 ⭐ 89</b></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 热门快捷 -->
+        <div class="hot-strip">
+          <div class="hot-strip-info">
+            <div class="hot-strip-title">⚡ 12 件即将截拍</div>
+            <div class="hot-strip-sub">5 分钟内可能落槌,抓紧出价</div>
+          </div>
+          <div class="hot-strip-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>首页</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>我的竞拍</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>购物袋</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>我的</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 4 方案对比表 -->
+  <div style="max-width:1700px;margin-top:24px;padding:18px 22px;background:#FFFFFF;border-radius:12px;border:1px solid rgba(0,0,0,0.06);font-size:13px;line-height:1.7;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px;">4 方案速览对比</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+      <thead style="background:#F8F8F6;">
+        <tr>
+          <th style="padding:9px 12px;text-align:left;color:#6B6B6B;width:120px;">维度</th>
+          <th style="padding:9px 12px;text-align:left;">A 杂志大图</th>
+          <th style="padding:9px 12px;text-align:left;">B 数据驱动</th>
+          <th style="padding:9px 12px;text-align:left;">C iOS Today</th>
+          <th style="padding:9px 12px;text-align:left;">D 日历时间轴</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">主视觉</td><td style="padding:7px 12px;">大图沉浸式 hero 380px</td><td style="padding:7px 12px;">黑色用户卡 + 4 列数据带</td><td style="padding:7px 12px;">紫色大卡 280px + 大字标题</td><td style="padding:7px 12px;">日期带 + 周历 + 时间轴</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">渠道入口</td><td style="padding:7px 12px;">3 个 3:4 大图卡</td><td style="padding:7px 12px;">4 个圆角 quick icon</td><td style="padding:7px 12px;">3 个横排 tile + 在售件数</td><td style="padding:7px 12px;">嵌入时间轴卡片</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">信息密度</td><td style="padding:7px 12px;">低(留白多,故事化)</td><td style="padding:7px 12px;"><b>高</b>(数据带 + 实时条 + chip)</td><td style="padding:7px 12px;">低(大字 + 留白)</td><td style="padding:7px 12px;">中(时间轴信息聚合)</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">设计感</td><td style="padding:7px 12px;">★★★★★</td><td style="padding:7px 12px;">★★★</td><td style="padding:7px 12px;">★★★★★</td><td style="padding:7px 12px;">★★★★</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">效率(找到下手点)</td><td style="padding:7px 12px;">★★</td><td style="padding:7px 12px;">★★★★★</td><td style="padding:7px 12px;">★★★</td><td style="padding:7px 12px;">★★★★(日程感强)</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">适合人群</td><td style="padding:7px 12px;">C 端藏家、品牌曝光</td><td style="padding:7px 12px;">B 端中古商 高频用户</td><td style="padding:7px 12px;">C 端高净值 / 仪式感</td><td style="padding:7px 12px;">B 端日程化(对标日本 KOMEHYO)</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">实现成本</td><td style="padding:7px 12px;">中(需出营销大图)</td><td style="padding:7px 12px;">低(组件复用现有)</td><td style="padding:7px 12px;">中(大图模板需打磨)</td><td style="padding:7px 12px;">中(时间轴组件新建)</td></tr>
+        <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 12px;color:#9A9A9A;">融合建议</td><td colspan="4" style="padding:7px 12px;color:#6B6B6B;"><b>C 的 Today 大卡 + D 的时间轴 + B 的数据带</b> = "设计感 + 高效率 + B/C 通吃"。或直接采纳一套作 v0.4 主视觉</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

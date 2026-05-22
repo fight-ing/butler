@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中古优品 · 后台 · 明拍商品详情</title>
+<style>
+  :root {
+    --primary: #2563EB;
+    --primary-light: #DBEAFE;
+    --primary-deep: #1D4ED8;
+    --success: #15803D;
+    --success-bg: #DCFCE7;
+    --warn: #D97706;
+    --warn-bg: #FEF3C7;
+    --danger: #DC2626;
+    --danger-bg: #FEE2E2;
+    --info: #0EA5E9;
+    --info-bg: #E0F2FE;
+    --profit: #7C3AED;
+    --profit-bg: #EDE9FE;
+    --proxy: #6B46C1;
+    --proxy-bg: #EDE9FE;
+    --manual: #15803D;
+    --manual-bg: #DCFCE7;
+
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    --text-tertiary: #9CA3AF;
+    --text-quaternary: #D1D5DB;
+
+    --bg-page: #F3F4F6;
+    --bg-card: #FFFFFF;
+    --bg-subtle: #F9FAFB;
+    --bg-hover: #F3F4F6;
+    --border: #E5E7EB;
+    --border-strong: #D1D5DB;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* header */
+  .top-header {
+    background: var(--bg-card);
+    height: 48px;
+    display: flex; align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .top-header .logo { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .top-header .logo .dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; }
+  .top-header .crumb { color: var(--text-tertiary); font-size: 13px; }
+  .top-header .crumb a { color: var(--primary); text-decoration: none; }
+  .top-header .crumb a:hover { text-decoration: underline; }
+  .top-header .crumb b { color: var(--text-primary); font-weight: 500; }
+  .top-header .right { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--text-secondary); font-size: 12px; }
+  .top-header .right .icon { width: 16px; height: 16px; cursor: pointer; color: var(--text-tertiary); }
+
+  /* sub-tabs */
+  .sub-tabs {
+    background: var(--bg-card);
+    padding: 0 20px;
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .sub-tabs::-webkit-scrollbar { display: none; }
+  .sub-tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sub-tab:hover { color: var(--primary); }
+  .sub-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .sub-tab .close { margin-left: 6px; color: var(--text-tertiary); font-size: 14px; }
+  .sub-tab.active .close { color: var(--primary); }
+
+  .main { padding: 16px 20px 28px; }
+
+  /* 顶栏:回退 + 标题 + 操作 */
+  .page-bar {
+    display: flex; align-items: center;
+    background: var(--bg-card);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+    gap: 14px;
+  }
+  .page-bar .back {
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .page-bar .back:hover { color: var(--primary); }
+  .page-bar .back svg { width: 14px; height: 14px; }
+  .page-bar .vbar { width: 1px; height: 16px; background: var(--border); }
+  .page-bar .ptitle { font-size: 15px; font-weight: 700; }
+  .page-bar .pno {
+    font-family: 'SF Mono', Menlo, monospace;
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+  .page-bar .pbadge {
+    margin-left: 4px;
+    background: var(--success-bg);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .page-bar .pbadge.draft   { background: var(--bg-subtle); color: var(--text-tertiary); }
+  .page-bar .pbadge.upcoming { background: var(--primary-light); color: var(--primary); }
+  .page-bar .pbadge.live    { background: var(--warn-bg); color: var(--warn); }
+  .page-bar .pbadge.paid    { background: var(--success-bg, #E8F5E9); color: var(--success); }
+  .page-bar .pbadge.pending-order { background: #FFF3E0; color: var(--warn); }
+  .page-bar .pbadge.unpaid  { background: var(--warn-bg); color: var(--warn); }
+  .page-bar .pbadge.cancel  { background: var(--danger-bg, #FFEBEE); color: var(--danger, #E53935); }
+  .page-bar .pbadge.unsold  { background: var(--bg-subtle); color: var(--text-tertiary); }
+
+  /* Demo 状态切换条 */
+  .demo-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    margin: 0 14px 12px;
+    background: linear-gradient(90deg, #FFF8E1 0%, #FFF1E0 100%);
+    border: 1px solid #FFE0B2;
+    border-radius: 6px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .demo-bar-l { font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
+  .demo-bar-list { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  .demo-bar-list a {
+    padding: 3px 10px;
+    font-size: 11.5px;
+    background: white;
+    border: 1px solid var(--border, #E8E8E8);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .demo-bar-list a:hover {
+    background: var(--primary, #FF8000);
+    color: white;
+    border-color: var(--primary, #FF8000);
+  }
+  .demo-bar-list a.active {
+    background: var(--primary, #FF8000);
+    color: white;
+    border-color: var(--primary, #FF8000);
+    font-weight: 600;
+  }
+  .demo-bar-hint {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  /* 隐藏:不同状态屏蔽对应区块 */
+  body.demo-no-result .result-card,
+  body.demo-no-result #timelineCard,
+  body.demo-no-result #bidsCard {
+    display: none;
+  }
+  /* 状态提示卡(替代结果/时间轴)*/
+  .state-notice {
+    background: var(--bg-card);
+    border: 1px solid var(--border, #E8E8E8);
+    border-radius: 6px;
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 0 0 14px;
+  }
+  .state-notice .icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+  .state-notice .title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .state-notice .desc { font-size: 12.5px; line-height: 1.6; }
+  .page-bar .ops { margin-left: auto; display: flex; gap: 8px; }
+  .btn {
+    padding: 6px 14px;
+    font-size: 12.5px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
+  .btn.danger {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+  .btn.danger:hover {
+    background: var(--danger-bg);
+  }
+  .btn svg { width: 12px; height: 12px; }
+
+  /* 2-col 主布局 */
+  .layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 14px;
+  }
+  .col-left { display: flex; flex-direction: column; gap: 14px; }
+  .col-right { display: flex; flex-direction: column; gap: 14px; }
+
+  /* card 通用 */
+  .card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    gap: 8px;
+  }
+  .card-head .ico {
+    width: 4px; height: 14px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  .card-head .title { font-size: 14px; font-weight: 700; }
+  .card-head .desc { font-size: 11.5px; color: var(--text-tertiary); margin-left: 4px; }
+  .card-head .right { margin-left: auto; }
+  .card-body { padding: 16px; }
+
+  /* 货品基本信息 */
+  .product-hero {
+    display: flex; gap: 14px;
+    padding: 16px;
+    background: linear-gradient(135deg, #FFF8E1, #FFFFFF);
+    border-bottom: 1px solid var(--border);
+  }
+  .product-thumb {
+    width: 110px; height: 110px;
+    background: linear-gradient(135deg, #FFE0B2, #FFCC80);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #B45309;
+    font-size: 56px;
+  }
+  .product-info { flex: 1; min-width: 0; }
+  .product-name {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .product-brand {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .product-tags {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-bottom: 8px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .tag.cert { background: var(--success-bg); color: var(--success); border-color: rgba(21,128,61,0.20); font-weight: 500; }
+  .tag.cat  { background: var(--primary-light); color: var(--primary); }
+  .product-no {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+
+  .product-meta {
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+  }
+  .pm-row { font-size: 12px; }
+  .pm-row .l { color: var(--text-tertiary); margin-bottom: 3px; }
+  .pm-row .v { color: var(--text-primary); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .pm-row .v.money::before { content: '¥'; color: var(--text-tertiary); font-weight: 400; }
+
+  /* 中拍结果卡 */
+  .result-card {
+    background: linear-gradient(135deg, #ECFDF5, #FFFFFF);
+    border: 1px solid #A7F3D0;
+  }
+  .result-card .card-head { background: rgba(167,243,208,0.30); border-bottom-color: #A7F3D0; }
+  .result-card .card-head .ico { background: var(--success); }
+  .result-card .card-head .title { color: var(--success); }
+  .result-card.live {
+    background: linear-gradient(135deg, #FFFBEB, #FFFFFF);
+    border-color: #FCD34D;
+  }
+  .result-card.live .card-head { background: rgba(252,211,77,0.30); border-bottom-color: #FCD34D; }
+  .result-card.live .card-head .ico,
+  .result-card.live .card-head .title { color: var(--warn); }
+  .result-card.upcoming {
+    background: linear-gradient(135deg, #EFF6FF, #FFFFFF);
+    border-color: #BFDBFE;
+  }
+  .result-card.upcoming .card-head { background: rgba(191,219,254,0.30); border-bottom-color: #BFDBFE; }
+  .result-card.upcoming .card-head .ico,
+  .result-card.upcoming .card-head .title { color: var(--primary); }
+  .result-card.unsold {
+    background: linear-gradient(135deg, #F9FAFB, #FFFFFF);
+    border-color: #D1D5DB;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .result-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .result-cell:nth-child(2n) { border-right: none; }
+  .result-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .result-cell .l {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .result-cell .v {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+  .result-cell .v.money::before {
+    content: '¥';
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    margin-right: 1px;
+  }
+  .result-cell .v.big { font-size: 22px; }
+  .result-cell .v.up   { color: var(--success); }
+  .result-cell .v.down { color: var(--danger); }
+  .result-cell .v.muted { color: var(--text-tertiary); font-size: 14px; font-weight: 500; }
+  .result-cell .sub {
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .result-cell.span2 {
+    grid-column: span 2;
+    border-right: none;
+  }
+  .stamp-row {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.7);
+    border-top: 1px solid var(--border);
+  }
+  .stamp-row .ico {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--success-bg);
+    color: var(--success);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stamp-row .ico svg { width: 18px; height: 18px; }
+  .stamp-row .txt { flex: 1; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+  .stamp-row .txt b { color: var(--text-primary); font-weight: 600; }
+
+  /* 出价记录 */
+  .bid-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 14px 16px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+  .bid-stat {
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .bid-stat:last-child { border-right: none; }
+  .bid-stat .v {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-stat .l {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  table.bid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .bid-table thead th {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: left;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bid-table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .bid-table tbody tr:hover { background: var(--bg-hover); }
+  .bid-table tbody tr.winner { background: rgba(167,243,208,0.18); }
+  .bid-table tbody tr.winner:hover { background: rgba(167,243,208,0.30); }
+  .bid-table .anon {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11.5px;
+    color: var(--text-primary);
+  }
+  .bid-table .anon.mine { color: var(--proxy); font-weight: 700; }
+  /* 后管:出价人可点击跳用户画像 */
+  .bid-table .user-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    cursor: pointer;
+    padding: 2px 6px;
+    margin: -2px -6px;
+    border-radius: 4px;
+    transition: background .15s, color .15s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .bid-table .user-link:hover {
+    background: rgba(255,128,0,0.12);
+    color: var(--brand-700, #E65100);
+  }
+  .bid-table .user-link .nick {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .bid-table .user-link:hover .nick { color: var(--brand-700, #E65100); }
+  .bid-table .user-link .uid {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+  /* 中拍人结果卡 / 时间轴 兼容 user-link */
+  .user-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    cursor: pointer;
+    padding: 2px 6px;
+    margin: -2px -6px;
+    border-radius: 4px;
+    transition: background .15s, color .15s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .user-link:hover {
+    background: rgba(255,128,0,0.12);
+  }
+  .user-link .nick {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .user-link:hover .nick { color: var(--primary-dark, #E65100); }
+  .user-link .uid {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+  /* 中拍结果卡内的高亮"中拍人"链接 */
+  .winner-link {
+    background: rgba(76,175,80,0.10);
+    padding: 6px 10px;
+    margin: 0;
+    border-radius: 6px;
+  }
+  .winner-link:hover {
+    background: rgba(255,128,0,0.14);
+  }
+  .bid-table .amount {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-table .amount::before { content: '¥'; font-size: 11px; color: var(--text-tertiary); font-weight: 500; margin-right: 1px; }
+  .bid-table .amount.win { color: var(--success); }
+  .bid-table .mark {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .bid-table .mark.proxy  { background: var(--proxy-bg); color: var(--proxy); }
+  .bid-table .mark.manual { background: var(--manual-bg); color: var(--manual); }
+  .bid-table .mark.highest{ background: #FEF3C7; color: #92400E; }
+  .bid-table .delta {
+    font-size: 11px;
+    color: var(--success);
+    margin-left: 4px;
+  }
+  .bid-table .timer {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-table .timer.delay {
+    color: var(--warn);
+    background: var(--warn-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  /* 系统记录 */
+  .timeline {
+    padding: 16px 18px;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 26px; top: 24px; bottom: 24px;
+    width: 1px;
+    background: var(--border);
+  }
+  .tline-item {
+    position: relative;
+    padding-left: 28px;
+    padding-bottom: 14px;
+  }
+  .tline-item:last-child { padding-bottom: 0; }
+  .tline-item .dot {
+    position: absolute;
+    left: 6px; top: 4px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+  .tline-item.system .dot { background: var(--warn); box-shadow: 0 0 0 1px var(--warn); }
+  .tline-item.success .dot { background: var(--success); box-shadow: 0 0 0 1px var(--success); }
+  .tline-item .ttitle {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .tline-item .ttime {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .tline-item .tdesc {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .tline-item.system .tdesc { color: var(--warn); }
+
+  .page-foot {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    padding: 20px 0 16px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-header">
+    <div class="logo"><span class="dot"></span>智赢管家</div>
+    <div class="crumb"><a href="admin-mingpai-simple_v0.3.html">明拍管理</a> · <a href="admin-mingpai-simple_v0.3.html">明拍商品</a> · <b>商品详情</b></div>
+    <div class="right">
+      <span>3428122913276</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <div class="sub-tab">订单列表</div>
+    <div class="sub-tab">回收商品</div>
+    <div class="sub-tab">订单详情</div>
+    <div class="sub-tab">商品信息</div>
+    <div class="sub-tab">售后率列表</div>
+    <div class="sub-tab">暗拍商品</div>
+    <div class="sub-tab">明拍商品</div>
+    <div class="sub-tab active">商品详情<span class="close">×</span></div>
+  </div>
+
+  <div class="main">
+
+    <!-- 顶栏:回退 + 标题 + 操作(状态动态) -->
+    <div class="page-bar">
+      <a href="admin-mingpai-simple_v0.3.html" class="back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+        返回列表
+      </a>
+      <div class="vbar"></div>
+      <div class="ptitle" id="ptitle">HERMÈS Birkin 25 Gold Togo PHW · 2023 全套</div>
+      <span class="pno" id="pno">No. 20260513001</span>
+      <span class="pbadge" id="pbadge">已支付</span>
+      <div class="ops">
+        <button class="btn">导出出价记录</button>
+      </div>
+    </div>
+
+    <!-- Demo 状态切换条(便于评审查看不同状态) -->
+    <div class="demo-bar" id="demoBar">
+      <span class="demo-bar-l">演示状态切换:</span>
+      <div class="demo-bar-list" id="demoBarList"></div>
+      <span class="demo-bar-hint">实际接入按 lot_id 拉取</span>
+    </div>
+
+    <div class="layout">
+
+      <!-- 左列:货品信息 -->
+      <div class="col-left">
+
+        <div class="card">
+          <div class="card-head">
+            <span class="ico"></span>
+            <span class="title">货品基本信息</span>
+          </div>
+
+          <div class="product-hero">
+            <div class="product-thumb">◆</div>
+            <div class="product-info">
+              <div class="product-brand" id="productBrand">HERMÈS · 爱马仕</div>
+              <div class="product-name" id="productName">Birkin 25 Gold Togo PHW · 2023 全套</div>
+              <div class="product-tags" id="productTags">
+                <span class="tag cat">箱包</span>
+                <span class="tag cert">官方鉴定 ✓</span>
+                <span class="tag">9.5 新</span>
+                <span class="tag">U 刻 2023</span>
+              </div>
+              <div class="product-no" id="productNo">No. 20260513001</div>
+            </div>
+          </div>
+
+          <div class="product-meta">
+            <div class="pm-row">
+              <div class="l">起拍价</div>
+              <div class="v money" id="startPrice">68,000</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">成本价</div>
+              <div class="v money" id="costPrice">62,000</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">加价幅度</div>
+              <div class="v money" id="bidStep">200</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">估价区间</div>
+              <div class="v">¥ 78,000 ~ 92,000</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">商家</div>
+              <div class="v" id="sellerName">沪上中古集</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">入库时间</div>
+              <div class="v">2026-05-08 10:32</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">开拍时间</div>
+              <div class="v">2026-05-13 14:00</div>
+            </div>
+            <div class="pm-row">
+              <div class="l">结拍时间</div>
+              <div class="v">2026-05-13 15:18</div>
+            </div>
+            <div class="pm-row" style="grid-column: span 2;">
+              <div class="l">商品描述</div>
+              <div class="v" style="font-weight:400;color:var(--text-secondary);line-height:1.6;">Birkin 25 Gold Togo 皮料 9.5 新,银色 PHW 五金完好无划痕,U 刻 2023 年原盒原票齐全,皮料状态优秀。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 系统记录(扣保证金等纯系统行为)-->
+        <div class="card" id="timelineCard">
+          <div class="card-head">
+            <span class="ico"></span>
+            <span class="title">系统操作记录</span>
+            <span class="desc">所有扣款 / 状态变更均系统自动处理</span>
+          </div>
+          <div class="timeline">
+            <div class="tline-item">
+              <div class="dot"></div>
+              <div class="ttitle">商品上架</div>
+              <div class="ttime">2026-05-08 10:32:15</div>
+              <div class="tdesc">商家"沪上中古集"提交上架申请 → 审核通过 → 进入预告期</div>
+            </div>
+            <div class="tline-item">
+              <div class="dot"></div>
+              <div class="ttitle">开拍</div>
+              <div class="ttime">2026-05-13 14:00:00</div>
+              <div class="tdesc">竞价开始 · 预设代理 5 笔生效</div>
+            </div>
+            <div class="tline-item">
+              <div class="dot"></div>
+              <div class="ttitle">触发延时(2 分内有新出价)</div>
+              <div class="ttime">2026-05-13 14:58:24</div>
+              <div class="tdesc">结拍前 01:36 收到 ¥81,800 出价 → 结拍时间顺延 5 分钟</div>
+            </div>
+            <div class="tline-item success">
+              <div class="dot"></div>
+              <div class="ttitle">落槌成功</div>
+              <div class="ttime">2026-05-13 15:18:33</div>
+              <div class="tdesc">最高出价 ¥82,500 落槌 · 中拍人 <a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E" style="display:inline-flex;gap:4px;"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></div>
+            </div>
+            <div class="tline-item success">
+              <div class="dot"></div>
+              <div class="ttitle">付款完成</div>
+              <div class="ttime">2026-05-13 15:42:08</div>
+              <div class="tdesc">中拍人 24 分内完成付款 ¥82,500(在付款窗口内)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右列:中拍结果 + 出价记录 -->
+      <div class="col-right">
+
+        <!-- 状态占位卡(DRAFT / UPCOMING / LIVE / UNSOLD 时展示) -->
+        <div class="state-notice" id="stateNotice" style="display:none;"></div>
+
+        <!-- 最终中拍结果 -->
+        <div class="card result-card" id="resultCard">
+          <div class="card-head">
+            <span class="ico"></span>
+            <span class="title">最终中拍结果</span>
+            <span class="desc" id="resultDesc">竞价于 5/13 15:18:33 结束</span>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-cell">
+              <div class="l">落槌价(中拍价)</div>
+              <div class="v big money up">82,500</div>
+              <div class="sub">起拍价 ¥68,000 → 加价 ¥14,500(21.3%)</div>
+            </div>
+            <div class="result-cell">
+              <div class="l">中拍人</div>
+              <a class="v user-link winner-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E" style="font-size:16px;">
+                <span class="nick" style="font-size:15px;font-weight:700;">沪上小李</span>
+                <span class="uid">U10082</span>
+              </a>
+              <div class="sub">代理出价 · 点击查看用户画像 ›</div>
+            </div>
+            <div class="result-cell">
+              <div class="l">利润</div>
+              <div class="v money up">20,500</div>
+              <div class="sub">= 落槌价 82,500 − 成本价 62,000</div>
+            </div>
+            <div class="result-cell">
+              <div class="l">利润率</div>
+              <div class="v up">33.06<span style="font-size:13px;color:var(--text-tertiary);">%</span></div>
+              <div class="sub">= 利润 ÷ 成本价(成本利润率)</div>
+            </div>
+            <div class="result-cell">
+              <div class="l">付款状态</div>
+              <div class="v" style="color:var(--success);font-size:15px;">已支付 ✓</div>
+              <div class="sub">5/13 15:42:08 付款 · 24min</div>
+            </div>
+            <div class="result-cell">
+              <div class="l">物流状态</div>
+              <div class="v" style="font-size:15px;">已发货</div>
+              <div class="sub">5/14 09:18 SF1015268403</div>
+            </div>
+          </div>
+
+          <div class="stamp-row">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="txt">
+              本件 <b>已计入利润统计</b>(支付维度) · 平台佣金、分润已在订单层独立扣除,本利润为商家侧毛利。
+            </div>
+          </div>
+        </div>
+
+        <!-- 出价记录 -->
+        <div class="card" id="bidsCard">
+          <div class="card-head">
+            <span class="ico"></span>
+            <span class="title">出价记录</span>
+            <span class="desc">共 23 笔出价 · 5 人参与</span>
+          </div>
+
+          <div class="bid-stats">
+            <div class="bid-stat">
+              <div class="v">23</div>
+              <div class="l">总出价数</div>
+            </div>
+            <div class="bid-stat">
+              <div class="v">5</div>
+              <div class="l">参与人数</div>
+            </div>
+            <div class="bid-stat">
+              <div class="v">15</div>
+              <div class="l">代理出价</div>
+            </div>
+            <div class="bid-stat">
+              <div class="v" style="color:var(--warn);">1</div>
+              <div class="l">触发延时</div>
+            </div>
+          </div>
+
+          <table class="bid-table">
+            <thead>
+              <tr>
+                <th style="width:18%;">时间</th>
+                <th style="width:24%;">出价人</th>
+                <th style="width:14%;">方式</th>
+                <th style="width:24%;">出价金额</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="winner">
+                <td><span class="timer">15:16:57</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount win">82,500</span><span class="delta">+200</span></td>
+                <td><span class="mark highest">🏆 中拍</span></td>
+              </tr>
+              <tr>
+                <td><span class="timer delay">14:58:24 (延时)</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10125&nick=%E4%B8%AD%E5%8F%A4%E8%A1%8C%E5%AE%B6"><span class="nick">中古行家</span><span class="uid">U10125</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">82,300</span><span class="delta">+200</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:57:33</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">82,100</span><span class="delta">+200</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:56:18</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10125&nick=%E4%B8%AD%E5%8F%A4%E8%A1%8C%E5%AE%B6"><span class="nick">中古行家</span><span class="uid">U10125</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">81,900</span><span class="delta">+200</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:42:08</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">81,700</span><span class="delta">+200</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:35:24</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10203&nick=%E4%BA%AC%E9%83%BD%E8%A1%8C%E5%AE%B6"><span class="nick">京都行家</span><span class="uid">U10203</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">81,500</span><span class="delta">+500</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:28:50</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">81,000</span><span class="delta">+200</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:24:33</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10125&nick=%E4%B8%AD%E5%8F%A4%E8%A1%8C%E5%AE%B6"><span class="nick">中古行家</span><span class="uid">U10125</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">80,800</span><span class="delta">+800</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:18:16</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">80,000</span><span class="delta">+1,000</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:12:05</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10133&nick=%E6%94%B6%E8%97%8F%E8%BE%BE%E4%BA%BA"><span class="nick">收藏达人</span><span class="uid">U10133</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">79,000</span><span class="delta">+2,000</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:08:42</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">77,000</span><span class="delta">+1,000</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:05:18</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10157&nick=%E6%B5%99%E4%B8%9C%E8%97%8F%E5%AE%B6"><span class="nick">浙东藏家</span><span class="uid">U10157</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">76,000</span><span class="delta">+3,000</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:02:50</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">73,000</span><span class="delta">+1,000</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:00:42</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10125&nick=%E4%B8%AD%E5%8F%A4%E8%A1%8C%E5%AE%B6"><span class="nick">中古行家</span><span class="uid">U10125</span></a></td>
+                <td><span class="mark manual">手动</span></td>
+                <td><span class="amount">72,000</span><span class="delta">+4,000</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span class="timer">14:00:18</span></td>
+                <td><a class="user-link" href="admin-user-profile_v0.3.html?user_id=U10082&nick=%E6%B2%AA%E4%B8%8A%E5%B0%8F%E6%9D%8E"><span class="nick">沪上小李</span><span class="uid">U10082</span></a></td>
+                <td><span class="mark proxy">代理</span></td>
+                <td><span class="amount">68,200</span><span class="delta">+200</span></td>
+                <td>首拍</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="padding:10px 14px;background:var(--bg-subtle);font-size:11.5px;color:var(--text-tertiary);border-top:1px solid var(--border);">
+            显示 15 笔最近出价 · 共 23 笔 · <a style="color:var(--primary);text-decoration:none;cursor:pointer;">查看完整记录 ›</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="page-foot">©2014-2026 智赢管家 · 天津迹智科技有限公司</div>
+
+  </div>
+
+<script>
+  // 9 个状态示例(对应 admin-mingpai-simple 列表的 9 行)
+  const DEMO = {
+    1: { status:'draft',         label:'待上架',   lot:'20260515008', brand:'DIOR',    name:'Lady Dior Medium 黑色羊皮 银扣',          seller:'沪上中古集',   start:'未设置', cost:'52,000', step:'待算出', cat:'箱包',   condi:'9 新',     winner:null },
+    2: { status:'upcoming',      label:'预告',     lot:'20260513033', brand:'CARTIER', name:'蓝气球 36mm 钢带 自动机芯 全套',           seller:'沪上中古集',   start:'35,000', cost:'32,000', step:'200',    cat:'腕表',   condi:'95 新',    winner:null },
+    3: { status:'live',          label:'竞拍中',   lot:'20260513002', brand:'ROLEX',   name:'Daytona 116500LN 熊猫盘 陶瓷圈',          seller:'京都中古工坊', start:'240,000', cost:'218,000', step:'300',    cat:'腕表',   condi:'98 新',    winner:null, current:'252,000' },
+    4: { status:'paid',          label:'已支付',   lot:'20260513001', brand:'HERMÈS',  name:'Birkin 25 Gold Togo PHW · 2023 全套',     seller:'沪上中古集',   start:'68,000', cost:'62,000', step:'200',    cat:'箱包',   condi:'9.5 新',   winner:{uid:'U10082', nick:'沪上小李'}, win:'82,500' },
+    5: { status:'pending-order', label:'待下单',   lot:'20260515012', brand:'VCA',     name:'Vintage Alhambra 五花项链 18K 玫瑰金',     seller:'沪上中古集',   start:'42,000', cost:'38,200', step:'150',    cat:'珠宝',   condi:'99 新',    winner:{uid:'U10078', nick:'钰宝阁'}, win:'48,500' },
+    6: { status:'unpaid',        label:'待支付',   lot:'20260513015', brand:'CHANEL',  name:'Classic Flap CF25 Caviar 黑色金扣',       seller:'广州奢藏',     start:'38,000', cost:'39,500', step:'150',    cat:'箱包',   condi:'8.5 新',   winner:{uid:'U10095', nick:'真品爱好者'}, win:'46,000' },
+    7: { status:'cancel',        label:'已取消',   lot:'20260513003', brand:'LV',      name:'Speedy 30 Monogram 经典款 全套',          seller:'沪上中古集',   start:'2,800',  cost:'3,200',  step:'50',     cat:'箱包',   condi:'9 新',     winner:{uid:'U10101', nick:'小张'}, win:'4,200' },
+    8: { status:'unsold',        label:'流拍',     lot:'20260513042', brand:'PRADA',   name:'Galleria 中号手提包 黑色 Saffiano',       seller:'广州奢藏',     start:'15,000', cost:'14,000', step:'100',    cat:'箱包',   condi:'9 新',     winner:null, current:'12,800(最高,未达起拍价)' },
+    9: { status:'paid',          label:'已支付·亏损', lot:'20260513047', brand:'GUCCI',   name:'GG Marmont 中号链条包 黑色',              seller:'京都中古工坊', start:'2,800',  cost:'3,800',  step:'50',     cat:'箱包',   condi:'8.5 新',   winner:{uid:'U10090', nick:'实习买家'}, win:'3,500' },
+  };
+  const NO_RESULT = new Set(['draft', 'upcoming', 'live', 'unsold']);
+  const STATE_NOTICE = {
+    draft:    { icon:'📝', title:'待上架',   desc:'商家已提交,待运营审核排期。设置开拍 / 结拍时间后即可进入预告。' },
+    upcoming: { icon:'⏰', title:'预告中',   desc:'已排期,等待开拍。期间用户可收藏 / 预约提醒,不可出价。' },
+    live:     { icon:'⚡', title:'竞拍中',   desc:'拍卖进行中,实时接受用户出价。当前价 ¥<span id="liveCur"></span>(暂未结拍)。' },
+    unsold:   { icon:'—',  title:'流拍',     desc:'无人出价或最高出价未达起拍价 → 流拍 → 商品退回商家,可重新上拍。最高出价 ¥<span id="liveCur"></span>。' },
+  };
+
+  function pickDemo() {
+    const m = location.search.match(/demo=(\d+)/);
+    const n = m ? parseInt(m[1], 10) : 4;  // 默认 4:已支付 HERMES
+    return DEMO[n] ? n : 4;
+  }
+
+  function render(n) {
+    const d = DEMO[n];
+    if (!d) return;
+
+    // 顶栏
+    document.getElementById('ptitle').textContent = `${d.brand} ${d.name}`;
+    document.getElementById('pno').textContent = `No. ${d.lot}`;
+    const pbadge = document.getElementById('pbadge');
+    pbadge.textContent = d.label;
+    pbadge.className = 'pbadge ' + d.status;
+
+    // 货品卡
+    document.getElementById('productBrand').textContent = `${d.brand}`;
+    document.getElementById('productName').textContent = d.name;
+    document.getElementById('productNo').textContent = `No. ${d.lot}`;
+    document.getElementById('productTags').innerHTML =
+      `<span class="tag cat">${d.cat}</span>` +
+      `<span class="tag cert">官方鉴定 ✓</span>` +
+      `<span class="tag">${d.condi}</span>`;
+    document.getElementById('startPrice').textContent = d.start;
+    document.getElementById('costPrice').textContent = d.cost;
+    document.getElementById('bidStep').textContent = d.step;
+    document.getElementById('sellerName').textContent = d.seller;
+
+    // 中拍结果区(若有中拍人)
+    const notice = document.getElementById('stateNotice');
+    if (NO_RESULT.has(d.status)) {
+      // 隐藏 中拍结果 / 时间轴 / 出价记录,显示状态占位
+      document.body.classList.add('demo-no-result');
+      const sn = STATE_NOTICE[d.status];
+      notice.style.display = 'block';
+      notice.innerHTML =
+        `<div class="icon">${sn.icon}</div>` +
+        `<div class="title">${sn.title}</div>` +
+        `<div class="desc">${sn.desc}</div>`;
+      const liveCur = notice.querySelector('#liveCur');
+      if (liveCur) liveCur.textContent = d.current || '—';
+    } else {
+      document.body.classList.remove('demo-no-result');
+      notice.style.display = 'none';
+      // 中拍结果卡数据(只更新关键字段,其他保留 HERMES 样例)
+      // 中拍人链接
+      const winnerLink = document.querySelector('.winner-link');
+      if (winnerLink && d.winner) {
+        winnerLink.href = `admin-user-profile_v0.3.html?user_id=${d.winner.uid}&nick=${encodeURIComponent(d.winner.nick)}`;
+        winnerLink.querySelector('.nick').textContent = d.winner.nick;
+        winnerLink.querySelector('.uid').textContent = d.winner.uid;
+      }
+    }
+  }
+
+  // demo bar
+  function buildDemoBar(active) {
+    const list = document.getElementById('demoBarList');
+    list.innerHTML = '';
+    Object.keys(DEMO).forEach(k => {
+      const d = DEMO[k];
+      const a = document.createElement('a');
+      a.textContent = d.label;
+      a.href = `?demo=${k}`;
+      if (parseInt(k) === active) a.classList.add('active');
+      list.appendChild(a);
+    });
+  }
+
+  (function init() {
+    const n = pickDemo();
+    buildDemoBar(n);
+    render(n);
+  })();
+</script>
+
+</body>
+</html>

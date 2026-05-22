@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 申请提现 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --info: #2B6CB0; --info-bg: #EBF4FB;
+    --success: #2F855A; --success-bg: #E6F4EA;
+    --warning: #C05621; --warning-bg: #FFF4E5;
+    --danger: #C53030; --danger-bg: #FFF1F0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 84px;
+  }
+
+  /* status bar + nav */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+  .navbar {
+    height: 44px; padding: 0 12px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-back {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; font-size: 17px; font-weight: 600;
+    text-align: center;
+    margin-right: 32px;
+  }
+
+  /* 顶部摘要(可用金额)*/
+  .summary {
+    margin: 12px 12px 0;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #FFFBEB 0%, #FFF8E1 100%);
+    border-radius: 12px;
+    border: 1px solid var(--brand-100);
+  }
+  .summary .l {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+  }
+  .summary .v {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--brand-900);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary .v::before {
+    content: '¥';
+    font-size: 15px;
+    color: var(--brand-700);
+    margin-right: 2px;
+    font-weight: 500;
+  }
+  .summary .sub {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+  }
+
+  /* form card */
+  .form-card {
+    margin: 12px 12px 0;
+    background: var(--bg-card);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .form-section {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-section:last-child { border-bottom: none; }
+  .form-label {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .form-label .req { color: var(--danger); margin-left: 2px; font-weight: 700; }
+  .form-label .hint {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  /* 金额输入 */
+  .amount-input {
+    display: flex; align-items: baseline; gap: 4px;
+    padding: 8px 0;
+    border-bottom: 2px solid var(--brand-500);
+  }
+  .amount-input .yuan {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .amount-input input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: transparent;
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+    font-family: inherit;
+    letter-spacing: -0.5px;
+  }
+  .amount-input input::placeholder { color: var(--text-quaternary); font-weight: 500; }
+  .amount-chips {
+    display: flex; gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .amount-chip {
+    padding: 5px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    background: var(--bg-card);
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .amount-chip:hover { color: var(--brand-700); border-color: var(--brand-500); }
+  .amount-chip.active {
+    background: var(--brand-100);
+    border-color: var(--brand-500);
+    color: var(--brand-900);
+    font-weight: 600;
+  }
+  .amount-hint {
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+  }
+  .amount-hint.warn {
+    color: var(--danger);
+    font-weight: 500;
+  }
+
+  /* 只读字段(退款方式/收款账户) */
+  .readonly-value {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .readonly-value .ico {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--info-bg);
+    color: var(--info);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .readonly-value .ico svg { width: 15px; height: 15px; }
+  .readonly-value .v {
+    flex: 1; font-weight: 600;
+  }
+  .readonly-value .v .acc {
+    font-family: 'SF Mono', Menlo, monospace;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .readonly-value .lock {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    background: var(--bg-subtle);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* radio 原因 */
+  .reason-list {
+    display: flex; flex-direction: column;
+    gap: 0;
+  }
+  .reason-item {
+    display: flex; align-items: flex-start;
+    padding: 11px 0;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .reason-list .reason-item:first-child { border-top: none; padding-top: 4px; }
+  .reason-item .dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    flex-shrink: 0;
+    margin-top: 1px;
+    margin-right: 10px;
+    background: var(--bg-card);
+    position: relative;
+    transition: all 0.12s;
+  }
+  .reason-item.active .dot {
+    border-color: var(--brand-500);
+    background: var(--brand-500);
+  }
+  .reason-item.active .dot::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: white;
+  }
+  .reason-item .rt { flex: 1; line-height: 1.45; }
+  .reason-item .rt .rt-main {
+    font-size: 13.5px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .reason-item .rt .rt-sub {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+  }
+  .reason-item.active .rt .rt-main { color: var(--brand-900); font-weight: 600; }
+
+  /* 其他原因 textarea */
+  .other-input {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: none;
+  }
+  .reason-item.active.other ~ .other-input,
+  .other-input.show { display: block; }
+  .other-input textarea {
+    width: 100%;
+    min-height: 60px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    resize: none;
+    font-family: inherit;
+    line-height: 1.55;
+  }
+  .other-input .char-count {
+    display: block;
+    text-align: right;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  /* 注意事项 */
+  .notice {
+    margin: 12px;
+    padding: 12px 14px;
+    background: var(--warning-bg);
+    border: 1px solid rgba(192,86,33,0.18);
+    border-radius: 8px;
+    font-size: 11.5px;
+    color: var(--warning);
+    line-height: 1.7;
+  }
+  .notice b { color: #92400E; font-weight: 700; }
+  .notice .nt-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #78350F;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .notice ul {
+    margin: 0; padding-left: 14px;
+  }
+  .notice li { margin-bottom: 3px; }
+
+  /* sticky footer */
+  .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    padding: 12px 14px 22px;
+    border-top: 1px solid var(--border);
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 13px 0;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 4px 14px rgba(255,128,0,0.30);
+    cursor: pointer;
+  }
+  .submit-btn:disabled {
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  /* 金额只读样式 */
+  .amount-readonly {
+    display: flex; align-items: baseline; gap: 6px;
+    padding: 8px 0;
+    border-bottom: 2px solid var(--brand-500);
+  }
+  .amount-readonly .yuan {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .amount-readonly .amount-value {
+    flex: 1;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .amount-readonly .amount-all-tag {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 11px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* 行式选择(点击弹底部 sheet) */
+  .sel-row {
+    display: flex; align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .sel-row:active { background: var(--bg-subtle); }
+  .sel-row .sr-label {
+    font-size: 13px;
+    color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  .sel-row .sr-label .req { color: var(--danger); margin-left: 2px; font-weight: 700; }
+  .sel-row .sr-value {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 13.5px;
+    color: var(--text-primary);
+    font-weight: 500;
+    max-width: 65%;
+  }
+  .sel-row .sr-value .placeholder {
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+  .sel-row .sr-arrow {
+    width: 14px; height: 14px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .other-section .other-input { margin-top: 0; }
+  .other-section .form-label {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .other-section .form-label .hint {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  /* ============ 底部弹出 sheet ============ */
+  .sheet-mask {
+    position: absolute; inset: 0;
+    background: rgba(15,23,42,0.45);
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+  }
+  .sheet-mask.show { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-radius: 14px 14px 0 0;
+    z-index: 91;
+    transform: translateY(100%);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 70%;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .sheet.show { transform: translateY(0); }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border-strong);
+    border-radius: 2px;
+    margin: 8px auto 0;
+    flex-shrink: 0;
+  }
+  .sheet-head {
+    padding: 12px 18px 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    flex-shrink: 0;
+  }
+  .sheet-head .sh-title {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .sheet-head .sh-cancel {
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+  }
+  .sheet-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0 24px;
+  }
+  .sheet-item {
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .sheet-list .sheet-item:first-child { border-top: none; }
+  .sheet-item:active { background: var(--bg-subtle); }
+  .sheet-item .si-text { flex: 1; line-height: 1.45; }
+  .sheet-item .si-main {
+    font-size: 14.5px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .sheet-item .si-sub {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+  }
+  .sheet-item .si-check {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    color: var(--brand-700);
+    opacity: 0;
+  }
+  .sheet-item.selected .si-check { opacity: 1; }
+  .sheet-item.selected .si-main { color: var(--brand-900); font-weight: 600; }
+
+  /* 二次确认弹窗 */
+  .modal-mask {
+    position: absolute; inset: 0;
+    background: rgba(15,23,42,0.55);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+  }
+  .modal-mask.show { opacity: 1; pointer-events: auto; }
+  .confirm-modal {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 86%;
+    max-width: 320px;
+    background: white;
+    border-radius: 14px;
+    z-index: 101;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.20s;
+    overflow: hidden;
+  }
+  .confirm-modal.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+  .cm-body { padding: 20px 18px 14px; }
+  .cm-title {
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .cm-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .cm-row .l { color: var(--text-tertiary); }
+  .cm-row .v {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    max-width: 60%;
+  }
+  .cm-row .v.amt { color: var(--brand-900); font-size: 15px; }
+  .cm-row .v.amt::before { content: '¥'; color: var(--brand-700); font-size: 11px; margin-right: 1px; font-weight: 500; }
+  .cm-tip {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--info-bg);
+    border-radius: 5px;
+    font-size: 11.5px;
+    color: var(--info);
+    line-height: 1.5;
+  }
+  .cm-foot {
+    display: flex;
+    border-top: 1px solid var(--border);
+  }
+  .cm-btn {
+    flex: 1;
+    padding: 13px 0;
+    border: none;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .cm-btn.cancel { color: var(--text-secondary); border-right: 1px solid var(--border); }
+  .cm-btn.confirm { color: var(--brand-700); font-weight: 600; }
+  .cm-btn:hover { background: var(--bg-page); }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <div class="navbar">
+      <a class="nav-back" href="deposit_v0.2.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <div class="nav-title">申请提现</div>
+    </div>
+
+    <!-- 摘要:可用金额 -->
+    <div class="summary">
+      <div class="l">本次可提现金额</div>
+      <div class="v">2,500.00</div>
+      <div class="sub">账户余额 ¥4,500 − 提现冻结 ¥2,000 = 可提现 ¥2,500</div>
+    </div>
+
+    <!-- 表单 -->
+    <div class="form-card">
+
+      <!-- 金额(只读全额) -->
+      <div class="form-section">
+        <div class="form-label">提现金额 <span class="hint">全额提现 · 不可修改</span></div>
+        <div class="amount-readonly">
+          <span class="yuan">¥</span>
+          <span class="amount-value" id="amtValue">2,500.00</span>
+          <span class="amount-all-tag">全额</span>
+        </div>
+        <div class="amount-hint">本次申请将提现全部可用保证金 ¥2,500</div>
+      </div>
+
+      <!-- 退款方式(固定 · 不可选) -->
+      <div class="form-section">
+        <div class="form-label">退款方式</div>
+        <div class="readonly-value">
+          <span class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          </span>
+          <span class="v">原路退回</span>
+          <span class="lock">固定不可修改</span>
+        </div>
+      </div>
+
+      <!-- 收款账户(只读) -->
+      <div class="form-section">
+        <div class="form-label">收款账户</div>
+        <div class="readonly-value">
+          <span class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </span>
+          <span class="v">招商银行 <span class="acc">****4521</span></span>
+          <span class="lock">绑定卡</span>
+        </div>
+      </div>
+
+      <!-- 申请原因(行式 - 点击底部 sheet) -->
+      <div class="form-section sel-row" onclick="openSheet('reason')">
+        <div class="sr-label">申请原因 <span class="req">*</span></div>
+        <div class="sr-value">
+          <span id="reasonVal" class="placeholder">请选择申请原因</span>
+          <svg class="sr-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 注意事项 -->
+    <div class="notice">
+      <div class="nt-title">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        提现须知
+      </div>
+      <ul>
+        <li>提现申请提交后预计 <b>5-7 个工作日</b>内到账</li>
+        <li>处理期间可在保证金主页主动取消申请,款项原路退回</li>
+        <li>提现期间冻结金额 <b>不计入可用保证金</b>,不影响其他参拍订单</li>
+        <li>同一时间仅支持一笔提现申请,请等当前申请完结后再发起新申请</li>
+        <li>提现金额不可超过当前可提现额度 ¥2,500</li>
+      </ul>
+    </div>
+
+    <!-- 底部 -->
+    <div class="footer">
+      <button class="submit-btn" id="submitBtn" disabled>提交提现申请</button>
+    </div>
+
+    <!-- 底部 sheet 选择 -->
+    <div class="sheet-mask" id="sheetMask"></div>
+    <div class="sheet" id="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <span class="sh-title" id="sheetTitle">选择</span>
+        <button class="sh-cancel" id="sheetCancel">取消</button>
+      </div>
+      <div class="sheet-list" id="sheetList"></div>
+    </div>
+
+    <!-- 二次确认弹窗 -->
+    <div class="modal-mask" id="confirmMask"></div>
+    <div class="confirm-modal" id="confirmModal">
+      <div class="cm-body">
+        <div class="cm-title">确认提现申请</div>
+        <div class="cm-row"><span class="l">提现金额</span><span class="v amt" id="cfmAmt">2,500.00</span></div>
+        <div class="cm-row"><span class="l">退款方式</span><span class="v">原路退回</span></div>
+        <div class="cm-row"><span class="l">收款账户</span><span class="v">招商银行 ****4521</span></div>
+        <div class="cm-row"><span class="l">申请原因</span><span class="v" id="cfmReason">—</span></div>
+        <div class="cm-tip">提交后预计 <b>5-7 个工作日</b>内到账,期间可在主页取消申请。</div>
+      </div>
+      <div class="cm-foot">
+        <button class="cm-btn cancel" id="cfmCancel">再想想</button>
+        <button class="cm-btn confirm" id="cfmConfirm">确认提交</button>
+      </div>
+    </div>
+
+  </div>
+
+<script src="_shell-hook.js"></script>
+<script>
+  const FIXED_AMT = 2500;
+  const submitBtn = document.getElementById('submitBtn');
+
+  let selectedReason = null;
+
+  const REASON_OPTS = [
+    { key: 'quit',  main: '退出平台,不再采购', sub: '永久离开,后续不再参拍' },
+    { key: 'merge', main: '平台多个账号需要注销', sub: '合并/清理多余账户,资金归集' },
+    { key: 'pause', main: '暂停参拍,资金挪作他用', sub: '短期内不再出价,待复出再充值' },
+    { key: 'cash',  main: '资金周转需要', sub: '业务/经营临时调用' },
+    { key: 'other', main: '其他原因', sub: '不便描述的其它情况' },
+  ];
+
+  // ---------- 底部 sheet(仅"申请原因"使用)----------
+  const sheetMask  = document.getElementById('sheetMask');
+  const sheet      = document.getElementById('sheet');
+  const sheetTitle = document.getElementById('sheetTitle');
+  const sheetList  = document.getElementById('sheetList');
+
+  function renderSheet() {
+    sheetTitle.textContent = '选择申请原因';
+    sheetList.innerHTML = REASON_OPTS.map(o => `
+      <div class="sheet-item ${o.key === selectedReason ? 'selected' : ''}" data-key="${o.key}">
+        <div class="si-text">
+          <div class="si-main">${o.main}</div>
+          <div class="si-sub">${o.sub}</div>
+        </div>
+        <svg class="si-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    `).join('');
+    sheetList.querySelectorAll('.sheet-item').forEach(it => {
+      it.addEventListener('click', () => {
+        const key = it.dataset.key;
+        selectedReason = key;
+        const opt = REASON_OPTS.find(o => o.key === key);
+        const rv = document.getElementById('reasonVal');
+        rv.textContent = opt.main;
+        rv.classList.remove('placeholder');
+        closeSheet();
+        validateForm();
+      });
+    });
+  }
+  function openSheet(/* type kept for compat */) {
+    renderSheet();
+    sheetMask.classList.add('show');
+    sheet.classList.add('show');
+  }
+  function closeSheet() {
+    sheetMask.classList.remove('show');
+    sheet.classList.remove('show');
+  }
+  sheetMask.addEventListener('click', closeSheet);
+  document.getElementById('sheetCancel').addEventListener('click', closeSheet);
+  window.openSheet = openSheet;
+
+  // ---------- 校验 ----------
+  function validateForm() {
+    submitBtn.disabled = !selectedReason;
+  }
+  validateForm();
+
+  // ---------- 提交确认 ----------
+  const mask = document.getElementById('confirmMask');
+  const modal = document.getElementById('confirmModal');
+  submitBtn.addEventListener('click', () => {
+    if (submitBtn.disabled) return;
+    document.getElementById('cfmAmt').textContent = FIXED_AMT.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+    const map = {
+      quit: '退出平台,不再采购',
+      merge: '平台多个账号需要注销',
+      pause: '暂停参拍,资金挪作他用',
+      cash: '资金周转需要',
+      other: '其他原因'
+    };
+    document.getElementById('cfmReason').textContent = map[selectedReason] || '—';
+    mask.classList.add('show');
+    modal.classList.add('show');
+  });
+
+  function closeModal() {
+    mask.classList.remove('show');
+    modal.classList.remove('show');
+  }
+  document.getElementById('cfmCancel').addEventListener('click', closeModal);
+  mask.addEventListener('click', closeModal);
+  document.getElementById('cfmConfirm').addEventListener('click', () => {
+    closeModal();
+    alert('演示稿:提现申请已提交,预计 5-7 个工作日内到账');
+    // 实际应跳回 deposit_v0.2.html
+    setTimeout(() => { window.location.href = 'deposit_v0.2.html'; }, 800);
+  });
+</script>
+
+</body>
+</html>

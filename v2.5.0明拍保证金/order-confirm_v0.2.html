@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 订单确认 v0.3</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E;
+    --mingpai-deep: #E65100; --anpai-orange: #FF8000;
+    --listing-blue: #2B6CB0;
+    --danger: #DC2626;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 72px;
+  }
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-back {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -4px;
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; text-align: center;
+    font-size: 17px; font-weight: 600;
+    margin-right: 28px;
+  }
+
+  /* 地址卡(底部红蓝条纹) */
+  .addr-card {
+    margin: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .addr-card::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: repeating-linear-gradient(
+      90deg,
+      #E53E3E 0 10px,
+      #FFFFFF 10px 14px,
+      #2B6CB0 14px 24px,
+      #FFFFFF 24px 28px
+    );
+  }
+  .addr-head { display: flex; align-items: flex-start; gap: 8px; }
+  .addr-pin {
+    width: 16px; height: 16px;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .addr-info { flex: 1; }
+  .addr-line1 { font-size: 13px; color: var(--text-secondary); }
+  .addr-line2 {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .addr-contact {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-top: 6px;
+  }
+  .addr-arrow { color: var(--text-tertiary); align-self: center; }
+
+  /* 店铺 + 货品 */
+  .shop-card {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .shop-head {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .shop-head svg { width: 17px; height: 17px; }
+
+  .item-row {
+    display: flex; gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .item-row:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .item-img {
+    width: 78px; height: 78px;
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(150,140,120,0.55);
+    font-size: 28px;
+  }
+  .item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .item-title-row {
+    font-size: 13px; line-height: 1.45;
+    color: var(--text-primary);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .tag-verified {
+    display: inline-flex; align-items: center;
+    background: #FFFFFF; color: var(--text-primary);
+    font-size: 10px; font-weight: 700;
+    padding: 0 4px; height: 16px;
+    border: 1px solid #333;
+    border-radius: 2px;
+    margin-right: 3px;
+    vertical-align: 2px;
+  }
+  .tag-grade {
+    display: inline-flex; align-items: center;
+    background: #2D2D2D; color: #FFFFFF;
+    font-size: 10px; font-weight: 700;
+    padding: 0 4px; height: 16px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: 2px;
+  }
+  .item-source-pill {
+    display: inline-flex;
+    align-self: flex-start;
+    width: fit-content;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-top: 6px;
+    color: white;
+  }
+  .item-source-pill.listing { background: var(--listing-blue); }
+  .item-source-pill.mingpai { background: var(--mingpai-deep); }
+  .item-source-pill.anpai   { background: var(--anpai-orange); }
+  .item-source-pill.live    { background: var(--live-red); }
+  .item-price-row {
+    margin-top: auto;
+    padding-top: 6px;
+    font-size: 18px; font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .item-price-row::before {
+    content: '¥';
+    font-size: 12px;
+    margin-right: 1px;
+    font-weight: 600;
+  }
+
+  /* 单件快递选择(每件独立) */
+  .item-ship-row {
+    margin-top: 6px;
+    display: flex; align-items: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .item-ship-row .lbl {
+    color: var(--text-tertiary);
+    margin-right: 6px;
+  }
+  .item-ship-row .val {
+    color: var(--text-primary);
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .item-ship-row .arrow {
+    color: var(--text-tertiary);
+    margin-left: auto;
+    font-size: 13px;
+  }
+
+  /* 服务项 */
+  .service-row {
+    display: flex; align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .service-row .lbl {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    margin-right: auto;
+  }
+  .service-row .val {
+    color: var(--text-primary);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .service-row .val .pill-truck {
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .service-row .arrow {
+    color: var(--text-tertiary);
+    margin-left: 4px;
+  }
+  .service-row .placeholder {
+    color: var(--text-tertiary);
+    font-size: 12.5px;
+  }
+
+  /* 价格汇总 */
+  .summary {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .sum-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .sum-row .k { color: var(--text-secondary); }
+  .sum-row .v {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .sum-row .v.muted { color: var(--text-tertiary); }
+  .sum-row .v.price::before { content: '¥'; font-size: 11px; margin-right: 1px; font-weight: 500; }
+  .sum-row.total {
+    margin-top: 4px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--border);
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .sum-row.total .count {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .sum-row.total .v {
+    font-size: 20px; font-weight: 700;
+    color: var(--danger);
+  }
+  .sum-row.total .v::before {
+    content: '¥';
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 1px;
+  }
+
+  /* Sticky footer */
+  .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .footer-info { flex: 1; }
+  .footer-info .lbl {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .footer-info .amt {
+    font-size: 20px; font-weight: 700;
+    color: var(--danger);
+    font-variant-numeric: tabular-nums;
+  }
+  .footer-info .amt::before {
+    content: '¥';
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 1px;
+  }
+  .submit-btn {
+    flex-shrink: 0;
+    padding: 11px 26px;
+    background: #1A1A1A;
+    color: white;
+    border: none;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <div class="navbar">
+      <div class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">订单确认</div>
+    </div>
+
+    <!-- 地址卡 -->
+    <div class="addr-card">
+      <div class="addr-head">
+        <svg class="addr-pin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7 2 3 6 3 11c0 6 9 11 9 11s9-5 9-11c0-5-4-9-9-9zm0 12a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+        <div class="addr-info">
+          <div class="addr-line1">北京市 朝阳区 新华大街</div>
+          <div class="addr-line2">通州新华大街58号万达广场</div>
+          <div class="addr-contact">张铁柱 133****6666</div>
+        </div>
+        <span class="addr-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- 店铺卡 -->
+    <div class="shop-card">
+      <div class="shop-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h18M5 9V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M5 9l-1 11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1l-1-11"/></svg>
+        奢收多箱包店
+      </div>
+
+      <!-- 货品 1: 挂售 -->
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-title-row">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            NeoVintage/虎头老花虎头双面单肩背/最多两行文案
+          </div>
+          <span class="item-source-pill listing">挂售</span>
+          <div class="item-price-row">8,503</div>
+          <div class="item-ship-row">
+            <span class="lbl">快递</span>
+            <span class="val">顺丰陆运到付</span>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 货品 2: 明拍中拍 -->
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-title-row">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">A 级</span>
+            HERMÈS Birkin 25 Gold Togo PHW · 2023 全套
+          </div>
+          <span class="item-source-pill mingpai">明拍 · 中拍</span>
+          <div class="item-price-row">7,200</div>
+          <div class="item-ship-row">
+            <span class="lbl">快递</span>
+            <span class="val">顺丰空运到付</span>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 货品 3: 暗拍中拍 -->
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-title-row">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            CHANEL Classic Flap CF25 黑色金扣
+          </div>
+          <span class="item-source-pill anpai">暗拍 · 中拍</span>
+          <div class="item-price-row">3,800</div>
+          <div class="item-ship-row">
+            <span class="lbl">快递</span>
+            <span class="val">顺丰陆运到付</span>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 服务项 -->
+      <div class="service-row">
+        <span class="lbl">留言</span>
+        <span class="placeholder">建议留言前先与商家沟通</span>
+        <span class="arrow">›</span>
+      </div>
+    </div>
+
+    <!-- 价格汇总 -->
+    <div class="summary">
+      <div class="sum-row">
+        <span class="k">商品金额</span>
+        <span class="v price">19,503</span>
+      </div>
+      <div class="sum-row">
+        <span class="k">运费</span>
+        <span class="v muted">默认到付</span>
+      </div>
+      <div class="sum-row">
+        <span class="k">优惠券</span>
+        <span class="v muted">暂无可用</span>
+      </div>
+      <div class="sum-row total">
+        <span class="count">共 3 件商品,合计</span>
+        <span class="v">19,503</span>
+      </div>
+    </div>
+
+    <!-- Sticky footer -->
+    <div class="footer">
+      <div class="footer-info">
+        <div class="lbl">合计</div>
+        <div class="amt">19,503</div>
+      </div>
+      <button class="submit-btn">提交订单</button>
+    </div>
+
+  </div>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

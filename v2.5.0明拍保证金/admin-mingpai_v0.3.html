@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中古优品 · 后台 · 明拍商品管理</title>
+<style>
+  :root {
+    --primary: #2563EB;
+    --primary-light: #DBEAFE;
+    --primary-deep: #1D4ED8;
+    --success: #15803D;
+    --success-bg: #DCFCE7;
+    --warn: #D97706;
+    --warn-bg: #FEF3C7;
+    --danger: #DC2626;
+    --danger-bg: #FEE2E2;
+    --info: #0EA5E9;
+    --info-bg: #E0F2FE;
+    --profit: #7C3AED;
+    --profit-bg: #EDE9FE;
+
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    --text-tertiary: #9CA3AF;
+    --text-quaternary: #D1D5DB;
+
+    --bg-page: #F3F4F6;
+    --bg-card: #FFFFFF;
+    --bg-subtle: #F9FAFB;
+    --bg-hover: #F3F4F6;
+    --border: #E5E7EB;
+    --border-strong: #D1D5DB;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  /* ===== 顶部 header ===== */
+  .top-header {
+    background: var(--bg-card);
+    height: 48px;
+    display: flex; align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .top-header .logo {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-header .logo .dot {
+    width: 6px; height: 6px;
+    background: var(--primary);
+    border-radius: 50%;
+  }
+  .top-header .crumb {
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+  .top-header .crumb b { color: var(--text-primary); font-weight: 500; }
+  .top-header .right { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--text-secondary); font-size: 12px; }
+  .top-header .right .icon { width: 16px; height: 16px; cursor: pointer; color: var(--text-tertiary); }
+
+  /* ===== 二级 tab(类似截图顶部多 tab)===== */
+  .sub-tabs {
+    background: var(--bg-card);
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .sub-tabs::-webkit-scrollbar { display: none; }
+  .sub-tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+  }
+  .sub-tab:hover { color: var(--primary); }
+  .sub-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .sub-tab .close {
+    margin-left: 6px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+  .sub-tab.active .close { color: var(--primary); }
+
+  /* ===== 主体 ===== */
+  .main { padding: 16px 20px 28px; }
+
+  /* 筛选区 */
+  .filter-card {
+    background: var(--bg-card);
+    border-radius: 4px;
+    padding: 14px 16px 4px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .filter-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .filter-item {
+    display: flex; align-items: center;
+    gap: 6px;
+  }
+  .filter-item .label {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    text-align: right;
+    width: 70px;
+  }
+  .filter-item .input,
+  .filter-item .select {
+    flex: 1;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    padding: 4px 8px;
+    height: 28px;
+    background: var(--bg-card);
+    font-size: 12.5px;
+    color: var(--text-primary);
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-item .select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-tertiary) 50%),
+                      linear-gradient(135deg, var(--text-tertiary) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 12px, calc(100% - 9px) 12px;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 22px;
+  }
+  .filter-item .input::placeholder { color: var(--text-tertiary); }
+  .filter-item .range-sep { color: var(--text-tertiary); font-size: 12px; }
+
+  .filter-actions {
+    display: flex; gap: 8px;
+    padding: 8px 0 4px;
+    border-top: 1px dashed var(--border);
+  }
+  .btn {
+    padding: 6px 14px;
+    font-size: 12.5px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
+  .btn.primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  .btn.primary:hover { background: var(--primary-deep); border-color: var(--primary-deep); }
+  .btn svg { width: 12px; height: 12px; }
+
+  /* ===== 核心 KPI 3 张大卡 ===== */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .kpi-card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 16px 20px;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary);
+    display: flex; align-items: center; gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card.sell    { border-left-color: var(--success); }
+  .kpi-card.profit  { border-left-color: var(--profit); }
+  .kpi-card.margin  { border-left-color: var(--warn); }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    opacity: 0.06;
+    background: currentColor;
+  }
+  .kpi-card.sell::after    { color: var(--success); }
+  .kpi-card.profit::after  { color: var(--profit); }
+  .kpi-card.margin::after  { color: var(--warn); }
+  .kpi-icon {
+    width: 46px; height: 46px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .kpi-icon svg { width: 22px; height: 22px; }
+  .kpi-card.sell   .kpi-icon { background: var(--success-bg); color: var(--success); }
+  .kpi-card.profit .kpi-icon { background: var(--profit-bg);  color: var(--profit); }
+  .kpi-card.margin .kpi-icon { background: var(--warn-bg);    color: var(--warn); }
+
+  .kpi-body { flex: 1; min-width: 0; }
+  .kpi-label {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .kpi-label .tip {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    background: var(--bg-subtle);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-weight: 500;
+  }
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+  .kpi-value .unit { font-size: 13px; font-weight: 500; color: var(--text-tertiary); margin-left: 3px; }
+  .kpi-card.sell   .kpi-value { color: var(--success); }
+  .kpi-card.profit .kpi-value { color: var(--profit); }
+  .kpi-card.margin .kpi-value { color: var(--warn); }
+  .kpi-delta {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .kpi-delta .up { color: var(--success); font-weight: 600; }
+  .kpi-delta .down { color: var(--danger); font-weight: 600; }
+  .kpi-delta .pct { color: var(--text-secondary); }
+
+  /* ===== 统计数据网格(对齐暗拍样式)===== */
+  .stats-card {
+    background: var(--bg-card);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stats-head {
+    display: flex; align-items: center;
+    margin-bottom: 14px;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stats-head .ico {
+    width: 4px; height: 14px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  .stats-head .title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .stats-head .desc {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    margin-left: 6px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .stats-col {
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+  }
+  .stats-col:first-child { padding-left: 4px; }
+  .stats-col:last-child  { border-right: none; padding-right: 4px; }
+  .stats-col-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stats-col-title .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .stats-col[data-col="bid"]    .dot { background: var(--info); }
+  .stats-col[data-col="win"]    .dot { background: var(--success); }
+  .stats-col[data-col="profit"] .dot { background: var(--profit); }
+  .stats-col[data-col="unsold"] .dot { background: var(--danger); }
+
+  .stats-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 5px 0;
+    font-size: 12.5px;
+  }
+  .stats-row .l {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    padding-right: 8px;
+  }
+  .stats-row .v {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .stats-row .v.money::before {
+    content: '¥';
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-right: 1px;
+    font-size: 11px;
+  }
+  .stats-row .v.pct {
+    color: var(--success);
+  }
+  .stats-row .v.pct.warn { color: var(--warn); }
+  .stats-row .v.pct.bad  { color: var(--danger); }
+  .stats-row .v.muted    { color: var(--text-tertiary); font-weight: 500; }
+  .stats-row.highlight {
+    background: var(--bg-subtle);
+    margin: 3px -8px;
+    padding: 5px 8px;
+    border-radius: 3px;
+  }
+  .stats-row.highlight .l { font-weight: 600; color: var(--text-primary); }
+  .stats-row.highlight .v { font-size: 13.5px; }
+
+  /* ===== 商品列表 ===== */
+  .list-card {
+    background: var(--bg-card);
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .list-toolbar {
+    padding: 12px 16px;
+    display: flex; align-items: center;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .list-toolbar .title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .list-toolbar .count {
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+  .list-toolbar .right { margin-left: auto; display: flex; gap: 8px; }
+  .list-toolbar .check-tab {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .list-toolbar .check-tab.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  table.goods-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .goods-table thead th {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .goods-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .goods-table tbody tr:hover { background: var(--bg-hover); }
+
+  .goods-cell {
+    display: flex; gap: 10px;
+    min-width: 200px;
+  }
+  .goods-thumb {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #FFF3D6, #FFE0B0);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #C97C42;
+    font-size: 22px;
+  }
+  .goods-info { flex: 1; min-width: 0; line-height: 1.55; }
+  .goods-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 2px;
+  }
+  .goods-meta {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+  }
+  .goods-meta b { color: var(--text-secondary); font-weight: 500; }
+  .goods-no {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10.5px;
+    color: var(--text-quaternary);
+    margin-top: 2px;
+  }
+
+  .data-list {
+    line-height: 1.7;
+    font-size: 12px;
+  }
+  .data-list .row-mini {
+    display: flex; justify-content: space-between;
+    gap: 12px;
+    white-space: nowrap;
+  }
+  .data-list .row-mini .l { color: var(--text-tertiary); }
+  .data-list .row-mini .v {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .data-list .row-mini .v.money::before {
+    content: '¥';
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-right: 1px;
+  }
+  .data-list .row-mini .v.up   { color: var(--success); font-weight: 600; }
+  .data-list .row-mini .v.down { color: var(--danger);  font-weight: 600; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .badge.live    { background: var(--success-bg); color: var(--success); }
+  .badge.win     { background: var(--info-bg);    color: var(--info); }
+  .badge.paid    { background: var(--success-bg); color: var(--success); }
+  .badge.unpaid  { background: var(--warn-bg);    color: var(--warn); }
+  .badge.unsold  { background: var(--bg-subtle);  color: var(--text-tertiary); }
+  .badge.delay   { background: var(--danger-bg);  color: var(--danger); }
+  .badge.upcoming{ background: var(--primary-light); color: var(--primary); }
+  .badge .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge.live .dot { animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  .row-act {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .act-link {
+    color: var(--primary);
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .act-link:hover { text-decoration: underline; }
+  .act-link.muted { color: var(--text-tertiary); }
+  .act-link.danger { color: var(--danger); }
+
+  /* 分页 */
+  .pager {
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+  .pager .pg-num {
+    width: 28px; height: 28px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+  .pager .pg-num.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+  .pager .pg-num:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+  /* footer */
+  .page-foot {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    padding: 16px 0 20px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 顶部 header -->
+  <div class="top-header">
+    <div class="logo">
+      <span class="dot"></span>
+      智赢管家
+    </div>
+    <div class="crumb"><b>明拍管理</b> · 明拍商品</div>
+    <div class="right">
+      <span>3428122913276</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+  </div>
+
+  <!-- 二级 tab -->
+  <div class="sub-tabs">
+    <div class="sub-tab">订单列表</div>
+    <div class="sub-tab">回收商品</div>
+    <div class="sub-tab">订单详情</div>
+    <div class="sub-tab">直播订单</div>
+    <div class="sub-tab">直播详情</div>
+    <div class="sub-tab">商品信息</div>
+    <div class="sub-tab">售后率列表</div>
+    <div class="sub-tab">暗拍批次</div>
+    <div class="sub-tab">暗拍商品</div>
+    <div class="sub-tab active">明拍商品<span class="close">×</span></div>
+  </div>
+
+  <div class="main">
+
+    <!-- 筛选区 -->
+    <div class="filter-card">
+      <div class="filter-row">
+        <div class="filter-item">
+          <span class="label">商品编号</span>
+          <input class="input" placeholder="请输入 11 位编号" />
+        </div>
+        <div class="filter-item">
+          <span class="label">商品名称</span>
+          <input class="input" placeholder="请输入" />
+        </div>
+        <div class="filter-item">
+          <span class="label">品牌</span>
+          <select class="select"><option>全部</option><option>HERMÈS</option><option>CHANEL</option><option>LV</option><option>ROLEX</option><option>CARTIER</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="label">商家</span>
+          <select class="select"><option>全部</option><option>沪上中古集</option><option>京都中古工坊</option><option>广州奢藏</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="label">商品状态</span>
+          <select class="select"><option>全部</option><option>预告</option><option>竞价中</option><option>即将结拍</option><option>已中拍</option><option>已支付</option><option>流拍</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="label">鉴定状态</span>
+          <select class="select"><option>全部</option><option>已鉴定</option><option>待鉴定</option><option>无鉴定</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="label">开拍时间</span>
+          <input class="input" placeholder="开始日期" />
+          <span class="range-sep">~</span>
+          <input class="input" placeholder="结束日期" />
+        </div>
+        <div class="filter-item">
+          <span class="label">起拍价</span>
+          <input class="input" placeholder="最低" />
+          <span class="range-sep">~</span>
+          <input class="input" placeholder="最高" />
+        </div>
+        <div class="filter-item">
+          <span class="label">中拍价</span>
+          <input class="input" placeholder="最低" />
+          <span class="range-sep">~</span>
+          <input class="input" placeholder="最高" />
+        </div>
+        <div class="filter-item">
+          <span class="label">利润率</span>
+          <select class="select"><option>全部</option><option>≥30%</option><option>15-30%</option><option>0-15%</option><option>亏损</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="label">分类</span>
+          <select class="select"><option>全部</option><option>箱包</option><option>腕表</option><option>珠宝</option><option>配饰</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="label">支付状态</span>
+          <select class="select"><option>全部</option><option>已支付</option><option>待支付</option><option>超时未付</option></select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-5-5"/></svg>
+          查询
+        </button>
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg>
+          重置
+        </button>
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出数据
+        </button>
+      </div>
+    </div>
+
+    <!-- 核心 KPI 3 张大卡 -->
+    <div class="kpi-row">
+      <div class="kpi-card sell">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">售出率 <span class="tip">中拍 / 上拍</span></div>
+          <div class="kpi-value">78.92<span class="unit">%</span></div>
+          <div class="kpi-delta"><span class="up">↑ 4.6%</span><span class="pct">vs 上周</span> · 行业基准 65%</div>
+        </div>
+      </div>
+
+      <div class="kpi-card profit">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">总利润 <span class="tip">中拍价 − 收货价</span></div>
+          <div class="kpi-value">12,847,560<span class="unit">元</span></div>
+          <div class="kpi-delta"><span class="up">↑ ¥1,128,400</span><span class="pct">vs 上周</span> · 净利润 ¥11,920,300</div>
+        </div>
+      </div>
+
+      <div class="kpi-card margin">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">利润率 <span class="tip">利润 / 中拍总额</span></div>
+          <div class="kpi-value">26.83<span class="unit">%</span></div>
+          <div class="kpi-delta"><span class="up">↑ 1.2%</span><span class="pct">vs 上周</span> · 健康区间 20-35%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 统计数据网格 -->
+    <div class="stats-card">
+      <div class="stats-head">
+        <span class="ico"></span>
+        <span class="title">统计数据</span>
+        <span class="desc">按当前筛选条件实时计算 · 数据日期 2026-05-01 至 2026-05-14</span>
+      </div>
+
+      <div class="stats-grid">
+        <!-- Col 1: 参拍 / 上拍 -->
+        <div class="stats-col" data-col="bid">
+          <div class="stats-col-title"><span class="dot"></span>上拍数据</div>
+          <div class="stats-row"><span class="l">上拍商品数</span><span class="v">12,840</span></div>
+          <div class="stats-row"><span class="l">上拍商品总金额(起拍价)</span><span class="v money">385,267,400</span></div>
+          <div class="stats-row"><span class="l">出价商品数</span><span class="v">12,123</span></div>
+          <div class="stats-row"><span class="l">商品出价率</span><span class="v pct">94.42%</span></div>
+          <div class="stats-row"><span class="l">总出价次数</span><span class="v">187,925</span></div>
+          <div class="stats-row"><span class="l">平均出价次数/件</span><span class="v">15.5</span></div>
+          <div class="stats-row"><span class="l">代理出价占比</span><span class="v pct">62.3%</span></div>
+          <div class="stats-row"><span class="l">触发延时件数</span><span class="v">3,847</span></div>
+          <div class="stats-row"><span class="l">延时件占比</span><span class="v pct warn">29.96%</span></div>
+        </div>
+
+        <!-- Col 2: 中拍 -->
+        <div class="stats-col" data-col="win">
+          <div class="stats-col-title"><span class="dot"></span>中拍数据</div>
+          <div class="stats-row highlight"><span class="l">中拍商品数</span><span class="v">10,134</span></div>
+          <div class="stats-row highlight"><span class="l">售出率</span><span class="v pct">78.92%</span></div>
+          <div class="stats-row"><span class="l">中拍总金额(落槌价)</span><span class="v money">478,952,860</span></div>
+          <div class="stats-row"><span class="l">中拍商品平均成交价</span><span class="v money">47,261</span></div>
+          <div class="stats-row"><span class="l">平均加价倍数</span><span class="v">1.24×</span></div>
+          <div class="stats-row"><span class="l">最高落槌价</span><span class="v money">486,000</span></div>
+          <div class="stats-row"><span class="l">超估价上限件数</span><span class="v">2,318</span></div>
+          <div class="stats-row"><span class="l">超估价上限占比</span><span class="v pct">22.87%</span></div>
+          <div class="stats-row"><span class="l">未达起拍价件数</span><span class="v muted">—</span></div>
+        </div>
+
+        <!-- Col 3: 利润 -->
+        <div class="stats-col" data-col="profit">
+          <div class="stats-col-title"><span class="dot"></span>利润数据</div>
+          <div class="stats-row"><span class="l">中拍商品总成本(收货价)</span><span class="v money">357,265,300</span></div>
+          <div class="stats-row highlight"><span class="l">中拍商品总利润</span><span class="v money">121,687,560</span></div>
+          <div class="stats-row highlight"><span class="l">中拍商品利润率</span><span class="v pct">25.41%</span></div>
+          <div class="stats-row"><span class="l">平均单件利润</span><span class="v money">12,008</span></div>
+          <div class="stats-row"><span class="l">最高单件利润</span><span class="v money">186,400</span></div>
+          <div class="stats-row"><span class="l">最低单件利润</span><span class="v down" style="color:var(--danger);">−¥2,300</span></div>
+          <div class="stats-row"><span class="l">亏损件数</span><span class="v pct bad">38(0.37%)</span></div>
+          <div class="stats-row"><span class="l">同行价对比 · 平均溢价</span><span class="v pct">8.4%</span></div>
+          <div class="stats-row"><span class="l">分润 / 佣金后净利润</span><span class="v money">119,203,070</span></div>
+        </div>
+
+        <!-- Col 4: 流拍 / 支付 -->
+        <div class="stats-col" data-col="unsold">
+          <div class="stats-col-title"><span class="dot"></span>流拍 &amp; 支付</div>
+          <div class="stats-row"><span class="l">流拍商品数</span><span class="v">2,706</span></div>
+          <div class="stats-row"><span class="l">流拍率</span><span class="v pct bad">21.08%</span></div>
+          <div class="stats-row"><span class="l">流拍商品总成本</span><span class="v money">74,365,140</span></div>
+          <div class="stats-row"><span class="l">流拍最高估价</span><span class="v money">58,000</span></div>
+          <div class="stats-row"><span class="l">回流至挂售件数</span><span class="v">1,832</span></div>
+          <div class="stats-row" style="border-top:1px dashed var(--border); margin-top:5px; padding-top:8px;"><span class="l">支付商品数</span><span class="v">9,720</span></div>
+          <div class="stats-row"><span class="l">支付率</span><span class="v pct">95.92%</span></div>
+          <div class="stats-row"><span class="l">支付总金额</span><span class="v money">462,481,300</span></div>
+          <div class="stats-row"><span class="l">超时未付件数</span><span class="v pct warn">414(4.08%)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 商品列表 -->
+    <div class="list-card">
+      <div class="list-toolbar">
+        <span class="title">商品列表</span>
+        <span class="count">共 12,840 条 · 当前筛选 10,134 条</span>
+        <div class="right">
+          <span class="check-tab active">全部</span>
+          <span class="check-tab">竞价中</span>
+          <span class="check-tab">已中拍</span>
+          <span class="check-tab">流拍</span>
+          <span class="check-tab">超时未付</span>
+        </div>
+      </div>
+
+      <table class="goods-table">
+        <thead>
+          <tr>
+            <th style="width:24%;">商品信息</th>
+            <th style="width:15%;">出价数据</th>
+            <th style="width:16%;">价格 / 利润</th>
+            <th style="width:13%;">商品状态</th>
+            <th style="width:17%;">上拍 / 商家</th>
+            <th style="width:15%;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- 行 1:已中拍 + 高利润 -->
+          <tr>
+            <td>
+              <div class="goods-cell">
+                <div class="goods-thumb">◆</div>
+                <div class="goods-info">
+                  <div class="goods-name">HERMÈS Birkin 25 Gold Togo PHW · 2023 全套</div>
+                  <div class="goods-meta">分类 <b>箱包</b> · 9.5 新 · 官方鉴定</div>
+                  <div class="goods-no">No. 20260513001</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">出价数</span><span class="v">23 次</span></div>
+                <div class="row-mini"><span class="l">代理参与</span><span class="v">5 人</span></div>
+                <div class="row-mini"><span class="l">最终领先</span><span class="v">代理</span></div>
+                <div class="row-mini"><span class="l">触发延时</span><span class="v up">✓ 1 次</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">起拍</span><span class="v money">68,000</span></div>
+                <div class="row-mini"><span class="l">中拍价</span><span class="v money">82,500</span></div>
+                <div class="row-mini"><span class="l">收货价</span><span class="v money">62,000</span></div>
+                <div class="row-mini"><span class="l">利润</span><span class="v up money">20,500</span></div>
+                <div class="row-mini"><span class="l">利润率</span><span class="v up">24.85%</span></div>
+              </div>
+            </td>
+            <td>
+              <span class="badge paid"><span class="dot"></span>已支付</span>
+              <div class="goods-meta" style="margin-top:6px;">已发货 5/14<br>预计到货 5/16</div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">开拍</span><span class="v">5/13 14:00</span></div>
+                <div class="row-mini"><span class="l">结拍</span><span class="v">5/13 15:18</span></div>
+                <div class="row-mini"><span class="l">商家</span><span class="v">沪上中古集</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-act">
+                <a class="act-link">查看详情</a>
+                <a class="act-link">出价记录</a>
+                <a class="act-link">利润分析</a>
+                <a class="act-link muted">下架</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 行 2:竞价中 + 即将结拍 -->
+          <tr>
+            <td>
+              <div class="goods-cell">
+                <div class="goods-thumb">◆</div>
+                <div class="goods-info">
+                  <div class="goods-name">ROLEX Daytona 116500LN 熊猫盘 陶瓷圈</div>
+                  <div class="goods-meta">分类 <b>腕表</b> · 98 新 · 官方鉴定 · 原票</div>
+                  <div class="goods-no">No. 20260513002</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">出价数</span><span class="v">12 次</span></div>
+                <div class="row-mini"><span class="l">代理参与</span><span class="v">3 人</span></div>
+                <div class="row-mini"><span class="l">当前领先</span><span class="v">代理 ***88</span></div>
+                <div class="row-mini"><span class="l">距结拍</span><span class="v down">02:14</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">起拍</span><span class="v money">240,000</span></div>
+                <div class="row-mini"><span class="l">当前价</span><span class="v money">252,000</span></div>
+                <div class="row-mini"><span class="l">收货价</span><span class="v money">218,000</span></div>
+                <div class="row-mini"><span class="l">预计利润</span><span class="v up money">34,000</span></div>
+                <div class="row-mini"><span class="l">预计利润率</span><span class="v up">13.49%</span></div>
+              </div>
+            </td>
+            <td>
+              <span class="badge live"><span class="dot"></span>竞价中</span>
+              <div class="goods-meta" style="margin-top:6px;">即将结拍 02:14<br>已延时 0 次</div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">开拍</span><span class="v">5/13 14:00</span></div>
+                <div class="row-mini"><span class="l">结拍</span><span class="v">5/13 16:00</span></div>
+                <div class="row-mini"><span class="l">商家</span><span class="v">京都中古工坊</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-act">
+                <a class="act-link">查看详情</a>
+                <a class="act-link">出价记录</a>
+                <a class="act-link">实时监控</a>
+                <a class="act-link danger">强制流拍</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 行 3:流拍 -->
+          <tr>
+            <td>
+              <div class="goods-cell">
+                <div class="goods-thumb">◆</div>
+                <div class="goods-info">
+                  <div class="goods-name">PRADA Galleria 中号手提包 黑色 Saffiano</div>
+                  <div class="goods-meta">分类 <b>箱包</b> · 9 新 · 官方鉴定</div>
+                  <div class="goods-no">No. 20260513042</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">出价数</span><span class="v">4 次</span></div>
+                <div class="row-mini"><span class="l">代理参与</span><span class="v">2 人</span></div>
+                <div class="row-mini"><span class="l">最终领先</span><span class="v">商家 ***23</span></div>
+                <div class="row-mini"><span class="l">触发延时</span><span class="v muted">—</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">起拍</span><span class="v money">15,000</span></div>
+                <div class="row-mini"><span class="l">最高出价</span><span class="v money">12,800</span></div>
+                <div class="row-mini"><span class="l">收货价</span><span class="v money">14,000</span></div>
+                <div class="row-mini"><span class="l">利润</span><span class="v muted">—</span></div>
+                <div class="row-mini"><span class="l">利润率</span><span class="v muted">未成交</span></div>
+              </div>
+            </td>
+            <td>
+              <span class="badge unsold"><span class="dot"></span>流拍</span>
+              <div class="goods-meta" style="margin-top:6px;">最高出价未达起拍价<br>保证金已解冻</div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">开拍</span><span class="v">5/13 14:00</span></div>
+                <div class="row-mini"><span class="l">结拍</span><span class="v">5/13 14:58</span></div>
+                <div class="row-mini"><span class="l">商家</span><span class="v">广州奢藏</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-act">
+                <a class="act-link">查看详情</a>
+                <a class="act-link">转挂售</a>
+                <a class="act-link">下批重拍</a>
+                <a class="act-link muted">回收商品</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 行 4:已中拍 + 待支付 -->
+          <tr>
+            <td>
+              <div class="goods-cell">
+                <div class="goods-thumb">◆</div>
+                <div class="goods-info">
+                  <div class="goods-name">CHANEL Classic Flap CF25 Caviar 黑色金扣</div>
+                  <div class="goods-meta">分类 <b>箱包</b> · 8.5 新 · 官方鉴定</div>
+                  <div class="goods-no">No. 20260513015</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">出价数</span><span class="v">17 次</span></div>
+                <div class="row-mini"><span class="l">代理参与</span><span class="v">4 人</span></div>
+                <div class="row-mini"><span class="l">最终领先</span><span class="v">商家 ***48</span></div>
+                <div class="row-mini"><span class="l">触发延时</span><span class="v up">✓ 2 次</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">起拍</span><span class="v money">38,000</span></div>
+                <div class="row-mini"><span class="l">中拍价</span><span class="v money">46,000</span></div>
+                <div class="row-mini"><span class="l">收货价</span><span class="v money">39,500</span></div>
+                <div class="row-mini"><span class="l">利润</span><span class="v up money">6,500</span></div>
+                <div class="row-mini"><span class="l">利润率</span><span class="v up">14.13%</span></div>
+              </div>
+            </td>
+            <td>
+              <span class="badge unpaid"><span class="dot"></span>待支付</span>
+              <div class="goods-meta" style="margin-top:6px;">付款剩余 02:42:18<br>违约扣款 ¥460</div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">开拍</span><span class="v">5/13 14:00</span></div>
+                <div class="row-mini"><span class="l">结拍</span><span class="v">5/13 15:42</span></div>
+                <div class="row-mini"><span class="l">商家</span><span class="v">广州奢藏</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-act">
+                <a class="act-link">查看详情</a>
+                <a class="act-link">订单详情</a>
+                <a class="act-link">催付</a>
+                <a class="act-link danger">扣保证金</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 行 5:预告 -->
+          <tr>
+            <td>
+              <div class="goods-cell">
+                <div class="goods-thumb">◆</div>
+                <div class="goods-info">
+                  <div class="goods-name">CARTIER 蓝气球 36mm 钢带 自动机芯 全套</div>
+                  <div class="goods-meta">分类 <b>腕表</b> · 95 新 · GIA</div>
+                  <div class="goods-no">No. 20260513033</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">出价数</span><span class="v muted">未开拍</span></div>
+                <div class="row-mini"><span class="l">收藏数</span><span class="v">38 人</span></div>
+                <div class="row-mini"><span class="l">已设代理</span><span class="v">5 人</span></div>
+                <div class="row-mini"><span class="l">距开拍</span><span class="v">02:14:33</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">起拍</span><span class="v money">35,000</span></div>
+                <div class="row-mini"><span class="l">参考估价</span><span class="v money">38k-45k</span></div>
+                <div class="row-mini"><span class="l">收货价</span><span class="v money">32,000</span></div>
+                <div class="row-mini"><span class="l">预期利润</span><span class="v up money">8,500</span></div>
+                <div class="row-mini"><span class="l">预期利润率</span><span class="v up">19.55%</span></div>
+              </div>
+            </td>
+            <td>
+              <span class="badge upcoming"><span class="dot"></span>预告</span>
+              <div class="goods-meta" style="margin-top:6px;">5/13 16:00 开拍<br>结拍 17:00</div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">开拍</span><span class="v">5/13 16:00</span></div>
+                <div class="row-mini"><span class="l">结拍</span><span class="v">5/13 17:00</span></div>
+                <div class="row-mini"><span class="l">商家</span><span class="v">沪上中古集</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-act">
+                <a class="act-link">查看详情</a>
+                <a class="act-link">编辑信息</a>
+                <a class="act-link">调价</a>
+                <a class="act-link danger">撤拍</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 行 6:已中拍 · 亏损 -->
+          <tr>
+            <td>
+              <div class="goods-cell">
+                <div class="goods-thumb">◆</div>
+                <div class="goods-info">
+                  <div class="goods-name">GUCCI GG Marmont 中号链条包 黑色</div>
+                  <div class="goods-meta">分类 <b>箱包</b> · 8.5 新</div>
+                  <div class="goods-no">No. 20260513047</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">出价数</span><span class="v">22 次</span></div>
+                <div class="row-mini"><span class="l">代理参与</span><span class="v">6 人</span></div>
+                <div class="row-mini"><span class="l">最终领先</span><span class="v">代理 ***12</span></div>
+                <div class="row-mini"><span class="l">触发延时</span><span class="v up">✓ 3 次</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">起拍</span><span class="v money">2,800</span></div>
+                <div class="row-mini"><span class="l">中拍价</span><span class="v money">3,500</span></div>
+                <div class="row-mini"><span class="l">收货价</span><span class="v money">3,800</span></div>
+                <div class="row-mini"><span class="l">利润</span><span class="v down money">−300</span></div>
+                <div class="row-mini"><span class="l">利润率</span><span class="v down">−8.57%</span></div>
+              </div>
+            </td>
+            <td>
+              <span class="badge win"><span class="dot"></span>已中拍</span>
+              <div class="goods-meta" style="margin-top:6px;">已支付 5/14<br>商家亏损 ¥300</div>
+            </td>
+            <td>
+              <div class="data-list">
+                <div class="row-mini"><span class="l">开拍</span><span class="v">5/13 14:00</span></div>
+                <div class="row-mini"><span class="l">结拍</span><span class="v">5/13 14:48</span></div>
+                <div class="row-mini"><span class="l">商家</span><span class="v">京都中古工坊</span></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-act">
+                <a class="act-link">查看详情</a>
+                <a class="act-link">利润分析</a>
+                <a class="act-link">复盘</a>
+                <a class="act-link muted">商家反馈</a>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <div class="pager">
+        <span>每页 20 条 · 共 10,134 条</span>
+        <span class="pg-num">‹</span>
+        <span class="pg-num active">1</span>
+        <span class="pg-num">2</span>
+        <span class="pg-num">3</span>
+        <span class="pg-num">4</span>
+        <span style="color:var(--text-tertiary);">…</span>
+        <span class="pg-num">507</span>
+        <span class="pg-num">›</span>
+      </div>
+    </div>
+
+    <div class="page-foot">©2014-2026 智赢管家 · 天津迹智科技有限公司</div>
+
+  </div>
+
+<script>
+  // sub-tabs 切换示意
+  document.querySelectorAll('.sub-tab:not(.active)').forEach(t => {
+    t.addEventListener('click', () => {
+      alert('演示稿:跳转到 ' + t.textContent.replace('×','').trim());
+    });
+  });
+  // 操作链接示意
+  document.querySelectorAll('.act-link').forEach(a => {
+    a.addEventListener('click', () => {
+      alert('演示稿:执行操作 ' + a.textContent.trim());
+    });
+  });
+  // 筛选 chip
+  document.querySelectorAll('.check-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.check-tab').forEach(c => c.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

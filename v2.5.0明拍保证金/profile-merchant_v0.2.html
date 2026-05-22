@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 我的 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF0E0;
+    --success: #2F855A; --warning: #C05621; --danger: #C53030; --info: #2B6CB0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: transparent;
+    position: relative; z-index: 2;
+    color: #FFFFFF;
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar (透明叠在 hero 上) */
+  .navbar {
+    height: 44px; padding: 0 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: transparent;
+    position: relative; z-index: 2;
+    color: #FFFFFF;
+  }
+  .navbar .nav-title { font-size: 16px; font-weight: 600; }
+  .navbar .nav-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: inherit;
+  }
+  .navbar .nav-btn svg { width: 22px; height: 22px; }
+
+  /* Hero (整块橙色渐变背景，覆盖到状态栏顶部) */
+  .hero-wrap {
+    position: relative;
+    background: linear-gradient(150deg, #FFC300 0%, #FF8000 50%, #E65100 100%);
+    margin-top: -88px;   /* 拉到状态栏顶 */
+    padding-top: 88px;   /* 让 status bar + nav bar 占位 */
+    padding-bottom: 18px;
+    overflow: hidden;
+  }
+  .hero-wrap::after {
+    content: '';
+    position: absolute;
+    right: -50px; top: -30px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .hero-wrap::before {
+    content: '';
+    position: absolute;
+    left: -40px; bottom: -60px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .hero-card {
+    position: relative; z-index: 1;
+    padding: 0 16px;
+    color: #FFFFFF;
+  }
+  .hero-top {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .hero-avatar {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.18);
+    border: 2px solid rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700;
+    color: #FFFFFF;
+    flex-shrink: 0;
+  }
+  .hero-info { flex: 1; line-height: 1.3; }
+  .hero-name {
+    font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-badge {
+    font-size: 10px; font-weight: 600;
+    background: rgba(255,255,255,0.22);
+    color: #FFFFFF;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .hero-badge::before {
+    content: ''; display: inline-block;
+    width: 9px; height: 9px;
+    background: #FFFFFF;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z'/></svg>") center/contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z'/></svg>") center/contain no-repeat;
+  }
+  .hero-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    margin-top: 3px;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px 0;
+  }
+  .hero-stat {
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.18);
+  }
+  .hero-stat:last-child { border-right: none; }
+  .hero-stat .v {
+    font-size: 16px; font-weight: 700;
+    color: #FFFFFF;
+  }
+  .hero-stat .v .u { font-size: 10px; font-weight: 400; margin-left: 1px; opacity: 0.85; }
+  .hero-stat .l {
+    font-size: 11px;
+    color: rgba(255,255,255,0.82);
+    margin-top: 2px;
+  }
+
+  /* 资产概览 1x2 大卡（更突出）*/
+  .assets {
+    margin: -20px 12px 14px;
+    position: relative; z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .asset-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 16px 14px 14px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .asset-card.deposit {
+    background: linear-gradient(155deg, #FFFFFF 0%, #FFF8E1 100%);
+    border-color: var(--brand-200);
+  }
+  .asset-card.ub {
+    background: linear-gradient(155deg, #FFFFFF 0%, #FFF0E0 100%);
+    border-color: #FFD0A8;
+  }
+  .asset-card::after {
+    content: '';
+    position: absolute;
+    right: -30px; bottom: -30px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,128,0,0.05);
+  }
+  .asset-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 5px;
+    font-weight: 500;
+    position: relative; z-index: 1;
+  }
+  .asset-label .verified {
+    color: var(--success);
+    font-size: 10px;
+    display: inline-flex; align-items: center; gap: 2px;
+  }
+  .asset-label .verified::before {
+    content: '';
+    display: inline-block;
+    width: 10px; height: 10px;
+    background: var(--success);
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 2L4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z'/><path d='M9 12l2 2 4-4' stroke='%23FFF8E1' stroke-width='2' fill='none'/></svg>") center/contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 2L4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z'/></svg>") center/contain no-repeat;
+  }
+  .asset-value {
+    font-size: 26px; font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 8px;
+    line-height: 1.1;
+    position: relative; z-index: 1;
+    letter-spacing: -0.5px;
+  }
+  .asset-value::before {
+    content: '¥';
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 2px;
+    color: var(--brand-700);
+  }
+  .asset-card.deposit .asset-value { color: var(--brand-900); }
+  .asset-card.ub .asset-value { color: var(--brand-900); }
+  .asset-foot {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 1;
+  }
+  .asset-foot .warn { color: var(--danger); font-weight: 600; }
+  .asset-topup {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(255,128,0,0.25);
+    display: inline-flex; align-items: center; gap: 2px;
+  }
+
+  /* Sections (list groups) */
+  .section { margin: 0 12px 12px; }
+  .section-head {
+    display: flex; align-items: center;
+    padding: 6px 4px 8px;
+  }
+  .section-title {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--text-primary);
+  }
+  .section-title::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .group {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* 我的中拍 高亮 banner（订单组顶部）*/
+  .won-row {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFF0E0 100%);
+    border-bottom: 1px solid var(--brand-200);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .won-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(255,128,0,0.25);
+  }
+  .won-icon svg { width: 20px; height: 20px; }
+  .won-info { flex: 1; line-height: 1.3; min-width: 0; }
+  .won-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .won-title .won-num {
+    color: var(--brand-700);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 1px;
+  }
+  .won-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .won-arrow {
+    font-size: 12px;
+    color: var(--brand-700);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* Order center: 横向 5 等分 */
+  .order-row {
+    padding: 14px 4px 12px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .order-cell {
+    text-align: center;
+    position: relative;
+  }
+  .order-icon {
+    width: 26px; height: 26px;
+    margin: 0 auto 6px;
+    color: var(--brand-500);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .order-icon svg { width: 24px; height: 24px; }
+  .order-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .order-cell.hot .order-label {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .order-cell.hot .order-icon {
+    color: var(--live-red);
+  }
+  .order-num {
+    position: absolute;
+    top: -2px; right: calc(50% - 26px);
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    background: var(--live-red);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+  .order-num.muted { background: var(--text-tertiary); font-weight: 600; }
+  .order-num.warn { background: var(--brand-500); font-weight: 700; }
+  .group-foot {
+    border-top: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .group-foot .arrow { color: var(--text-tertiary); }
+
+  /* List rows */
+  .list .row {
+    display: flex; align-items: center;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+  .list .row:first-child { border-top: none; }
+  .row-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--bg-subtle);
+    color: var(--brand-500);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .row-icon svg { width: 16px; height: 16px; }
+  .row-icon.warn { background: var(--anpai-orange-bg); color: var(--anpai-orange); }
+  .row-icon.deep { background: var(--mingpai-deep-bg); color: var(--mingpai-deep); }
+  .row-icon.muted { background: var(--bg-subtle); color: var(--text-secondary); }
+  .row-icon.danger { background: var(--live-red-bg); color: var(--live-red); }
+  .row-label {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .row-extra {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .row-extra .num-dot {
+    min-width: 18px; height: 18px;
+    padding: 0 5px;
+    background: var(--live-red);
+    color: white;
+    font-size: 10px; font-weight: 600;
+    border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .row-extra .num-dot.warn { background: var(--brand-500); }
+  .row-arrow {
+    width: 14px; height: 14px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .row-arrow svg { width: 14px; height: 14px; }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Hero (橙色渐变，覆盖 status bar) -->
+    <div class="hero-wrap">
+
+      <!-- Status bar (透明，叠在 hero 上) -->
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+      </div>
+
+      <!-- Nav bar -->
+      <div class="navbar">
+        <div class="nav-btn"></div>
+        <div class="nav-title">我的</div>
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+
+      <!-- Hero card -->
+      <div class="hero-card">
+        <div class="hero-top">
+          <div class="hero-avatar">沪</div>
+          <div class="hero-info">
+            <div class="hero-name">
+              沪上中古集
+              <span class="hero-badge">认证商家</span>
+            </div>
+            <div class="hero-sub">入驻于 2024-08-15 · 商家编号 SH00128</div>
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="v">86<span class="u">件</span></div>
+            <div class="l">累计成交</div>
+          </div>
+          <div class="hero-stat">
+            <div class="v">128<span class="u">万</span></div>
+            <div class="l">累计交易额</div>
+          </div>
+          <div class="hero-stat">
+            <div class="v">98<span class="u">%</span></div>
+            <div class="l">履约率</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 资产概览 1x2 大卡（突出强调）-->
+    <div class="assets">
+      <div class="asset-card deposit">
+        <div class="asset-label">
+          <span>保证金余额</span>
+          <span class="verified">已缴足</span>
+        </div>
+        <div class="asset-value">5,000</div>
+        <div class="asset-foot">
+          <span>冻结 ¥3,200</span>
+          <button class="asset-topup">充值 ›</button>
+        </div>
+      </div>
+      <div class="asset-card ub">
+        <div class="asset-label">
+          <span>UB 余额</span>
+        </div>
+        <div class="asset-value">12,400</div>
+        <div class="asset-foot">
+          <span>可抵付货款</span>
+          <button class="asset-topup">充值 ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 订单中心 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">订单中心</div>
+      </div>
+      <div class="group">
+        <!-- 我的中拍 高亮入口 -->
+        <div class="won-row">
+          <div class="won-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m9 7 8 8"/></svg>
+          </div>
+          <div class="won-info">
+            <div class="won-title">我的中拍 <span class="won-num">8</span> 件</div>
+            <div class="won-sub">本月新增 14 · 待结算 2</div>
+          </div>
+          <span class="won-arrow">查看 ›</span>
+        </div>
+        <div class="order-row">
+          <div class="order-cell hot">
+            <div class="order-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="order-label">待付款</div>
+            <span class="order-num">2</span>
+          </div>
+          <div class="order-cell">
+            <div class="order-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div class="order-label">待发货</div>
+            <span class="order-num warn">5</span>
+          </div>
+          <div class="order-cell">
+            <div class="order-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <div class="order-label">待收货</div>
+            <span class="order-num muted">3</span>
+          </div>
+          <div class="order-cell">
+            <div class="order-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="order-label">已完成</div>
+          </div>
+          <div class="order-cell">
+            <div class="order-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v10c0 2 1 3 3 3h12c2 0 3-1 3-3V7"/><path d="M3 7l3-4h12l3 4"/><line x1="3" y1="7" x2="21" y2="7"/><path d="M10 12h4"/></svg>
+            </div>
+            <div class="order-label">退款/售后</div>
+          </div>
+        </div>
+        <div class="group-foot">
+          <span>查看全部订单（共 88 笔）</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拍卖工作台（简化：仅 2 项）-->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">拍卖工作台</div>
+      </div>
+      <div class="group list">
+        <div class="row">
+          <div class="row-icon warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg>
+          </div>
+          <div class="row-label">我的竞拍</div>
+          <div class="row-extra"><span>12 件</span></div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon deep">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v6m0 6v10"/><circle cx="12" cy="9" r="3"/><path d="M5 15l7-7 7 7"/></svg>
+          </div>
+          <div class="row-label">我代理的出价</div>
+          <div class="row-extra"><span>明拍 4 件</span></div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 服务 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">服务</div>
+      </div>
+      <div class="group list">
+        <div class="row">
+          <div class="row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div class="row-label">鉴定证书查询</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="row-label">售后申请</div>
+          <div class="row-extra"><span>15 天内可申请</span></div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="row-label">收货地址管理</div>
+          <div class="row-extra"><span>3 个</span></div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          </div>
+          <div class="row-label">发票管理</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          </div>
+          <div class="row-label">邀请商家入驻</div>
+          <div class="row-extra"><span style="color:var(--brand-700);font-weight:600;">奖 ¥500</span></div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设置 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">设置</div>
+      </div>
+      <div class="group list">
+        <div class="row">
+          <div class="row-icon muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="row-label">账号设置</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+          </div>
+          <div class="row-label">资质认证</div>
+          <div class="row-extra" style="color:var(--success);">已认证</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          </div>
+          <div class="row-label">通知设置</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="row-label">帮助中心</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="row">
+          <div class="row-icon muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
+          <div class="row-label" style="color:var(--text-secondary);">退出登录</div>
+          <div class="row-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:8px;"></div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

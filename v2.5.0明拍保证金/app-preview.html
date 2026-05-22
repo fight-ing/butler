@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 可交互原型 v0.3</title>
+<style>
+  :root {
+    --brand-700: #E65100; --brand-500: #FF8000; --brand-100: #FFF8E1;
+    --bg-page: #ECECEA;
+    --bg-card: #FFFFFF;
+    --border: rgba(0,0,0,0.06);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --tab-active: var(--brand-500);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-page);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body { display: flex; gap: 28px; padding: 32px 24px; align-items: flex-start; justify-content: center; }
+
+  /* 左侧导航说明区 */
+  .side {
+    width: 260px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    position: sticky;
+    top: 32px;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+  .side h1 {
+    margin: 0 0 4px;
+    font-size: 16px;
+  }
+  .side .sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .side .group-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    margin: 14px 0 6px;
+  }
+  .side .nav-btn {
+    display: block;
+    width: 100%;
+    padding: 7px 10px;
+    margin-bottom: 4px;
+    background: var(--bg-page);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .side .nav-btn:hover {
+    background: var(--brand-100);
+    border-color: var(--brand-500);
+  }
+  .side .nav-btn.active {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    font-weight: 600;
+  }
+  .side .nav-btn .meta {
+    color: var(--text-tertiary);
+    font-size: 10px;
+    margin-left: 6px;
+  }
+  .side .nav-btn.active .meta { color: rgba(255,255,255,0.7); }
+
+  /* 中间手机壳 */
+  .phone-shell {
+    position: relative;
+    width: 405px;
+    flex-shrink: 0;
+  }
+  .phone-bezel {
+    width: 405px;
+    background: #0e0e0e;
+    border-radius: 50px;
+    padding: 14px;
+    box-shadow:
+      0 20px 60px rgba(0,0,0,0.30),
+      0 6px 14px rgba(0,0,0,0.16),
+      inset 0 0 1px rgba(255,255,255,0.06);
+    position: sticky;
+    top: 32px;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 808px;
+    background: white;
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+  }
+  /* 顶部 shell 导航(浮于 iframe 之上) */
+  .shell-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 30px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px 0;
+    pointer-events: none;
+  }
+  .shell-back {
+    pointer-events: auto;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.42);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    border: none;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
+  .shell-back.show { opacity: 1; }
+  .shell-back svg { width: 14px; height: 14px; }
+  .shell-status {
+    pointer-events: auto;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.32);
+    padding: 3px 8px;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    user-select: none;
+  }
+
+  iframe.screen {
+    width: 100%; height: 100%;
+    border: none;
+    background: white;
+    display: block;
+  }
+
+  /* shell tabbar:仅 4 个主 tab 路由显示;二级页滑出隐藏 */
+  .shell-tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    z-index: 30;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: 4px;
+    transform: translateY(0);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.18s ease-out;
+  }
+  .shell-tabbar.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .shell-tab {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    gap: 2px;
+    user-select: none;
+    transition: color 0.12s;
+  }
+  .shell-tab:hover { color: var(--brand-500); }
+  .shell-tab.active { color: var(--brand-500); }
+  .shell-tab.active .ico { transform: scale(1.05); }
+  .shell-tab .ico {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.18s;
+  }
+  .shell-tab .ico svg { width: 22px; height: 22px; }
+  .shell-tab .lbl {
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .shell-tab.active .lbl { font-weight: 700; }
+  .shell-tab .badge {
+    position: absolute;
+    transform: translate(10px, -16px);
+    background: var(--brand-500);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 8px;
+    line-height: 1.3;
+  }
+
+  /* 路由 toast */
+  .toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s;
+    z-index: 99;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* file:// 限制 banner */
+  .file-warning {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    border: 1px solid #F59E0B;
+    border-radius: 12px;
+    padding: 14px 18px;
+    max-width: 560px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 100;
+    font-size: 12.5px;
+    color: #92400E;
+    display: none;
+  }
+  .file-warning.show { display: block; }
+  .file-warning .row1 {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 700;
+    color: #78350F;
+    margin-bottom: 6px;
+  }
+  .file-warning .row1 svg { width: 16px; height: 16px; }
+  .file-warning .desc {
+    line-height: 1.55;
+    color: #78350F;
+    margin-bottom: 10px;
+  }
+  .file-warning code.cmd {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1F2937;
+    color: #F9FAFB;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .file-warning code.cmd .cmd-text { flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .file-warning code.cmd .cmd-text::-webkit-scrollbar { display: none; }
+  .file-warning code.cmd button.copy {
+    flex-shrink: 0;
+    background: #F59E0B; color: #78350F;
+    border: none;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .file-warning code.cmd button.copy:hover { background: #FBBF24; }
+  .file-warning code.cmd button.copy.copied { background: #15803D; color: white; }
+  .file-warning .url-line {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: #1F2937;
+    background: rgba(255,255,255,0.6);
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .file-warning .footnote {
+    font-size: 11px;
+    color: #92400E;
+    opacity: 0.85;
+  }
+  .file-warning .dismiss {
+    position: absolute;
+    top: 8px; right: 10px;
+    color: #92400E;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* 右侧路由帮助 */
+  .help-side {
+    width: 280px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    position: sticky;
+    top: 32px;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+  .help-side h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .help-side .kbd {
+    background: var(--bg-page);
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: var(--text-primary);
+  }
+  .help-side hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+  .help-side strong { color: var(--text-primary); font-weight: 600; }
+  .help-side code {
+    background: var(--bg-page);
+    padding: 0 4px;
+    border-radius: 3px;
+    color: var(--brand-700);
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 左侧:页面导航 -->
+  <div class="side">
+    <h1>中古优品 v0.3</h1>
+    <div class="sub">可交互原型 · iframe 模拟原生导航</div>
+
+    <div class="group-title">主路由(底部 tab)</div>
+    <button class="nav-btn" data-route="home">首页 <span class="meta">home</span></button>
+    <button class="nav-btn" data-route="mine">我的竞拍 <span class="meta">favorites</span></button>
+    <button class="nav-btn" data-route="cart">购物袋 <span class="meta">cart</span></button>
+    <button class="nav-btn" data-route="profile">我的 <span class="meta">profile</span></button>
+
+    <div class="group-title">明拍流</div>
+    <button class="nav-btn" data-page="mingpai_v0.2.html">明拍主页</button>
+    <button class="nav-btn" data-page="mingpai-detail_v0.2.html">明拍详情</button>
+    <button class="nav-btn" data-page="mingpai-bid_v0.2.html">出价弹窗</button>
+    <button class="nav-btn" data-page="mingpai-proxy_v0.2.html">改代理价</button>
+    <button class="nav-btn" data-page="mingpai-rules_v0.2.html">明拍规则</button>
+    <button class="nav-btn" data-page="mingpai-bid-history_v0.2.html">出价记录</button>
+    <button class="nav-btn" data-page="mingpai-detail-states_v0.2.html">详情 6 状态</button>
+
+    <div class="group-title">暗拍流</div>
+    <button class="nav-btn" data-page="anpai_v0.2.html">暗拍主页</button>
+    <button class="nav-btn" data-page="anpai-detail_v0.2.html">暗拍详情</button>
+    <button class="nav-btn" data-page="anpai-rules_v0.2.html">暗拍规则</button>
+
+    <div class="group-title">订单 / 支付</div>
+    <button class="nav-btn" data-page="my-orders_v0.2.html">我的订单</button>
+    <button class="nav-btn" data-page="order-confirm_v0.2.html">订单确认</button>
+    <button class="nav-btn" data-page="pay_v0.2.html">收银台</button>
+    <button class="nav-btn" data-page="pay-result_v0.2.html">支付结果</button>
+
+    <div class="group-title">保证金</div>
+    <button class="nav-btn" data-page="deposit_v0.2.html">保证金主页</button>
+    <button class="nav-btn" data-page="deposit-pay_v0.2.html">补交保证金</button>
+
+    <div class="group-title">其他</div>
+    <button class="nav-btn" data-page="my-bids_v0.2.html">我的竞拍历史</button>
+    <button class="nav-btn" data-page="address_v0.2.html">收货地址</button>
+    <button class="nav-btn" data-page="logistics_v0.2.html">物流详情</button>
+    <button class="nav-btn" data-page="cert_v0.2.html">鉴定证书</button>
+  </div>
+
+  <!-- 中间:手机原型 -->
+  <div class="phone-shell">
+    <div class="phone-bezel">
+      <div class="phone-screen">
+        <div class="shell-top">
+          <button class="shell-back" id="backBtn" title="返回上一页">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="shell-status" id="pageTitle">首页</span>
+        </div>
+
+        <iframe class="screen" id="screen" src="home_v0.2.html"></iframe>
+
+        <div class="shell-tabbar">
+          <div class="shell-tab" data-route="home">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            <span class="lbl">首页</span>
+          </div>
+          <div class="shell-tab" data-route="mine">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></span>
+            <span class="lbl">我的竞拍</span>
+          </div>
+          <div class="shell-tab" data-route="cart">
+            <span class="ico" style="position:relative;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              <span class="badge">3</span>
+            </span>
+            <span class="lbl">购物袋</span>
+          </div>
+          <div class="shell-tab" data-route="profile">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <span class="lbl">我的</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧:帮助 -->
+  <div class="help-side">
+    <h2>使用说明</h2>
+    本原型 shell 通过 iframe 串联 v0.3 所有真实设计稿,模拟 APP 原生体验。
+    <hr>
+    <strong>底部 tabbar</strong><br>
+    点击 <span class="kbd">首页 / 我的竞拍 / 购物袋 / 我的</span> 跳转主路由(始终可点)。
+    <hr>
+    <strong>首页</strong><br>
+    · 顶部消息图标 → toast / 购物袋 → cart<br>
+    · 我的中拍 → cart / 待付款·待发货 → 订单列表<br>
+    · 保证金 → 保证金主页<br>
+    · 明拍/暗拍板块 → 各自主页<br>
+    · 热门拍卖卡(按渠道徽标分流) → 明/暗拍详情<br>
+    <hr>
+    <strong>明拍 / 暗拍</strong><br>
+    · 货品卡 → 对应详情(暗拍/明拍)<br>
+    · 出价按钮 → 出价弹窗<br>
+    · 代理出价/改代理 → 代理弹窗<br>
+    · 规则/出价记录链 → 二级页<br>
+    <hr>
+    <strong>个人中心</strong><br>
+    · 保证金卡 → 保证金 · 优币 → toast<br>
+    · 我的购买 4 列 → 订单列表<br>
+    · 我的竞拍入口 → favorites<br>
+    · 工具(实名/地址/反馈/客服) → 对应页 / toast<br>
+    <hr>
+    <strong>订单流</strong><br>
+    cart → 订单确认 → 收银台 → 支付结果<br>
+    订单列表 → 立即支付走收银台、查看物流走物流页
+    <hr>
+    <strong>回退</strong><br>
+    顶部 <span class="kbd">←</span> 按钮回退浏览栈;左侧 nav 不入栈,可随时切换。
+    <hr>
+    <strong>路由总数</strong> <span id="routeCount">—</span> 个页面 · 浏览栈深 <span id="stackDepth">0</span>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- file:// 限制提示 -->
+  <div class="file-warning" id="fileWarning">
+    <span class="dismiss" id="warnDismiss">×</span>
+    <div class="row1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      检测到页面未注入 hook 脚本(或 _shell-hook.js 加载失败)
+    </div>
+    <div class="desc">
+      v0.3 已为每个页面注入 <code>_shell-hook.js</code> 实现 file:// 兼容点击。<br>
+      若仍未生效,可启个本地服务器作为 fallback:
+    </div>
+    <code class="cmd">
+      <span class="cmd-text" id="cmdText">cd "/Users/i-dev/Desktop/PM文档/中古优品/docs/designs" &amp;&amp; python3 -m http.server 8000</span>
+      <button class="copy" id="cmdCopy">复制</button>
+    </code>
+    <div class="url-line">然后访问 → <b>http://localhost:8000/app-preview.html</b></div>
+    <div class="footnote">
+      当前仍可用:左侧导航(24 个页面深链) + 底部 tabbar(4 主路由)。仅"iframe 内部点击跳转"受限。
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ============ 路由配置 ============
+  const ROUTES = {
+    home:    { page: 'home_v0.2.html',     title: '首页' },
+    mine:    { page: 'favorites_v0.2.html', title: '我的竞拍' },
+    cart:    { page: 'cart_v0.2.html',      title: '购物袋' },
+    profile: { page: 'profile_v0.2.html',   title: '我的' },
+  };
+  const TAB_PAGES = new Set(Object.values(ROUTES).map(r => r.page));
+
+  // 标题表(根据页面文件名给出友好标题)
+  const TITLES = {
+    'home_v0.2.html':                '首页',
+    'favorites_v0.2.html':           '我的竞拍',
+    'cart_v0.2.html':                '购物袋',
+    'profile_v0.2.html':             '我的',
+    'mingpai_v0.2.html':             '明拍主页',
+    'mingpai-detail_v0.2.html':      '明拍详情',
+    'mingpai-bid_v0.2.html':         '出价',
+    'mingpai-proxy_v0.2.html':       '代理出价',
+    'mingpai-rules_v0.2.html':       '明拍规则',
+    'mingpai-bid-history_v0.2.html': '出价记录',
+    'mingpai-detail-states_v0.2.html':'明拍详情 状态样例',
+    'anpai_v0.2.html':               '暗拍主页',
+    'anpai-detail_v0.2.html':        '暗拍详情',
+    'anpai-rules_v0.2.html':         '暗拍规则',
+    'my-orders_v0.2.html':           '我的订单',
+    'order-confirm_v0.2.html':       '订单确认',
+    'pay_v0.2.html':                 '收银台',
+    'pay-result_v0.2.html':          '支付结果',
+    'deposit_v0.2.html':             '保证金',
+    'deposit-pay_v0.2.html':         '补交保证金',
+    'my-bids_v0.2.html':             '我的出价历史',
+    'address_v0.2.html':             '收货地址',
+    'logistics_v0.2.html':           '物流详情',
+    'cert_v0.2.html':                '鉴定证书',
+  };
+
+  // ============ DOM ============
+  const screen     = document.getElementById('screen');
+  const backBtn    = document.getElementById('backBtn');
+  const pageTitle  = document.getElementById('pageTitle');
+  const toastEl    = document.getElementById('toast');
+  const stackDepth = document.getElementById('stackDepth');
+
+  document.getElementById('routeCount').textContent = Object.keys(TITLES).length;
+
+  // ============ 状态:浏览栈 ============
+  const stack = ['home_v0.2.html'];
+  let toastTimer;
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1400);
+  }
+
+  function updateUI() {
+    const cur = stack[stack.length - 1];
+    const isTabPage = TAB_PAGES.has(cur);
+    pageTitle.textContent = TITLES[cur] || cur.replace('_v0.2.html', '');
+    backBtn.classList.toggle('show', stack.length > 1 && !isTabPage);
+
+    // 二级页:隐藏底部 tabbar(模拟原生 APP 行为)
+    const tabbar = document.querySelector('.shell-tabbar');
+    tabbar.classList.toggle('hidden', !isTabPage);
+
+    // 通知 iframe 内 hook 脚本同步调整 body 底部留白
+    try {
+      screen.contentWindow?.postMessage({ type: 'tabbar-mode', visible: isTabPage }, '*');
+    } catch (_) {}
+
+    // 高亮 side nav
+    document.querySelectorAll('.side .nav-btn').forEach(b => {
+      b.classList.toggle('active',
+        b.dataset.page === cur ||
+        (b.dataset.route && ROUTES[b.dataset.route]?.page === cur)
+      );
+    });
+    // 高亮 shell tabbar
+    document.querySelectorAll('.shell-tab').forEach(t => {
+      t.classList.toggle('active', ROUTES[t.dataset.route]?.page === cur);
+    });
+    stackDepth.textContent = stack.length;
+  }
+
+  // 跳转主入口
+  function go(page, opts = {}) {
+    if (!page) return;
+    if (page === stack[stack.length - 1]) return; // 同页不重复
+    if (opts.replace) {
+      stack[stack.length - 1] = page;
+    } else if (TAB_PAGES.has(page)) {
+      // 主 tab 切换:不堆叠,重置栈
+      stack.length = 0;
+      stack.push(page);
+    } else {
+      stack.push(page);
+    }
+    screen.src = page;
+    updateUI();
+  }
+
+  function back() {
+    if (stack.length <= 1) return;
+    stack.pop();
+    screen.src = stack[stack.length - 1];
+    updateUI();
+  }
+
+  backBtn.addEventListener('click', back);
+
+  // 左侧 nav
+  document.querySelectorAll('.side .nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.route) {
+        go(ROUTES[btn.dataset.route].page);
+      } else if (btn.dataset.page) {
+        // 左侧深链:重置栈到该页
+        stack.length = 0;
+        stack.push(btn.dataset.page);
+        screen.src = btn.dataset.page;
+        updateUI();
+      }
+    });
+  });
+
+  // shell tabbar
+  document.querySelectorAll('.shell-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      const r = ROUTES[t.dataset.route];
+      if (r) { go(r.page); toast(r.title); }
+    });
+  });
+
+  // ============ file:// 限制检测 ============
+  const fileWarning = document.getElementById('fileWarning');
+  const cmdTextEl = document.getElementById('cmdText');
+
+  // 动态填充实际路径
+  if (window.location.protocol === 'file:') {
+    try {
+      const fullPath = decodeURIComponent(window.location.pathname);
+      const folder = fullPath.replace(/\/[^\/]*$/, '');
+      cmdTextEl.textContent = `cd "${folder}" && python3 -m http.server 8000`;
+    } catch (_) {}
+  }
+
+  document.getElementById('warnDismiss').addEventListener('click', () => fileWarning.classList.remove('show'));
+  document.getElementById('cmdCopy').addEventListener('click', async (e) => {
+    const text = cmdTextEl.textContent;
+    const btn = e.target;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '已复制 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1800);
+    } catch (err) {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); btn.textContent = '已复制 ✓'; btn.classList.add('copied'); }
+      catch (_) { btn.textContent = '失败,手动复制'; }
+      ta.remove();
+      setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1800);
+    }
+  });
+
+  // file:// 下默认不弹 banner;改用 hook ready 检测兜底
+  function checkFileProtocol() { return false; }
+
+  // ============ iframe 加载完成时:注入跳转钩子(HTTP 场景的备用路径) ============
+  // 注:file:// 下 contentDocument 访问被 Chrome 阻止,会静默失败 — 此时改靠 _shell-hook.js + postMessage
+  function hookIframe() {
+    let doc;
+    try { doc = screen.contentDocument; } catch (e) { return; }
+    if (!doc || !doc.body) return;
+
+    // 1) 隐藏原页面内置 tabbar(shell 已提供) + 留出 64px 给 shell tabbar
+    const style = doc.createElement('style');
+    style.textContent = `
+      .tabbar { display: none !important; }
+      .phone { padding-bottom: 64px !important; min-height: 100vh !important; }
+      body { padding-bottom: 64px; }
+    `;
+    doc.head.appendChild(style);
+
+    const cur = stack[stack.length - 1];
+
+    // ============ 上下文化跳转规则 ============
+    // value 类型:
+    //   string                  → 跳转该页面
+    //   null                    → toast 占位
+    //   function(el) → string   → 动态决定目标(基于元素内容)
+    const ctxMap = {
+      // ─────────── 首页 ───────────
+      'home_v0.2.html': {
+        // 顶部图标
+        '.icon-btn[title="消息"]':  () => { toast('消息页 v0.4'); return null; },
+        '.icon-btn[title="购物袋"]':'cart_v0.2.html',
+
+        // Banner / 公告
+        '.banner-slide':   () => { toast('Banner 落地页待配置'); return null; },
+        '.announce-item':  () => { toast('公告详情 v0.4'); return null; },
+
+        // 4 个 quick-bar
+        '.quick-item': (el) => {
+          const label = el.querySelector('.quick-label')?.textContent.trim();
+          if (label === '我的中拍')  return 'cart_v0.2.html';
+          if (label === '待付款')    return 'my-orders_v0.2.html';
+          if (label === '待发货')    return 'my-orders_v0.2.html';
+          if (label === '保证金')    return 'deposit_v0.2.html';
+          return null;
+        },
+
+        // 渠道板块整卡 → 各自主页
+        '.channel.mingpai-ch': 'mingpai_v0.2.html',
+        '.channel.anpai-ch':   'anpai_v0.2.html',
+        '.channel.live-ch':    () => { toast('直播 v0.4'); return null; },
+
+        // 明拍 inline 列表
+        '.mp-item':            'mingpai-detail_v0.2.html',
+        '.mp-go':              'mingpai-detail_v0.2.html',
+        '.mp-more':            'mingpai_v0.2.html',
+
+        // 暗拍 stage
+        '.anpai-stage':        'anpai_v0.2.html',
+        '.anpai-mine':         'anpai_v0.2.html',
+
+        // 直播 session
+        '.session-item':       () => { toast('直播间 v0.4'); return null; },
+
+        // 热门拍卖(按渠道徽标分流)
+        '.hot-item': (el) => {
+          if (el.querySelector('.hot-channel-tag.anpai'))   return 'anpai-detail_v0.2.html';
+          if (el.querySelector('.hot-channel-tag.mingpai')) return 'mingpai-detail_v0.2.html';
+          if (el.querySelector('.hot-channel-tag.live'))    { toast('直播间 v0.4'); return null; }
+          return 'mingpai-detail_v0.2.html';
+        },
+        '.hot-rule':           () => { toast('热门排序规则'); return null; },
+        '.section-head .section-all, .section-head [class*="all"]': () => { toast('查看全部'); return null; },
+      },
+
+      // ─────────── 明拍主页 ───────────
+      'mingpai_v0.2.html': {
+        '.lot':        'mingpai-detail_v0.2.html',
+        '.bid-btn':    'mingpai-bid_v0.2.html',
+        '.remind-btn': () => { toast('已设开拍提醒'); return null; },
+        '.star-btn':   () => { toast('已切换收藏'); return null; },
+        '.tab-link':   null, // 让 iframe 内部 tab 切换继续生效
+        'a[href*="rules"]':  'mingpai-rules_v0.2.html',
+      },
+
+      // ─────────── 我的竞拍(聚合明拍 + 暗拍) ───────────
+      'favorites_v0.2.html': {
+        // 渠道 tab 让 iframe 自己处理(active 切换)
+        '.ch-tab': null,
+        // 暗拍卡 / 明拍卡区分:用 #pane-anpai/#pane-mingpai 父节点判断
+        '.item': (el) => {
+          if (el.closest('#pane-anpai')) return 'anpai-detail_v0.2.html';
+          return 'mingpai-detail_v0.2.html';
+        },
+        '.go-detail': () => 'mingpai-detail_v0.2.html',
+        '.fav-btn':   () => { toast('已切换收藏'); return null; },
+      },
+
+      // ─────────── 明拍详情 ───────────
+      'mingpai-detail_v0.2.html': {
+        '.bid-quick-add':       'mingpai-bid_v0.2.html',
+        '.bid-proxy-btn':       'mingpai-proxy_v0.2.html',
+        '#openProxy':           'mingpai-proxy_v0.2.html',
+        '.my-status-edit':      'mingpai-proxy_v0.2.html',
+        '.my-status-card':      'mingpai-proxy_v0.2.html',
+        'a[href*="bid-history"]':'mingpai-bid-history_v0.2.html',
+        '.records-foot a':      'mingpai-bid-history_v0.2.html',
+        'a[href*="rules"]':     'mingpai-rules_v0.2.html',
+        '.bid-icon.fav':        () => { toast('已切换收藏'); return null; },
+        '.title-tool.star':     () => { toast('已切换收藏'); return null; },
+        '.title-tool.note':     () => { toast('打开笔记编辑'); return null; },
+      },
+
+      // ─────────── 暗拍主页 ───────────
+      'anpai_v0.2.html': {
+        '.goods':      'anpai-detail_v0.2.html',
+        '.quick-bid':  'anpai-detail_v0.2.html', // 暗拍出价进详情
+        '.star-corner':() => { toast('已切换收藏'); return null; },
+        '.anpai-rule, .anpai-rule strong': 'anpai-rules_v0.2.html',
+        '.chip':       null, // iframe 自有 chip 切换
+        '.layout-toggle .lt-btn': null,
+        '.sort-item':  null,
+      },
+
+      // ─────────── 暗拍详情 ───────────
+      'anpai-detail_v0.2.html': {
+        'a[href*="rules"]':  'anpai-rules_v0.2.html',
+        '.btn-bid, .submit-bid, .anpai-bid-btn': () => { toast('暗拍出价弹窗 v0.4'); return null; },
+      },
+
+      // ─────────── 购物袋 ───────────
+      'cart_v0.2.html': {
+        '.submit-btn, .checkout-btn, .pay-btn': 'order-confirm_v0.2.html',
+        '.item-row, .cart-item':                'mingpai-detail_v0.2.html',
+      },
+
+      // ─────────── 订单确认 ───────────
+      'order-confirm_v0.2.html': {
+        '.submit-btn, .pay-btn, .confirm-btn':  'pay_v0.2.html',
+        '.addr-card, .addr-head':               'address_v0.2.html',
+      },
+
+      // ─────────── 收银台 ───────────
+      'pay_v0.2.html': {
+        '.pay-now-btn, .confirm-pay, .submit-btn, .footer button, .footer-btn': 'pay-result_v0.2.html',
+      },
+
+      // ─────────── 支付结果 ───────────
+      'pay-result_v0.2.html': {
+        '.go-orders, .btn-orders, [data-go="orders"]': 'my-orders_v0.2.html',
+        '.go-home, .btn-home, [data-go="home"]':       'home_v0.2.html',
+      },
+
+      // ─────────── 个人中心 ───────────
+      'profile_v0.2.html': {
+        // 资产卡
+        '.asset-card.deposit, .asset-card.deposit .asset-cta': 'deposit_v0.2.html',
+        '.asset-card.ub':     () => { toast('优币页 v0.4'); return null; },
+
+        // 我的购买 4 列
+        '.order-cell': (el) => {
+          const label = el.querySelector('.order-label')?.textContent.trim();
+          if (label === '退款售后')  { toast('退款售后 v0.4'); return null; }
+          return 'my-orders_v0.2.html'; // 待付款/待收货/已完成 都跳订单列表
+        },
+        '.section-all':       'my-orders_v0.2.html',
+
+        // 我的竞拍入口
+        '.bid-entry, .bid-single, .bs-arrow': 'favorites_v0.2.html',
+
+        // 工具区
+        '.tool': (el) => {
+          const label = el.querySelector('.tool-label')?.textContent.trim();
+          if (label === '实名认证')  return 'cert_v0.2.html';
+          if (label === '地址管理')  return 'address_v0.2.html';
+          if (label === '意见反馈')  { toast('意见反馈 v0.4'); return null; }
+          if (label === '电话客服')  { toast('客服 hotline'); return null; }
+          return null;
+        },
+
+        // 我的工作台/收藏夹快捷项(若存在)
+        '.menu-row, .row[data-go]': (el) => {
+          const go = el.dataset.go;
+          if (go === 'orders')   return 'my-orders_v0.2.html';
+          if (go === 'deposit')  return 'deposit_v0.2.html';
+          if (go === 'address')  return 'address_v0.2.html';
+          if (go === 'bids')     return 'favorites_v0.2.html';
+          if (go === 'cert')     return 'cert_v0.2.html';
+          return null;
+        },
+
+        // 顶部头像/会员
+        '.hero, .user-card, .avatar': () => { toast('账户资料 v0.4'); return null; },
+        '.tag-credit': () => { toast('信用分详情 v0.4'); return null; },
+      },
+
+      // ─────────── 我的订单 ───────────
+      'my-orders_v0.2.html': {
+        // 主操作:待付款的"立即支付"走收银台
+        '.act-btn.primary, .act-btn.danger-fill': 'pay_v0.2.html',
+        // 次要操作:取消/查看详情/查看物流 等
+        '.act-btn': (el) => {
+          const txt = el.textContent.trim();
+          if (txt.includes('支付'))    return 'pay_v0.2.html';
+          if (txt.includes('物流'))    return 'logistics_v0.2.html';
+          if (txt.includes('详情'))    return 'mingpai-detail_v0.2.html';
+          if (txt.includes('证书'))    return 'cert_v0.2.html';
+          if (txt.includes('地址'))    return 'address_v0.2.html';
+          if (txt.includes('取消'))    { toast('取消订单'); return null; }
+          if (txt.includes('确认收货')){ toast('已确认收货'); return null; }
+          return null;
+        },
+        '.order-body, .order-img, .order-info': 'mingpai-detail_v0.2.html',
+        '.o-tab':   null,
+      },
+
+      // ─────────── 保证金主页 ───────────
+      'deposit_v0.2.html': {
+        '.bond-recharge, .recharge-btn, .btn-recharge, .btn-pay': 'deposit-pay_v0.2.html',
+        '.history-row, .record-row':  () => { toast('扣款记录详情'); return null; },
+      },
+
+      // ─────────── 补交保证金 ───────────
+      'deposit-pay_v0.2.html': {
+        '.submit-btn, .pay-btn, button[type="submit"], .footer button': 'pay_v0.2.html',
+      },
+
+      // ─────────── 物流详情 ───────────
+      'logistics_v0.2.html': {
+        '.copy-btn': () => { toast('已复制单号'); return null; },
+      },
+
+      // ─────────── 收货地址 ───────────
+      'address_v0.2.html': {
+        '.addr-row, .addr-item': () => { toast('编辑地址 v0.4'); return null; },
+        '.add-btn, .btn-add':    () => { toast('新增地址 v0.4'); return null; },
+      },
+    };
+
+    const rules = ctxMap[cur] || {};
+
+    // 分离:skip(null = 让 iframe 自己处理) vs action(string / function)
+    const skipSelectors = [];
+    const actionRules = []; // [ [sel, target], ... ]
+    Object.entries(rules).forEach(([sel, target]) => {
+      if (target === null) skipSelectors.push(sel);
+      else actionRules.push([sel, target]);
+    });
+
+    // 注入 cursor:pointer 给所有 action selector,提示可点击
+    if (actionRules.length) {
+      const cursorCss = actionRules.map(([sel]) => `${sel}{cursor:pointer !important;}`).join('\n');
+      const cursorStyle = doc.createElement('style');
+      cursorStyle.textContent = cursorCss;
+      doc.head.appendChild(cursorStyle);
+    }
+
+    // 单一委托式 click 监听(replace 任何已有的)
+    if (doc._shellClickHandler) {
+      doc.removeEventListener('click', doc._shellClickHandler, true);
+    }
+
+    const handler = (e) => {
+      // 从 e.target 向上 walk,找匹配规则
+      let el = e.target;
+      const root = doc.body || doc.documentElement;
+      const maxDepth = 30;
+      let depth = 0;
+
+      while (el && el !== root && depth++ < maxDepth) {
+        if (!el.matches) { el = el.parentElement; continue; }
+
+        // 先查 skip 列表(让 iframe 内部处理)
+        for (const sel of skipSelectors) {
+          try { if (el.matches(sel)) return; } catch (_) {}
+        }
+
+        // 再查 action 列表
+        for (const [sel, target] of actionRules) {
+          let matched = false;
+          try { matched = el.matches(sel); } catch (_) {}
+          if (!matched) continue;
+          e.preventDefault();
+          e.stopPropagation();
+          let dest = null;
+          try { dest = typeof target === 'function' ? target(el) : target; }
+          catch (err) { console.warn('[shell] target func error', err); }
+          if (dest) go(dest);
+          console.log('[shell] click hit', sel, '→', dest || '(no-op)');
+          return;
+        }
+
+        // a[href] 兜底
+        if (el.tagName === 'A') {
+          const href = el.getAttribute('href');
+          if (href && href.endsWith('.html') && !href.startsWith('http')) {
+            e.preventDefault();
+            e.stopPropagation();
+            go(href);
+            return;
+          }
+        }
+
+        // 二级页 nav-back 兜底
+        if (!TAB_PAGES.has(cur) && (
+          el.classList.contains('nav-back') ||
+          el.classList.contains('back-btn')
+        )) {
+          e.preventDefault();
+          e.stopPropagation();
+          back();
+          return;
+        }
+
+        el = el.parentElement;
+      }
+    };
+
+    doc._shellClickHandler = handler;
+    doc.addEventListener('click', handler, true);
+
+    console.log('[shell] hooks applied for', cur,
+      '· actions:', actionRules.length,
+      '· skips:', skipSelectors.length);
+  }
+
+  // ============ postMessage 接收(file:// 兼容路径) ============
+  // _shell-hook.js 注入到各页面后,在 iframe 内拦截点击 → postMessage 通知 shell
+  let hookReady = false;
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === 'shell-nav')   go(d.page);
+    else if (d.type === 'shell-toast') toast(d.msg);
+    else if (d.type === 'shell-back')  back();
+    else if (d.type === 'shell-ready') {
+      hookReady = true;
+      // hook 起作用了 → 关闭 file:// 警告
+      fileWarning.classList.remove('show');
+      console.log('[shell] ready @', d.page, '· hooks:', d.hooks);
+      // 立即推送 tabbar 模式给 iframe
+      const cur = stack[stack.length - 1];
+      try {
+        screen.contentWindow?.postMessage(
+          { type: 'tabbar-mode', visible: TAB_PAGES.has(cur) }, '*'
+        );
+      } catch (_) {}
+    }
+  });
+
+  screen.addEventListener('load', () => {
+    // 标记 hook 起没起,500ms 内没收到 ready 消息 → 提示 file:// 限制
+    hookReady = false;
+    setTimeout(() => {
+      if (!hookReady && window.location.protocol === 'file:') {
+        // 注:此处 hook 应当生效(_shell-hook.js 是 iframe 内同源脚本)
+        // 若仍未 ready,说明页面没注入 hook 脚本 — 提示用户
+        console.warn('[shell] hook 未上报 ready,可能页面缺少 _shell-hook.js');
+      }
+    }, 500);
+
+    // 备用:同源时仍尝试 contentDocument hook(HTTP 服务器场景)
+    try { hookIframe(); } catch (_) {}
+    updateUI();
+  });
+
+  // 键盘:Esc 返回 / 数字 1-4 切 tab
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') back();
+    if (e.key === '1') go(ROUTES.home.page);
+    if (e.key === '2') go(ROUTES.mine.page);
+    if (e.key === '3') go(ROUTES.cart.page);
+    if (e.key === '4') go(ROUTES.profile.page);
+  });
+
+  // 初始化
+  updateUI();
+})();
+</script>
+
+</body>
+</html>

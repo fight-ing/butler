@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 明拍出价弹窗 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --success: #2F855A; --success-bg: #EEF6F0;
+    --warning: #DD6B20; --warning-bg: #FFF8EF;
+    --danger: #E53E3E; --danger-bg: #FFF6F5;
+    --info: #2B6CB0; --info-bg: #F3F7FC;
+    --proxy-purple: #6B46C1; --proxy-bg: #EDE9FE;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+  }
+
+  /* 背景层:模拟详情页 */
+  .bg-detail {
+    position: absolute; inset: 0;
+    background: var(--bg-page);
+    z-index: 1;
+    overflow: hidden;
+    filter: blur(1px) brightness(0.6);
+    opacity: 0.75;
+  }
+  .bg-status { height: 44px; background: var(--bg-card); padding: 0 20px; display:flex; align-items:center; justify-content:space-between; font-size:15px;font-weight:600;}
+  .bg-nav { height: 44px; background: var(--bg-card); border-bottom: 1px solid var(--border); display:flex;align-items:center;padding:0 16px;}
+  .bg-img {
+    width: 100%; height: 250px;
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(180,140,100,0.5);
+    font-size: 64px;
+  }
+  .bg-info {
+    padding: 14px;
+    background: var(--bg-card);
+    margin: 12px;
+    border-radius: 8px;
+  }
+
+  /* 遮罩 + 半屏 sheet */
+  .modal-mask {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+  .bid-sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: var(--bg-card);
+    border-radius: 18px 18px 0 0;
+    z-index: 20;
+    max-height: 88%;
+    display: flex; flex-direction: column;
+    animation: slideUp 0.25s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .sheet-drag {
+    width: 36px; height: 4px;
+    background: var(--border-strong);
+    border-radius: 2px;
+    margin: 8px auto 0;
+  }
+  .sheet-head {
+    padding: 10px 16px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sheet-title {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sheet-title .lot-no {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    background: var(--bg-subtle);
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 4px;
+  }
+  .sheet-close {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+  }
+  .sheet-close svg { width: 14px; height: 14px; }
+
+  /* 弹窗内容(可滚动) */
+  .sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 14px 0;
+  }
+
+  /* 当前价 1 行(无独立 hero) */
+  .now-row {
+    background: linear-gradient(155deg, #FFFFFF 0%, #FFF8E1 100%);
+    border: 1px solid var(--brand-200);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .now-left { display: flex; flex-direction: column; }
+  .now-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .now-label .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--danger);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.4); }
+  }
+  .now-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brand-900);
+    line-height: 1.1;
+    letter-spacing: -0.3px;
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+  }
+  .now-value::before {
+    content: '¥';
+    font-size: 13px;
+    color: var(--brand-700);
+    margin-right: 2px;
+  }
+  .now-right { text-align: right; }
+  .now-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .now-status.leading { background: #DCFCE7; color: #15803D; }
+  .now-status.outbid  { background: #FEE2E2; color: #B91C1C; }
+  .now-status.none    { background: var(--bg-subtle); color: var(--text-secondary); }
+  .now-cd {
+    font-size: 11px;
+    color: var(--danger);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 估价 + 成交概率(可视化分布)*/
+  .estimate-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .est-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .est-title {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .est-title svg { width: 13px; height: 13px; color: var(--brand-700); }
+  .est-range {
+    font-size: 13px; font-weight: 700;
+    color: var(--brand-900);
+    font-variant-numeric: tabular-nums;
+  }
+  .est-sub {
+    font-size: 10.5px; color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+  /* 概率分布条 */
+  .prob-bar {
+    position: relative;
+    height: 22px;
+    background: var(--bg-subtle);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .prob-seg {
+    position: absolute; top: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+  }
+  .prob-seg.low    { background: #FCD34D; color: #78350F; }
+  .prob-seg.mid    { background: var(--brand-500); }
+  .prob-seg.high   { background: var(--success); }
+  .prob-marker {
+    position: absolute;
+    top: -3px; bottom: -3px;
+    width: 2px;
+    background: var(--text-primary);
+  }
+  .prob-marker::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    background: white;
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+  }
+  .prob-axis {
+    display: flex; justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .prob-legend {
+    margin-top: 8px;
+    display: flex; gap: 12px;
+    font-size: 10.5px;
+    color: var(--text-secondary);
+  }
+  .prob-legend .lg-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    margin-right: 3px;
+    vertical-align: -1px;
+  }
+  .prob-legend .lg-dot.low  { background: #FCD34D; }
+  .prob-legend .lg-dot.mid  { background: var(--brand-500); }
+  .prob-legend .lg-dot.high { background: var(--success); }
+
+  /* 代理已设提示 */
+  .proxy-set {
+    background: var(--proxy-bg);
+    border: 1px solid rgba(107,70,193,0.20);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .proxy-set svg { width: 18px; height: 18px; color: var(--proxy-purple); flex-shrink: 0; }
+  .proxy-set .info { flex: 1; font-size: 12px; }
+  .proxy-set b { color: var(--proxy-purple); font-weight: 700; }
+  .proxy-set .small { font-size: 10.5px; color: var(--text-secondary); margin-top: 1px; }
+  .proxy-edit {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--proxy-purple);
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid rgba(107,70,193,0.30);
+    border-radius: 12px;
+  }
+
+  /* 未设代理价 空态 */
+  .proxy-set.empty {
+    background: #FAFAFA;
+    border: 1px dashed #CFCFCF;
+  }
+  .proxy-set.empty svg { color: #9A9A9A; }
+  .proxy-set.empty .info { color: var(--text-secondary); }
+  .proxy-set.empty b { color: var(--text-primary); font-weight: 700; }
+  .proxy-set.empty .proxy-edit {
+    color: var(--proxy-purple);
+    border-color: var(--proxy-purple);
+    background: var(--proxy-bg);
+  }
+
+  /* 加减控件 */
+  .bid-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .bid-step-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .bid-step-label .step-val {
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 4px;
+  }
+  .bid-step-label .hint {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+  .bid-control {
+    display: grid;
+    grid-template-columns: 50px 1fr 50px;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .bid-step {
+    background: var(--bg-page);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--brand-700);
+    user-select: none;
+  }
+  .bid-step.disabled { color: var(--text-tertiary); opacity: 0.45; cursor: not-allowed; }
+  .bid-step .op { font-size: 22px; font-weight: 600; line-height: 1; }
+  .bid-step .label { font-size: 10px; margin-top: 3px; }
+  .bid-amount {
+    background: var(--bg-page);
+    border: 2px solid var(--brand-500);
+    border-radius: 8px;
+    text-align: center;
+    padding: 9px 4px;
+    line-height: 1.2;
+  }
+  .bid-amount .formula {
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+  .bid-amount .total {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brand-900);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-amount .will-bid {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--brand-700);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .bid-amount .will-bid b {
+    color: var(--brand-900);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-amount .total::before {
+    content: '¥';
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand-700);
+    margin-right: 2px;
+    vertical-align: 3px;
+  }
+  /* 加后预览(加一手后下次会到的价格)*/
+  .next-step {
+    margin-top: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--brand-50);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--brand-700);
+  }
+  .next-step b { font-weight: 700; }
+  .next-step .arrow svg { width: 12px; height: 12px; }
+  .bid-hint {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .bid-hint svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* 规则(折叠) */
+  .rules {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .rules-head {
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .rules-head svg { width: 16px; height: 16px; color: var(--text-tertiary); transition: transform 0.2s; }
+  .rules.open .rules-head svg { transform: rotate(180deg); }
+  .rules-body {
+    padding: 0 14px 12px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    display: none;
+  }
+  .rules.open .rules-body { display: block; }
+  .rules-body ul { margin: 0; padding-left: 16px; }
+  .rules-body li { margin-bottom: 2px; }
+  .rules-body .danger { color: var(--danger); font-weight: 600; }
+
+  /* Sticky 底部出价条(弹窗内底部悬浮) */
+  .sheet-footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .footer-info { flex: 1; line-height: 1.3; min-width: 0; }
+  .footer-info .lbl { font-size: 10.5px; color: var(--text-tertiary); }
+  .footer-info .amt {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand-900);
+    font-variant-numeric: tabular-nums;
+  }
+  .footer-info .amt::before { content: '¥'; font-size: 12px; color: var(--brand-700); margin-right: 1px; }
+  .submit-btn {
+    flex-shrink: 0;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    border: none;
+    border-radius: 22px;
+    font-size: 15px; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(230,81,0,0.30);
+    cursor: pointer;
+    min-width: 132px;
+  }
+
+  /* 保证金不足拦截弹窗 */
+  .deposit-prompt-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 24px;
+  }
+  .deposit-prompt-mask.show { display: flex; }
+  .deposit-prompt-box {
+    width: 100%;
+    max-width: 320px;
+    background: white;
+    border-radius: 14px;
+    padding: 24px 22px 18px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+  }
+  .dp-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFF1E0, #FFD8A8);
+    color: var(--brand-700);
+    margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dp-icon svg { width: 24px; height: 24px; }
+  .dp-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .dp-sub {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+  }
+  .dp-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 18px;
+    text-align: left;
+    background: #FAFAFA;
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dp-list li {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    padding-left: 14px;
+    position: relative;
+  }
+  .dp-list li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    top: -2px;
+    color: var(--brand-500);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .dp-list b { color: var(--text-primary); font-weight: 700; }
+  .dp-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .dp-btn {
+    flex: 1;
+    padding: 11px 0;
+    border-radius: 22px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dp-btn.cancel {
+    background: #F3F3F3;
+    color: var(--text-secondary);
+  }
+  .dp-btn.primary {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    box-shadow: 0 4px 12px rgba(230,81,0,0.28);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- 背景层:模拟详情页 -->
+    <div class="bg-detail">
+      <div class="bg-status"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="bg-nav">← Daytona 116500LN</div>
+      <div class="bg-img">◆</div>
+      <div class="bg-info">商品参数 · 鉴定信息 · 出价记录…</div>
+    </div>
+
+    <!-- 遮罩 -->
+    <div class="modal-mask"></div>
+
+    <!-- 弹窗 sheet -->
+    <div class="bid-sheet">
+
+      <div class="sheet-drag"></div>
+
+      <div class="sheet-head">
+        <div class="sheet-title">
+          我要出价
+        </div>
+        <div class="sheet-close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>
+
+      <div class="sheet-body">
+
+        <!-- 当前价(简洁单行,不重复显示货品名/图)-->
+        <div class="now-row">
+          <div class="now-left">
+            <div class="now-label">
+              <span class="dot"></span>
+              当前价(实时)
+            </div>
+            <div class="now-value">252,000</div>
+          </div>
+          <div class="now-right">
+            <span class="now-status leading">我代理领先</span>
+            <div class="now-cd">距结拍 02:14:33</div>
+          </div>
+        </div>
+
+        <!-- (v0.3:估价 & 成交概率 模块已移除 — 出价决策回归到当前价 + 加价幅度) -->
+
+        <!-- 代理价 · 状态 A:未设置(空态)-->
+        <div class="proxy-set empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+          <div class="info">
+            <b>未设代理价</b>
+            <div class="small">设置上限后系统自动按手加价,无需盯到结拍</div>
+          </div>
+          <button class="proxy-edit">去设置</button>
+        </div>
+
+        <!-- 代理价 · 状态 B:已设置(示例,与上方二选一展示,实际按用户状态切换) -->
+        <div class="proxy-set">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+          <div class="info">
+            已设代理上限 <b>¥ 260,000</b>(剩 <b>¥7,500</b>)
+            <div class="small">系统自动加价中 · 仅比对手高 1 手,直到上限</div>
+          </div>
+          <button class="proxy-edit">改</button>
+        </div>
+
+        <!-- 加减控件 + 加后预览 -->
+        <div class="bid-section">
+          <div class="bid-step-label">
+            加一手 <span class="step-val">¥ 1,000</span>
+          </div>
+          <div class="bid-control">
+            <div class="bid-step" id="step-minus">
+              <span class="op">−</span>
+              <span class="label">1 手</span>
+            </div>
+            <div class="bid-amount">
+              <div class="formula" id="formula">当前 252,000 + 1 手</div>
+              <div class="total" id="bid-total">253,000</div>
+              <div class="will-bid" id="will-bid">您将出价 <b>¥ 253,000</b> 元</div>
+            </div>
+            <div class="bid-step" id="step-plus">
+              <span class="op">+</span>
+              <span class="label">1 手</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中拍规则(折叠) -->
+        <div class="rules" id="rules">
+          <div class="rules-head" id="rules-toggle">
+            <span>中拍规则</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="rules-body">
+            <ul>
+              <li><span class="danger">出价不可撤回</span>,落槌后 48h 内需付款</li>
+              <li>结拍前 2 分钟内有新出价 → 延时 5 分钟,封顶当日 23:00</li>
+              <li>买家佣金 <b>3%</b>(落槌价 × 3%),与货款一同收</li>
+              <li>逾期未付:首次扣 50% 保证金 / 二次 100% / 三次封号</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sticky 底部出价条(始终悬浮在弹窗底部) -->
+      <div class="sheet-footer">
+        <div class="footer-info">
+          <div class="lbl">本次出价</div>
+          <div class="amt" id="footer-amt">253,000</div>
+        </div>
+        <button class="submit-btn" id="submitBidBtn">立即出价</button>
+      </div>
+
+    </div>
+
+    <!-- 保证金不足拦截弹窗(默认隐藏,点 立即出价 后 4002 触发) -->
+    <div class="deposit-prompt-mask" id="depositPromptMask">
+      <div class="deposit-prompt-box">
+        <div class="dp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 14h4"/></svg>
+        </div>
+        <div class="dp-title">保证金余额不足</div>
+        <div class="dp-sub">平台标准 ¥5,000,缴纳后即可继续</div>
+        <ul class="dp-list">
+          <li>标准额 <b>¥5,000</b></li>
+          <li>出价 / 中拍 / 加购 / 下单均<b>不扣减余额</b>,违约才扣</li>
+        </ul>
+        <div class="dp-actions">
+          <button class="dp-btn cancel" id="depositPromptCancel">取消</button>
+          <button class="dp-btn primary" id="depositPromptGo">前往充值</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  (function() {
+    const CURRENT = 252000;
+    const STEP = 1000;
+    const MIN = CURRENT + STEP;
+    let bid = MIN;
+
+    const totalEl   = document.getElementById('bid-total');
+    const footerEl  = document.getElementById('footer-amt');
+    const formulaEl = document.getElementById('formula');
+    const willEl    = document.getElementById('will-bid');
+    const minusEl   = document.getElementById('step-minus');
+    const plusEl    = document.getElementById('step-plus');
+
+    function fmt(n) { return n.toLocaleString('en-US'); }
+    function render() {
+      const steps = (bid - CURRENT) / STEP;
+      totalEl.textContent  = fmt(bid);
+      footerEl.textContent = fmt(bid);
+      formulaEl.textContent = '当前 ' + fmt(CURRENT) + ' + ' + steps + ' 手';
+      willEl.innerHTML = '您将出价 <b>¥ ' + fmt(bid) + '</b> 元';
+      minusEl.classList.toggle('disabled', bid <= MIN);
+    }
+
+    minusEl.addEventListener('click', () => {
+      if (bid > MIN) { bid -= STEP; render(); }
+    });
+    plusEl.addEventListener('click', () => {
+      bid += STEP; render();
+    });
+
+    // 规则折叠
+    const rulesEl = document.getElementById('rules');
+    document.getElementById('rules-toggle').addEventListener('click', () => {
+      rulesEl.classList.toggle('open');
+    });
+
+    render();
+  })();
+
+  // 保证金不足拦截弹窗(模拟:点 立即出价 → 4002 → 弹窗;再点 → 通过)
+  (function() {
+    const mask = document.getElementById('depositPromptMask');
+    const btn  = document.getElementById('submitBidBtn');
+    const cancelBtn = document.getElementById('depositPromptCancel');
+    const goBtn = document.getElementById('depositPromptGo');
+    // 模拟态:首次点出价命中 4002 余额不足
+    let mockInsufficient = true;
+    btn.addEventListener('click', () => {
+      if (mockInsufficient) {
+        mask.classList.add('show');
+      } else {
+        // 实际出价成功流程(此处可对接 toast / 关闭 sheet)
+      }
+    });
+    cancelBtn.addEventListener('click', () => {
+      mask.classList.remove('show');
+    });
+    goBtn.addEventListener('click', () => {
+      // 直跳充值页,携带 source + lot 参数;充值成功后由 shell 路由回 bid sheet
+      const url = 'deposit-pay_v0.2.html?source=bid&lot_id=20260513002';
+      // shell hook 兼容:postNav
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'shell-nav', page: url }, '*');
+      } else {
+        window.location.href = url;
+      }
+    });
+    mask.addEventListener('click', (e) => {
+      if (e.target === mask) mask.classList.remove('show');
+    });
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

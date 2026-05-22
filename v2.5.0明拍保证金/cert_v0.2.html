@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 鉴定证书 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E;
+    --success: #2F855A; --warning: #C05621; --danger: #C53030; --info: #2B6CB0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+
+    /* Cert ceremonial palette */
+    --cert-ink: #14110B;
+    --cert-deep: #1F1A12;
+    --cert-mid: #2A2218;
+    --cert-gold-1: #F2D27A;
+    --cert-gold-2: #E0B055;
+    --cert-gold-3: #B98A38;
+    --cert-gold-shine: #FFE49E;
+    --cert-cream: #F6EFDD;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Scroll area: status(44) + nav(44) on top, bottom = 60 tabbar + 64 sticky */
+  .scroll-area {
+    height: calc(812px - 44px - 44px - 60px - 64px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bg-page);
+    scrollbar-width: none;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* Status bar (transparent on dark hero) */
+  .status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 12;
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    position: absolute;
+    top: 44px; left: 0; right: 0;
+    z-index: 12;
+    height: 44px; padding: 0 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: white;
+  }
+  .nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(242,210,122,0.25);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--cert-gold-1);
+  }
+  .nav-btn svg { width: 17px; height: 17px; }
+  .nav-title {
+    font-size: 15px; font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--cert-gold-1);
+  }
+  .nav-right { display: flex; gap: 8px; }
+
+  /* ============ HERO CERTIFICATE ============ */
+  .cert-hero {
+    position: relative;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(242,210,122,0.10), transparent 60%),
+      radial-gradient(80% 50% at 50% 100%, rgba(185,138,56,0.18), transparent 70%),
+      linear-gradient(160deg, #1F1A12 0%, #14110B 55%, #0E0B07 100%);
+    padding: 116px 24px 28px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  /* gold pattern texture */
+  .cert-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 18% 22%, rgba(242,210,122,0.06) 0, transparent 28%),
+      radial-gradient(circle at 82% 78%, rgba(242,210,122,0.05) 0, transparent 30%);
+    z-index: 0;
+  }
+  /* corner ornament */
+  .cert-corner {
+    position: absolute;
+    width: 38px; height: 38px;
+    z-index: 2;
+  }
+  .cert-corner.tl { top: 96px; left: 14px; border-top: 1.5px solid var(--cert-gold-2); border-left: 1.5px solid var(--cert-gold-2); }
+  .cert-corner.tr { top: 96px; right: 14px; border-top: 1.5px solid var(--cert-gold-2); border-right: 1.5px solid var(--cert-gold-2); }
+  .cert-corner.bl { bottom: 14px; left: 14px; border-bottom: 1.5px solid var(--cert-gold-2); border-left: 1.5px solid var(--cert-gold-2); }
+  .cert-corner.br { bottom: 14px; right: 14px; border-bottom: 1.5px solid var(--cert-gold-2); border-right: 1.5px solid var(--cert-gold-2); }
+  /* gold inner border */
+  .cert-frame {
+    position: absolute;
+    top: 92px; left: 18px; right: 18px; bottom: 18px;
+    border: 1px solid rgba(242,210,122,0.22);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .cert-eyebrow {
+    position: relative; z-index: 3;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 6px;
+    color: var(--cert-gold-3);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .cert-eyebrow::before,
+  .cert-eyebrow::after {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--cert-gold-3);
+    vertical-align: middle;
+    margin: 0 8px;
+    transform: translateY(-2px);
+  }
+
+  .cert-title {
+    position: relative; z-index: 3;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    background: linear-gradient(180deg, var(--cert-gold-shine) 0%, var(--cert-gold-1) 50%, var(--cert-gold-3) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 4px;
+    text-shadow: 0 1px 0 rgba(255,228,158,0.25);
+  }
+  .cert-title-en {
+    position: relative; z-index: 3;
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--cert-gold-3);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  /* Big seal / check icon */
+  .cert-seal {
+    position: relative; z-index: 3;
+    width: 96px; height: 96px;
+    margin: 6px auto 18px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,228,158,0.25), transparent 60%),
+      linear-gradient(135deg, var(--cert-gold-1) 0%, var(--cert-gold-2) 50%, var(--cert-gold-3) 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+      0 0 0 4px rgba(20,17,11,0.6),
+      0 0 0 5px rgba(242,210,122,0.45),
+      0 8px 28px rgba(242,210,122,0.32);
+    color: var(--cert-ink);
+  }
+  .cert-seal svg { width: 48px; height: 48px; stroke-width: 3; }
+  .cert-seal::after {
+    content: '';
+    position: absolute;
+    width: 110px; height: 110px;
+    border: 1px dashed rgba(242,210,122,0.4);
+    border-radius: 50%;
+    animation: rotate 24s linear infinite;
+  }
+  @keyframes rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  .cert-meta {
+    position: relative; z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    padding: 14px 4px 0;
+    border-top: 1px dashed rgba(242,210,122,0.18);
+  }
+  .cert-meta-divider {
+    width: 1px;
+    background: rgba(242,210,122,0.2);
+    align-self: stretch;
+  }
+  .cert-meta-block {
+    text-align: center;
+  }
+  .cert-meta-label {
+    font-size: 9px;
+    color: var(--cert-gold-3);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .cert-meta-value {
+    font-size: 13px;
+    color: var(--cert-cream);
+    font-weight: 600;
+    font-family: 'SF Mono', Menlo, monospace;
+    letter-spacing: 0.5px;
+  }
+
+  /* ============ CARD ============ */
+  .card {
+    margin: 14px 14px 0;
+    background: var(--bg-card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 14px 16px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--cert-gold-1), var(--cert-gold-3));
+    border-radius: 2px;
+  }
+  .card-body { padding: 6px 16px 16px; }
+
+  /* ============ 商品信息 ============ */
+  .item-card { display: flex; gap: 14px; padding: 4px 0; }
+  .item-thumb {
+    width: 92px; height: 92px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2a1f15 0%, #4a3826 50%, #6b5239 100%);
+    flex-shrink: 0;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(242,210,122,0.4);
+    font-size: 38px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .item-thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 60% at 50% 50%, rgba(242,210,122,0.18), transparent 70%);
+  }
+  .item-thumb-content { position: relative; z-index: 1; }
+  .item-info { flex: 1; min-width: 0; padding-top: 2px; }
+  .item-brand {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .item-model {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .item-attr-row {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: flex; flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .item-attr-row .k { color: var(--text-tertiary); }
+
+  .accessories {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 0;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  }
+  .accessories .lbl {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-right: 2px;
+  }
+  .acc-chip {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    border-radius: 3px;
+    font-weight: 600;
+    border: 1px solid var(--brand-200);
+  }
+
+  /* ============ 鉴定结论 ============ */
+  .verdict {
+    margin: 14px 14px 0;
+    padding: 18px 18px;
+    background:
+      linear-gradient(135deg, #E8F4ED 0%, #F0F8F2 100%);
+    border: 1.5px solid #C6E6D0;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .verdict::after {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(47,133,90,0.10), transparent 60%);
+  }
+  .verdict-seal {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38a169, var(--success));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(47,133,90,0.32);
+    position: relative; z-index: 1;
+  }
+  .verdict-seal svg { width: 30px; height: 30px; stroke-width: 3; }
+  .verdict-text { position: relative; z-index: 1; }
+  .verdict-main {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--success);
+    letter-spacing: 4px;
+    margin-bottom: 2px;
+  }
+  .verdict-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .verdict-sub strong { color: var(--success); font-weight: 700; }
+
+  /* ============ 鉴定明细 5项 (accordion) ============ */
+  .detail-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-item:last-child { border-bottom: none; }
+  .detail-head {
+    display: flex; align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    gap: 10px;
+  }
+  .detail-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cert-gold-1), var(--cert-gold-3));
+    color: var(--cert-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .detail-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .detail-pass {
+    font-size: 10.5px;
+    color: var(--success);
+    background: #E8F4ED;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 700;
+    display: inline-flex; align-items: center; gap: 3px;
+    border: 1px solid #C6E6D0;
+  }
+  .detail-pass svg { width: 10px; height: 10px; stroke-width: 3; }
+  .detail-arrow {
+    width: 16px; height: 16px;
+    color: var(--text-tertiary);
+    transition: transform 0.25s;
+  }
+  .detail-item.open .detail-arrow { transform: rotate(180deg); }
+  .detail-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0 16px;
+    background: var(--bg-subtle);
+  }
+  .detail-item.open .detail-body { max-height: 200px; }
+  .detail-content {
+    padding: 12px 0;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    border-top: 0;
+  }
+  .detail-content::before {
+    content: '"';
+    display: inline-block;
+    color: var(--cert-gold-2);
+    font-size: 24px;
+    line-height: 0.6;
+    vertical-align: -8px;
+    margin-right: 2px;
+  }
+
+  /* ============ 鉴定师 ============ */
+  .expert-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 4px 0;
+  }
+  .expert-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,228,158,0.4), transparent 60%),
+      linear-gradient(135deg, var(--cert-gold-1), var(--cert-gold-3));
+    color: var(--cert-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px white, 0 0 0 3px var(--cert-gold-2);
+    font-family: "Songti SC", "STSong", serif;
+  }
+  .expert-info { flex: 1; min-width: 0; }
+  .expert-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .expert-level {
+    font-size: 9px;
+    padding: 2px 7px;
+    background: linear-gradient(135deg, var(--cert-gold-1), var(--cert-gold-3));
+    color: var(--cert-ink);
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .expert-attr {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .expert-attr .k { color: var(--text-tertiary); display: inline-block; min-width: 56px; }
+  .expert-attr .hl { color: var(--brand-700); font-weight: 600; }
+
+  .expert-rating {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .rating-stars {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .rating-stars .stars {
+    color: var(--brand-500);
+    letter-spacing: 1px;
+    font-size: 13px;
+  }
+  .rating-stars strong {
+    color: var(--brand-700);
+    font-weight: 800;
+    font-size: 15px;
+  }
+  .rating-meta {
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+
+  .signature-block {
+    margin-top: 14px;
+    padding: 12px 0 4px;
+    border-top: 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .signature-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .signature {
+    font-family: "Brush Script MT", "Songti SC", cursive;
+    font-size: 26px;
+    color: var(--cert-gold-3);
+    transform: rotate(-3deg);
+    letter-spacing: 1px;
+    background:
+      linear-gradient(135deg, var(--cert-gold-1), var(--cert-gold-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 1px 1px rgba(185,138,56,0.18);
+  }
+
+  /* ============ 平台保障 ============ */
+  .guarantee {
+    margin: 14px 14px 0;
+    padding: 18px 16px;
+    background:
+      radial-gradient(120% 80% at 100% 0%, rgba(242,210,122,0.10), transparent 60%),
+      linear-gradient(135deg, var(--cert-deep) 0%, var(--cert-ink) 100%);
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    color: var(--cert-cream);
+    border: 1px solid rgba(242,210,122,0.2);
+  }
+  .guarantee::before {
+    content: '';
+    position: absolute;
+    right: -16px; bottom: -16px;
+    width: 130px; height: 130px;
+    background:
+      radial-gradient(circle, rgba(242,210,122,0.10), transparent 70%);
+  }
+
+  .seal-row {
+    display: flex; align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(242,210,122,0.22);
+    position: relative; z-index: 1;
+  }
+  .platform-seal {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--cert-gold-2);
+    color: var(--cert-gold-1);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 1.2;
+    background: rgba(242,210,122,0.06);
+    box-shadow: inset 0 0 0 1px rgba(242,210,122,0.22), 0 4px 14px rgba(242,210,122,0.15);
+    position: relative;
+    transform: rotate(-6deg);
+  }
+  .platform-seal-inner {
+    width: 50px; height: 50px;
+    border: 1px solid rgba(242,210,122,0.7);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .platform-seal-inner .star {
+    color: var(--cert-gold-1);
+    font-size: 14px;
+  }
+  .platform-seal-inner .txt {
+    font-size: 8px;
+    margin-top: 1px;
+    color: var(--cert-gold-1);
+  }
+  .seal-text { flex: 1; }
+  .seal-brand {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+    color: var(--cert-gold-1);
+  }
+  .seal-sub {
+    font-size: 11px;
+    color: rgba(246,239,221,0.75);
+    line-height: 1.4;
+  }
+
+  .guarantee-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+    position: relative; z-index: 1;
+  }
+  .guarantee-item {
+    text-align: center;
+    padding: 10px 4px;
+    border: 1px solid rgba(242,210,122,0.18);
+    border-radius: 8px;
+    background: rgba(242,210,122,0.03);
+  }
+  .guarantee-item .ico {
+    width: 26px; height: 26px;
+    margin: 0 auto 4px;
+    color: var(--cert-gold-1);
+  }
+  .guarantee-item .ico svg { width: 26px; height: 26px; }
+  .guarantee-item .label {
+    font-size: 11px;
+    color: var(--cert-cream);
+    font-weight: 600;
+  }
+  .guarantee-item .hint {
+    font-size: 9px;
+    color: rgba(246,239,221,0.5);
+    margin-top: 1px;
+    letter-spacing: 0.5px;
+  }
+
+  .third-party {
+    position: relative; z-index: 1;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(242,210,122,0.22);
+    text-align: center;
+  }
+  .third-party .lbl {
+    font-size: 10px;
+    color: rgba(246,239,221,0.6);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .third-party .badges {
+    display: flex; justify-content: center; gap: 8px;
+  }
+  .tp-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border: 1px solid var(--cert-gold-3);
+    color: var(--cert-gold-1);
+    border-radius: 4px;
+    letter-spacing: 1px;
+    background: rgba(242,210,122,0.05);
+  }
+
+  /* ============ 二维码 ============ */
+  .qr-card {
+    margin: 14px 14px 0;
+    background:
+      linear-gradient(135deg, var(--cert-cream) 0%, #FDFAF2 100%);
+    border: 1px solid #E6D8B3;
+    border-radius: 14px;
+    padding: 18px;
+    display: flex; align-items: center; gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .qr-card::before,
+  .qr-card::after {
+    content: '';
+    position: absolute;
+    width: 28px; height: 28px;
+    border-color: var(--cert-gold-3);
+  }
+  .qr-card::before {
+    top: 8px; left: 8px;
+    border-top: 1px solid; border-left: 1px solid;
+  }
+  .qr-card::after {
+    bottom: 8px; right: 8px;
+    border-bottom: 1px solid; border-right: 1px solid;
+  }
+  .qr-img {
+    width: 100px; height: 100px;
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(185,138,56,0.18);
+  }
+  .qr-grid {
+    width: 100%; height: 100%;
+    background-image:
+      linear-gradient(90deg, var(--cert-ink) 50%, transparent 50%),
+      linear-gradient(0deg, var(--cert-ink) 50%, transparent 50%);
+    background-size: 6px 6px;
+    background-position: 0 0;
+    -webkit-mask:
+      conic-gradient(from 0deg at 50% 50%, black 0deg, transparent 0deg, black 360deg);
+    position: relative;
+  }
+  /* fake QR pattern */
+  .qr-img::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    background:
+      repeating-linear-gradient(0deg, var(--cert-ink) 0 4px, transparent 4px 8px),
+      repeating-linear-gradient(90deg, var(--cert-ink) 0 4px, transparent 4px 8px);
+    background-blend-mode: multiply;
+    opacity: 0.85;
+  }
+  .qr-corner-l, .qr-corner-r, .qr-corner-b {
+    position: absolute;
+    width: 22px; height: 22px;
+    background: white;
+    border: 4px solid var(--cert-ink);
+    border-radius: 2px;
+    z-index: 1;
+  }
+  .qr-corner-l { top: 10px; left: 10px; }
+  .qr-corner-r { top: 10px; right: 10px; }
+  .qr-corner-b { bottom: 10px; left: 10px; }
+  .qr-logo {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 22px; height: 22px;
+    background: white;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--cert-gold-3);
+    font-weight: 700;
+    font-size: 12px;
+    z-index: 2;
+    border: 1px solid var(--cert-gold-2);
+  }
+  .qr-text { flex: 1; }
+  .qr-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cert-ink);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  .qr-sub {
+    font-size: 11px;
+    color: #7A6440;
+    line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .qr-actions {
+    display: flex; gap: 4px;
+    font-size: 10px;
+    color: var(--cert-gold-3);
+    font-weight: 600;
+  }
+  .qr-actions span {
+    padding: 3px 7px;
+    border: 1px solid rgba(185,138,56,0.4);
+    border-radius: 3px;
+    background: white;
+  }
+
+  .cert-footer {
+    text-align: center;
+    padding: 18px 20px 12px;
+    font-size: 9.5px;
+    color: var(--text-tertiary);
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+  .cert-footer .line {
+    width: 24px; height: 1px;
+    background: var(--border-strong);
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 8px;
+  }
+
+  /* ============ Sticky bottom ============ */
+  .bottom-bar {
+    position: absolute;
+    bottom: 60px; left: 0; right: 0;
+    height: 64px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    z-index: 10;
+  }
+  .bb-btn {
+    flex: 1;
+    height: 42px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-radius: 22px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+  .bb-btn svg { width: 14px; height: 14px; }
+  .bb-btn.outline-gold {
+    border-color: var(--cert-gold-3);
+    color: var(--cert-gold-3);
+  }
+  .bb-btn.primary {
+    flex: 1.4;
+    background: linear-gradient(135deg, var(--cert-deep) 0%, var(--cert-ink) 100%);
+    color: var(--cert-gold-1);
+    border: 1px solid var(--cert-gold-2);
+    box-shadow: 0 3px 10px rgba(20,17,11,0.32);
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status bar (over hero) -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- Nav bar (over hero) -->
+    <div class="navbar">
+      <div class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">鉴 定 证 书</div>
+      <div class="nav-right">
+        <div class="nav-btn" title="分享">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </div>
+        <div class="nav-btn" title="下载">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll area -->
+    <div class="scroll-area">
+
+      <!-- HERO 证书区 -->
+      <div class="cert-hero">
+        <div class="cert-frame"></div>
+        <div class="cert-corner tl"></div>
+        <div class="cert-corner tr"></div>
+        <div class="cert-corner bl"></div>
+        <div class="cert-corner br"></div>
+
+        <div class="cert-eyebrow">VINTAGE LUXURY · AUTHENTIC</div>
+        <div class="cert-title">中古优品鉴定证书</div>
+        <div class="cert-title-en">CERTIFICATE OF AUTHENTICITY</div>
+
+        <div class="cert-seal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+
+        <div class="cert-meta">
+          <div class="cert-meta-block">
+            <div class="cert-meta-label">CERT NO.</div>
+            <div class="cert-meta-value">MEK-2026-<br/>0001-Birkin</div>
+          </div>
+          <div class="cert-meta-divider"></div>
+          <div class="cert-meta-block">
+            <div class="cert-meta-label">ISSUED</div>
+            <div class="cert-meta-value">2026-05-09<br/>Shanghai · CN</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 商品信息卡 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">商品信息</div>
+        </div>
+        <div class="card-body">
+          <div class="item-card">
+            <div class="item-thumb"><span class="item-thumb-content">◆</span></div>
+            <div class="item-info">
+              <div class="item-brand">HERMÈS</div>
+              <div class="item-model">Birkin 25</div>
+              <div class="item-attr-row">
+                <span><span class="k">颜色</span> Gold</span>
+                <span><span class="k">材质</span> Togo</span>
+                <span><span class="k">五金</span> PHW（钯金）</span>
+                <span><span class="k">年份</span> 2023 U 刻</span>
+              </div>
+            </div>
+          </div>
+          <div class="accessories">
+            <span class="lbl">附件 ·</span>
+            <span class="acc-chip">原盒</span>
+            <span class="acc-chip">防尘袋</span>
+            <span class="acc-chip">雨衣</span>
+            <span class="acc-chip">购物票</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 鉴定结论 -->
+      <div class="verdict">
+        <div class="verdict-seal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="verdict-text">
+          <div class="verdict-main">真 品</div>
+          <div class="verdict-sub"><strong>5 项</strong>核心特征确认无误</div>
+        </div>
+      </div>
+
+      <!-- 鉴定明细 -->
+      <div class="card" style="padding: 0;">
+        <div class="card-head">
+          <div class="card-title">鉴定明细</div>
+          <span style="font-size:11px;color:var(--text-tertiary);">点击查看详情</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+
+          <div class="detail-item open">
+            <div class="detail-head">
+              <span class="detail-num">01</span>
+              <span class="detail-name">缝线检验</span>
+              <span class="detail-pass">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                通过
+              </span>
+              <svg class="detail-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="detail-body">
+              <div class="detail-content">
+                马鞍针法走线均匀，针距 5mm，符合 2023 年 Hermès 制作标准。"
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-head">
+              <span class="detail-num">02</span>
+              <span class="detail-name">五金检验</span>
+              <span class="detail-pass">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                通过
+              </span>
+              <svg class="detail-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="detail-body">
+              <div class="detail-content">
+                Brushed PHW 钯金五金，磨砂工艺正确，刻字深浅一致。"
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-head">
+              <span class="detail-num">03</span>
+              <span class="detail-name">皮料检验</span>
+              <span class="detail-pass">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                通过
+              </span>
+              <svg class="detail-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="detail-body">
+              <div class="detail-content">
+                Togo 小牛皮，纹路自然，气味标准，无人工压纹痕迹。"
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-head">
+              <span class="detail-num">04</span>
+              <span class="detail-name">烙印验证</span>
+              <span class="detail-pass">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                通过
+              </span>
+              <svg class="detail-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="detail-body">
+              <div class="detail-content">
+                U 刻代表 2023 年，对照 Hermès 内部年份代码表确认。"
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-head">
+              <span class="detail-num">05</span>
+              <span class="detail-name">工艺细节</span>
+              <span class="detail-pass">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                通过
+              </span>
+              <svg class="detail-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="detail-body">
+              <div class="detail-content">
+                锁扣对位精准，皮带磨砂处理符合官方工艺。"
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 鉴定师信息 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">鉴定师</div>
+        </div>
+        <div class="card-body">
+          <div class="expert-card">
+            <div class="expert-avatar">張</div>
+            <div class="expert-info">
+              <div class="expert-name">
+                张鉴定师
+                <span class="expert-level">一 级</span>
+              </div>
+              <div class="expert-attr">
+                <div><span class="k">资 质</span>国家奢侈品鉴定师一级 · Hermès 品牌专家</div>
+                <div><span class="k">经 验</span><span class="hl">10 年</span>（2014 — 至今）</div>
+                <div><span class="k">累 计</span>已鉴定 <span class="hl">12,486</span> 件</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="expert-rating">
+            <div class="rating-stars">
+              <strong>4.98</strong>
+              <span class="stars">★★★★★</span>
+            </div>
+            <div class="rating-meta">基于 2,341 条评价</div>
+          </div>
+
+          <div class="signature-block">
+            <span class="signature-label">数 字 签 名</span>
+            <span class="signature">Zhang.Y</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 平台保障 -->
+      <div class="guarantee">
+        <div class="seal-row">
+          <div class="platform-seal">
+            <div class="platform-seal-inner">
+              <span class="star">★</span>
+              <span class="txt">中古优品</span>
+            </div>
+          </div>
+          <div class="seal-text">
+            <div class="seal-brand">中古优品 · 鉴定真品保障</div>
+            <div class="seal-sub">官方鉴定，平台担保<br/>证书与商品一一对应</div>
+          </div>
+        </div>
+
+        <div class="guarantee-list">
+          <div class="guarantee-item">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="label">终身可查</div>
+            <div class="hint">CERT FOREVER</div>
+          </div>
+          <div class="guarantee-item">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <div class="label">假一赔十</div>
+            <div class="hint">10× WARRANTY</div>
+          </div>
+          <div class="guarantee-item">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+            </div>
+            <div class="label">报告存档</div>
+            <div class="hint">FULL RECORD</div>
+          </div>
+        </div>
+
+        <div class="third-party">
+          <div class="lbl">第三方鉴定机构联合背书</div>
+          <div class="badges">
+            <span class="tp-badge">NSAA</span>
+            <span class="tp-badge">NGTC</span>
+            <span class="tp-badge">GIA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 二维码 -->
+      <div class="qr-card">
+        <div class="qr-img">
+          <div class="qr-corner-l"></div>
+          <div class="qr-corner-r"></div>
+          <div class="qr-corner-b"></div>
+          <div class="qr-logo">中</div>
+        </div>
+        <div class="qr-text">
+          <div class="qr-title">证书查询</div>
+          <div class="qr-sub">扫码访问中古优品官网<br/>验证证书真伪</div>
+          <div class="qr-actions">
+            <span>长按保存</span>
+            <span>分享</span>
+            <span>PDF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer ornament -->
+      <div class="cert-footer">
+        <div>
+          <span class="line"></span>
+          MIDDLEKING · AUTHENTICATED
+          <span class="line"></span>
+        </div>
+        <div style="margin-top:6px; font-size: 9px; color: var(--text-tertiary);">
+          本证书由中古优品鉴定中心签发 · 仅对应商品 MEK-2026-0001
+        </div>
+      </div>
+
+      <div style="height: 14px;"></div>
+
+    </div>
+    <!-- /scroll-area -->
+
+    <!-- Sticky bottom -->
+    <div class="bottom-bar">
+      <button class="bb-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        查看商品
+      </button>
+      <button class="bb-btn outline-gold">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        分享
+      </button>
+      <button class="bb-btn primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        下载 PDF
+      </button>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // Accordion expand
+  document.querySelectorAll('.detail-item').forEach(item => {
+    item.querySelector('.detail-head').addEventListener('click', () => {
+      item.classList.toggle('open');
+    });
+  });
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

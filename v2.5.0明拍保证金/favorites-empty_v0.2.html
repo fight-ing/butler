@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 我的竞拍 空状态样例 v0.3</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E;
+    --anpai-orange: #FF8000; --anpai-red: #C62828;
+    --mingpai-deep: #E65100;
+    --listing-blue: #2B6CB0;
+    --success: #15803D;
+    --danger: #DC2626;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #ECECEA;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+  }
+  .page-head {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .page-title {
+    font-size: 20px; font-weight: 700; margin: 0 0 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .pair {
+    display: flex; gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phone-wrap {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .badge.mp { background: var(--brand-100); color: var(--brand-700); border: 1px solid var(--brand-200); }
+  .badge.ap { background: #FFF1F0; color: var(--anpai-red); border: 1px solid rgba(198,40,40,0.18); }
+  .badge .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .phone {
+    width: 375px;
+    min-height: 750px;
+    background: var(--bg-page);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    position: relative;
+  }
+  .status-bar {
+    height: 30px; padding: 0 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-title {
+    flex: 1; font-size: 17px; font-weight: 600;
+  }
+  .nav-act {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+  }
+  .nav-act svg { width: 20px; height: 20px; }
+
+  /* 渠道 Tab */
+  .channel-tabs {
+    background: var(--bg-card);
+    padding: 0 16px;
+    display: flex; gap: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ch-tab {
+    padding: 12px 0 11px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    position: relative;
+  }
+  .ch-tab .count {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .ch-tab.active {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .ch-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 0;
+    width: 28px; height: 3px;
+    background: linear-gradient(90deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+
+  /* 顶部提示带(中拍流程) */
+  .tip-strip {
+    margin: 0;
+    padding: 9px 14px;
+    background: linear-gradient(95deg, #FFF4DC 0%, #FFEFC9 100%);
+    border-bottom: 1px solid var(--brand-200);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    color: #6B3A0E;
+    line-height: 1.5;
+  }
+  .tip-strip svg {
+    width: 13px; height: 13px;
+    color: var(--brand-700);
+    flex-shrink: 0;
+  }
+  .tip-strip b { color: var(--brand-900); font-weight: 700; }
+
+  /* Empty state 占位 */
+  .empty-hero {
+    margin: 22px 16px 12px;
+    text-align: center;
+    padding: 22px 16px;
+  }
+  .empty-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    border: 1px dashed var(--border-strong);
+  }
+  .empty-icon svg { width: 28px; height: 28px; opacity: 0.6; }
+  .empty-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .empty-sub {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.6;
+  }
+
+  /* 推荐区(进行中数据,参考首页样式) */
+  .reco-section {
+    margin: 0 12px;
+  }
+  .reco-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 4px 10px;
+  }
+  .reco-title {
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .reco-title::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .reco-title.anpai::before {
+    background: linear-gradient(180deg, #E63946, #C62828);
+  }
+  .reco-title small {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  /* 2 列 mini Grid(同首页热门拍卖样式) */
+  .reco-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+  .reco-item {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .reco-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    font-size: 42px;
+    position: relative;
+  }
+  .reco-thumb.dark {
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    color: rgba(140,130,120,0.6);
+  }
+  .reco-pill {
+    position: absolute;
+    top: 6px; left: 6px;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: white;
+  }
+  .reco-pill.mp { background: var(--mingpai-deep); }
+  .reco-pill.ap { background: var(--anpai-orange); }
+  .reco-tag-hot {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .reco-tag-ending {
+    position: absolute;
+    bottom: 6px; left: 6px; right: 6px;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 0;
+    text-align: center;
+    border-radius: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .reco-info { padding: 8px 10px; }
+  .reco-brand {
+    font-size: 9.5px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .reco-name {
+    font-size: 12px;
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .reco-price {
+    margin-top: 5px;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .reco-price .v {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+  .reco-price .v::before { content: '¥'; font-size: 10px; }
+  .reco-price .l { font-size: 10px; color: var(--text-tertiary); }
+
+  /* CTA 双入口(明拍 + 暗拍)— 大块卡片样式 */
+  .cta-area {
+    margin: 14px 12px 20px;
+    text-align: center;
+  }
+  .cta-area.dual {
+    display: flex; flex-direction: column;
+    gap: 10px;
+    margin: 8px 14px 20px;
+  }
+  .cta-area.dual .cta-btn {
+    width: 100%;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    color: white;
+  }
+  .cta-area.dual .cta-btn.mp {
+    background: linear-gradient(135deg, #FFA526 0%, #FF8000 60%, #E65100 100%);
+    box-shadow: 0 4px 14px rgba(230,81,0,0.30);
+  }
+  .cta-area.dual .cta-btn.ap {
+    background: linear-gradient(135deg, #FF8F8F 0%, #E63946 60%, #C62828 100%);
+    box-shadow: 0 4px 14px rgba(229,62,62,0.30);
+  }
+  .cta-area.dual .cta-btn .cta-ico {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.20);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+  }
+  .cta-area.dual .cta-btn .cta-ico svg { width: 20px; height: 20px; color: white; }
+  .cta-area.dual .cta-btn .cta-text {
+    flex: 1;
+    display: flex; flex-direction: column;
+    line-height: 1.3;
+  }
+  .cta-area.dual .cta-btn .cta-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .cta-area.dual .cta-btn .cta-sub {
+    font-size: 11.5px;
+    opacity: 0.85;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .cta-area.dual .cta-btn .cta-arrow {
+    width: 14px; height: 14px;
+    opacity: 0.85;
+    flex-shrink: 0;
+  }
+
+  /* (v0.3:reco-section 已弃用,空状态不再展示进行中推荐) */
+  .reco-section { display: none; }
+
+  /* 兼容:旧 .cta-btn(单按钮)样式保留作降级 */
+  .cta-area > .cta-btn:not(.mp):not(.ap) {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    border: none;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(230,81,0,0.30);
+    cursor: pointer;
+  }
+  .cta-area > .cta-btn.anpai {
+    background: linear-gradient(135deg, #E63946, #C62828);
+    box-shadow: 0 4px 12px rgba(230,57,70,0.30);
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    font-size: 10px;
+  }
+  .tab svg { width: 20px; height: 20px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1 class="page-title">我的竞拍 · 空状态样例</h1>
+    <p class="page-sub">
+      明拍 / 暗拍 Pane 在<b>无关注数据</b>时的占位:<br>
+      不展示"进行中"推荐货品 · 只提供 明拍 / 暗拍 入口
+    </p>
+  </div>
+
+  <div class="pair">
+
+    <!-- ① 明拍 空状态 -->
+    <div class="phone-wrap">
+      <div class="badge mp"><span class="dot"></span>① 明拍 · 空状态</div>
+      <div class="phone">
+
+        <div class="status-bar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="navbar">
+          <div class="nav-title">我的竞拍</div>
+          <div class="nav-act">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+        </div>
+
+        <!-- 中拍提示带 -->
+        <div class="tip-strip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round"/></svg>
+          <span>中拍货品将<b>自动加入购物袋</b>,须手动下单付款</span>
+        </div>
+
+        <!-- 渠道 Tab -->
+        <div class="channel-tabs">
+          <div class="ch-tab active">明拍 <span class="count">0</span></div>
+          <div class="ch-tab">暗拍 <span class="count">15</span></div>
+        </div>
+
+        <!-- 空状态(无任何"进行中"推荐) -->
+        <div class="empty-hero">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </div>
+          <div class="empty-title">暂无明拍关注</div>
+          <div class="empty-sub">去明拍 / 暗拍频道挑选心仪好货</div>
+        </div>
+
+        <!-- 入口区:明拍 + 暗拍 双 CTA -->
+        <div class="cta-area dual">
+          <button class="cta-btn mp">
+            <span class="cta-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m9 7 8 8"/></svg>
+            </span>
+            <span class="cta-text">
+              <span class="cta-title">去明拍</span>
+              <span class="cta-sub">透明竞价 · 价高者得</span>
+            </span>
+            <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="cta-btn ap">
+            <span class="cta-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <span class="cta-text">
+              <span class="cta-title">去暗拍</span>
+              <span class="cta-sub">密封竞价 · 心理价博弈</span>
+            </span>
+            <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="tabbar">
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 3l9 9"/><path d="M5 10v10h14V10"/></svg>
+            首页
+          </div>
+          <div class="tab active">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            我的竞拍
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+            购物袋
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/></svg>
+            我的
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ② 暗拍 空状态 -->
+    <div class="phone-wrap">
+      <div class="badge ap"><span class="dot"></span>② 暗拍 · 空状态</div>
+      <div class="phone">
+
+        <div class="status-bar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="navbar">
+          <div class="nav-title">我的竞拍</div>
+          <div class="nav-act">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+        </div>
+
+        <div class="tip-strip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-linecap="round"/></svg>
+          <span>中拍货品将<b>自动加入购物袋</b>,须手动下单付款</span>
+        </div>
+
+        <div class="channel-tabs">
+          <div class="ch-tab">明拍 <span class="count">10</span></div>
+          <div class="ch-tab active">暗拍 <span class="count">0</span></div>
+        </div>
+
+        <div class="empty-hero">
+          <div class="empty-icon" style="border-color:rgba(198,40,40,0.20);color:var(--anpai-red);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="empty-title">暂无暗拍关注</div>
+          <div class="empty-sub">去明拍 / 暗拍频道挑选心仪好货</div>
+        </div>
+
+        <!-- 入口区:明拍 + 暗拍 双 CTA -->
+        <div class="cta-area dual">
+          <button class="cta-btn mp">
+            <span class="cta-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m9 7 8 8"/></svg>
+            </span>
+            <span class="cta-text">
+              <span class="cta-title">去明拍</span>
+              <span class="cta-sub">透明竞价 · 价高者得</span>
+            </span>
+            <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="cta-btn ap">
+            <span class="cta-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <span class="cta-text">
+              <span class="cta-title">去暗拍</span>
+              <span class="cta-sub">密封竞价 · 心理价博弈</span>
+            </span>
+            <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="tabbar">
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 3l9 9"/><path d="M5 10v10h14V10"/></svg>
+            首页
+          </div>
+          <div class="tab active">
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            我的竞拍
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+            购物袋
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/></svg>
+            我的
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 设计说明 -->
+  <div style="max-width:1100px;margin-top:24px;padding:16px 20px;background:#FFFFFF;border-radius:10px;border:1px solid rgba(0,0,0,0.06);font-size:12.5px;line-height:1.7;">
+    <div style="font-size:14px;font-weight:700;margin-bottom:8px;">空状态设计要点(v0.3 精简版)</div>
+    <ul style="margin:0;padding-left:18px;color:#6B6B6B;">
+      <li>渠道 Tab 数字显示 <b>0</b>(明确告知"无关注数据")</li>
+      <li>大圆形空状态图标(主题色虚线圈)+ 主文案"暂无 X 关注"+ 引导副文案</li>
+      <li><b>不展示"进行中的 X" 推荐货品</b>(v0.3 调整)— 避免占用决策空间,引导用户主动进入主页浏览</li>
+      <li><b>双 CTA 大卡入口</b>:明拍(橙金渐变)+ 暗拍(红渐变),并列 100% 宽,各带主标题 + 副描述</li>
+      <li>顶部"中拍货品将自动加入购物袋"提示保留 — 业务规则全局展示</li>
+    </ul>
+  </div>
+
+</body>
+</html>

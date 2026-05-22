@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 直播间内 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100;
+    --success: #2F855A; --warning: #C05621; --danger: #C53030; --info: #2B6CB0;
+
+    /* 直播间 · 暗色专属 token */
+    --dark-bg: #0F0E0C;
+    --dark-overlay: rgba(0,0,0,0.55);
+    --dark-overlay-soft: rgba(0,0,0,0.35);
+    --dark-card: rgba(20,16,12,0.78);
+    --dark-card-border: rgba(255,255,255,0.10);
+    --dark-text: #FFFFFF;
+    --dark-text-soft: rgba(255,255,255,0.78);
+    --dark-text-mute: rgba(255,255,255,0.55);
+    --gold: #FFD54F;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.10);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.18);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.28);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; height: 812px;
+    background: var(--dark-bg);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  /* ============ Status bar（暗色版）============ */
+  .status-bar {
+    height: 36px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    color: var(--dark-text);
+    background: transparent;
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 30;
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* ============ 视频区 ============ */
+  .video-stage {
+    position: relative;
+    width: 100%;
+    height: 488px;
+    background: linear-gradient(135deg, #3a2a1a, #6b5239);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  /* 假装视频底纹 */
+  .video-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,213,79,0.10), transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(230,81,0,0.12), transparent 55%);
+    pointer-events: none;
+  }
+  .video-center {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.18);
+  }
+  .video-center .ico {
+    font-size: 110px;
+    line-height: 1;
+    animation: floatY 3.6s ease-in-out infinite;
+  }
+  .video-center .live-placeholder {
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.32);
+  }
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* ============ 视频顶部叠加层 ============ */
+  .video-topbar {
+    position: absolute;
+    top: 40px; left: 0; right: 0;
+    padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px;
+    z-index: 10;
+  }
+  .host-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--dark-card);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--dark-card-border);
+    border-radius: 24px;
+    padding: 4px 10px 4px 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .host-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .host-text { min-width: 0; line-height: 1.2; flex: 1; }
+  .host-name {
+    font-size: 12px; font-weight: 600;
+    color: var(--dark-text);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .v-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 12px; height: 12px;
+    background: var(--brand-500);
+    color: white;
+    border-radius: 50%;
+    font-size: 9px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .host-sub {
+    font-size: 10px;
+    color: var(--dark-text-mute);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 150px;
+  }
+  .follow-btn {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border: none;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 13px;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .follow-btn.followed {
+    background: rgba(255,255,255,0.14);
+    color: var(--dark-text-soft);
+  }
+
+  .video-top-right {
+    display: flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .viewers-chip {
+    background: var(--dark-card);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--dark-card-border);
+    color: var(--dark-text);
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 13px;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .viewers-chip svg { width: 12px; height: 12px; }
+  .close-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--dark-card);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--dark-card-border);
+    color: var(--dark-text);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .close-btn svg { width: 14px; height: 14px; }
+
+  /* ============ 拍卖进度条（左中浮层）============ */
+  .progress-overlay {
+    position: absolute;
+    top: 86px; left: 12px;
+    background: var(--dark-card);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--dark-card-border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    z-index: 10;
+    width: 160px;
+  }
+  .progress-text {
+    font-size: 11px;
+    color: var(--dark-text);
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .progress-text .now {
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .progress-text .total {
+    color: var(--dark-text-mute);
+    font-size: 10px;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 26%;
+    background: linear-gradient(90deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+
+  /* ============ 右侧工具栏（垂直）============ */
+  .tools-rail {
+    position: absolute;
+    top: 92px; right: 10px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    z-index: 10;
+  }
+  .tool-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--dark-card);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--dark-card-border);
+    color: var(--dark-text);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .tool-btn svg { width: 18px; height: 18px; }
+  .tool-btn .num {
+    position: absolute;
+    top: -2px; right: -2px;
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    background: var(--brand-500);
+    color: white;
+    font-size: 9px; font-weight: 700;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--dark-bg);
+  }
+
+  /* ============ 底部叠加 · 当前拍品卡 ============ */
+  .lot-card {
+    position: absolute;
+    left: 10px; right: 10px;
+    bottom: 8px;
+    background: rgba(20,16,12,0.82);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--dark-card-border);
+    border-radius: 12px;
+    padding: 10px;
+    z-index: 10;
+    box-shadow: var(--shadow-lg);
+  }
+  .lot-top {
+    display: flex; gap: 10px;
+    align-items: flex-start;
+  }
+  .lot-thumb {
+    width: 56px; height: 56px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    color: var(--brand-400);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .lot-no {
+    position: absolute;
+    top: -4px; left: -4px;
+    background: var(--gold);
+    color: #4a2f00;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .lot-info { flex: 1; min-width: 0; }
+  .lot-brand {
+    font-size: 10px;
+    color: var(--dark-text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .lot-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--dark-text);
+    margin: 1px 0 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .lot-price-row {
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .lot-current {
+    font-size: 22px; font-weight: 800;
+    color: var(--brand-400);
+    line-height: 1;
+    font-feature-settings: 'tnum';
+  }
+  .lot-current::before {
+    content: '¥';
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 1px;
+  }
+  .lot-start {
+    font-size: 10px;
+    color: var(--dark-text-mute);
+  }
+  .lot-step {
+    font-size: 10px;
+    color: var(--dark-text-soft);
+    background: rgba(255,255,255,0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: auto;
+  }
+
+  /* 倒计时栏 */
+  .countdown-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .countdown-label {
+    font-size: 11px;
+    color: var(--dark-text-mute);
+  }
+  .countdown-clock {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 17px; font-weight: 700;
+    color: var(--live-red);
+    letter-spacing: 1px;
+    animation: cdPulse 1s infinite;
+  }
+  .countdown-clock::before {
+    content: '';
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--live-red);
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    animation: cdPulse 1s infinite;
+  }
+  @keyframes cdPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  .countdown-rule {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--gold);
+    background: rgba(255,213,79,0.12);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(255,213,79,0.25);
+  }
+
+  /* 出价记录滚动 */
+  .bid-history {
+    margin-top: 8px;
+    background: rgba(0,0,0,0.32);
+    border-radius: 6px;
+    padding: 4px 8px;
+    height: 60px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bid-list {
+    display: flex; flex-direction: column;
+    gap: 2px;
+  }
+  .bid-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px;
+    color: var(--dark-text-soft);
+    line-height: 18px;
+    animation: bidFadeIn 0.4s ease-out;
+  }
+  .bid-row .bidder {
+    color: var(--dark-text);
+    font-weight: 600;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 10px;
+  }
+  .bid-row .price {
+    color: var(--brand-300);
+    font-weight: 700;
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .bid-row .time {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--dark-text-mute);
+  }
+  .bid-row.leading .bidder::after {
+    content: '领先';
+    margin-left: 4px;
+    color: var(--gold);
+    background: rgba(255,213,79,0.14);
+    padding: 0 4px;
+    font-size: 9px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  @keyframes bidFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ 弹幕区 ============ */
+  .danmu-area {
+    flex-shrink: 0;
+    height: 64px;
+    background: var(--bg-card);
+    padding: 6px 12px 4px;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .danmu-track {
+    display: flex; flex-direction: column;
+    gap: 3px;
+    animation: danmuScroll 14s linear infinite;
+  }
+  .danmu-row {
+    font-size: 11px;
+    line-height: 1.5;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .danmu-row .who {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .danmu-row .msg {
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .danmu-row.sys-bid .msg,
+  .danmu-row.sys-bid .who {
+    color: var(--brand-700);
+    font-weight: 600;
+  }
+  .danmu-row.sys-bid::before {
+    content: '出价';
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-size: 9px; font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .danmu-row.sys-warn .msg,
+  .danmu-row.sys-warn .who {
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .danmu-row.sys-warn::before {
+    content: '系统';
+    background: var(--live-red-bg);
+    color: var(--danger);
+    font-size: 9px; font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .danmu-row.user::before {
+    content: '聊天';
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    font-size: 9px; font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  @keyframes danmuScroll {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-150px); }
+  }
+
+  /* ============ 底部出价控制区 ============ */
+  .bid-panel {
+    flex: 1;
+    background: var(--bg-card);
+    padding: 10px 12px 8px;
+    display: flex; flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+  }
+
+  /* 快速加价按钮组 */
+  .quick-add {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .qa-btn {
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--brand-200);
+    background: var(--brand-50);
+    color: var(--brand-700);
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .qa-btn.custom {
+    border: 1px dashed var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .qa-btn:active {
+    background: var(--brand-100);
+    border-color: var(--brand-500);
+  }
+
+  /* 主出价按钮 */
+  .bid-cta {
+    height: 44px;
+    border-radius: 22px;
+    border: none;
+    background: linear-gradient(135deg, var(--brand-400) 0%, var(--brand-500) 55%, var(--brand-700) 100%);
+    color: white;
+    font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(230,81,0,0.32);
+    position: relative;
+    overflow: hidden;
+  }
+  .bid-cta .price {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+  .bid-cta::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+    animation: ctaShimmer 2.6s infinite;
+  }
+  @keyframes ctaShimmer {
+    0% { left: -50%; }
+    60%, 100% { left: 120%; }
+  }
+
+  /* 工具栏小图标 + 聊天 */
+  .panel-toolbar {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pt-icons {
+    display: flex; gap: 4px;
+  }
+  .pt-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .pt-icon svg { width: 16px; height: 16px; }
+  .pt-icon.active { color: var(--brand-500); border-color: var(--brand-200); background: var(--brand-50); }
+  .chat-input {
+    flex: 1;
+    height: 32px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0 8px 0 12px;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    overflow: hidden;
+  }
+  .chat-input .ph {
+    flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .chat-input .emoji {
+    color: var(--text-tertiary);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .chat-input .send {
+    color: var(--brand-500);
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* 返回直播大厅小链接 */
+  .back-link {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    padding: 2px 0 0;
+  }
+  .back-link span { display: inline-flex; align-items: center; gap: 3px; }
+
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status bar（白字浮在视频上）-->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- ============ 视频区 ============ -->
+    <div class="video-stage">
+      <div class="video-center">
+        <div class="ico">◆</div>
+        <div class="live-placeholder">LIVE · 1080P · 张鉴定师</div>
+      </div>
+
+      <!-- 顶部：主播信息 + 在线人数 + 关闭 -->
+      <div class="video-topbar">
+        <div class="host-pill">
+          <div class="host-avatar">张</div>
+          <div class="host-text">
+            <div class="host-name">张鉴定师 <span class="v-badge">V</span></div>
+            <div class="host-sub">爱马仕专场 · 沪上中古集</div>
+          </div>
+          <button class="follow-btn" id="followBtn">+ 关注</button>
+        </div>
+        <div class="video-top-right">
+          <div class="viewers-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="viewers">124</span>
+          </div>
+          <button class="close-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 左中：拍卖进度浮层 -->
+      <div class="progress-overlay">
+        <div class="progress-text">
+          <span class="now"><span id="lotDone">8</span> 已拍</span>
+          <span class="total">/ <span id="lotTotal">23</span> 待拍</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <!-- 右侧工具栏 -->
+      <div class="tools-rail">
+        <button class="tool-btn" title="静音">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+        <button class="tool-btn" title="画质">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </button>
+        <button class="tool-btn" title="截图">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <button class="tool-btn" title="分享">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+        <button class="tool-btn" title="商品列表">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.2" fill="currentColor"/><circle cx="3.5" cy="12" r="1.2" fill="currentColor"/><circle cx="3.5" cy="18" r="1.2" fill="currentColor"/></svg>
+          <span class="num">23</span>
+        </button>
+      </div>
+
+      <!-- 底部叠加：当前拍品卡 -->
+      <div class="lot-card">
+        <div class="lot-top">
+          <div class="lot-thumb">
+            ◆
+            <span class="lot-no">Lot 09</span>
+          </div>
+          <div class="lot-info">
+            <div class="lot-brand">HERMÈS</div>
+            <div class="lot-name">Birkin 25 Gold · Togo / 银扣</div>
+            <div class="lot-price-row">
+              <span class="lot-current" id="currentPrice">45,000</span>
+              <span class="lot-start">起拍 ¥38,000</span>
+              <span class="lot-step">加价 ¥500</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="countdown-row">
+          <span class="countdown-label">倒计时</span>
+          <span class="countdown-clock" id="countdown">00:00:28</span>
+          <span class="countdown-rule">5 秒延时</span>
+        </div>
+
+        <div class="bid-history">
+          <div class="bid-list" id="bidList">
+            <div class="bid-row leading">
+              <span class="bidder">商家 ***48</span>
+              <span class="price">¥45,000</span>
+              <span class="time">00:32 前</span>
+            </div>
+            <div class="bid-row">
+              <span class="bidder">商家 ***12</span>
+              <span class="price">¥44,500</span>
+              <span class="time">00:48 前</span>
+            </div>
+            <div class="bid-row">
+              <span class="bidder">商家 ***07</span>
+              <span class="price">¥44,000</span>
+              <span class="time">01:12 前</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ============ /视频区 ============ -->
+
+    <!-- ============ 弹幕区 ============ -->
+    <div class="danmu-area">
+      <div class="danmu-track">
+        <div class="danmu-row sys-bid"><span class="who">***48</span><span class="msg">出价 ¥45,000</span></div>
+        <div class="danmu-row user"><span class="who">***33</span><span class="msg">看这个皮料品相不错，刻印是哪年的？</span></div>
+        <div class="danmu-row sys-warn"><span class="who">提醒</span><span class="msg">倒计时 30 秒，无新出价即结拍</span></div>
+        <div class="danmu-row sys-bid"><span class="who">***12</span><span class="msg">出价 ¥44,500</span></div>
+        <div class="danmu-row user"><span class="who">***21</span><span class="msg">麻烦给个底部和锁头特写谢谢</span></div>
+        <!-- 复制一遍实现无缝循环 -->
+        <div class="danmu-row sys-bid"><span class="who">***48</span><span class="msg">出价 ¥45,000</span></div>
+        <div class="danmu-row user"><span class="who">***33</span><span class="msg">看这个皮料品相不错，刻印是哪年的？</span></div>
+        <div class="danmu-row sys-warn"><span class="who">提醒</span><span class="msg">倒计时 30 秒，无新出价即结拍</span></div>
+        <div class="danmu-row sys-bid"><span class="who">***12</span><span class="msg">出价 ¥44,500</span></div>
+        <div class="danmu-row user"><span class="who">***21</span><span class="msg">麻烦给个底部和锁头特写谢谢</span></div>
+      </div>
+    </div>
+
+    <!-- ============ 底部出价控制区 ============ -->
+    <div class="bid-panel">
+      <!-- 快速加价按钮 -->
+      <div class="quick-add">
+        <button class="qa-btn">+500</button>
+        <button class="qa-btn">+1,000</button>
+        <button class="qa-btn">+2,000</button>
+        <button class="qa-btn custom">自定义</button>
+      </div>
+
+      <!-- 主出价按钮 -->
+      <button class="bid-cta">
+        立即出价
+        <span class="price" id="nextBidPrice">¥45,500</span>
+      </button>
+
+      <!-- 工具栏 + 聊天 -->
+      <div class="panel-toolbar">
+        <div class="pt-icons">
+          <button class="pt-icon" title="收藏当前品">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+          <button class="pt-icon active" title="提醒">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          </button>
+          <button class="pt-icon" title="图录">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </button>
+          <button class="pt-icon" title="客服">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          </button>
+        </div>
+        <div class="chat-input">
+          <span class="ph">和主播或同行说点什么...</span>
+          <span class="emoji">☺</span>
+          <span class="send">发送</span>
+        </div>
+      </div>
+
+      <!-- 返回大厅小链接 -->
+      <div class="back-link">
+        <span>‹ 返回直播大厅</span>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ============ 倒计时（秒级跳动）============
+  (function() {
+    const el = document.getElementById('countdown');
+    let total = 28; // 起步 28 秒
+    setInterval(() => {
+      // 接近 0 时假装有新出价 → 重置 + 顺延
+      if (total <= 0) {
+        total = 30 + Math.floor(Math.random() * 30);
+      }
+      total -= 1;
+      const h = String(Math.floor(total / 3600)).padStart(2, '0');
+      const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+      const s = String(total % 60).padStart(2, '0');
+      el.textContent = `${h}:${m}:${s}`;
+    }, 1000);
+  })();
+
+  // ============ 在线人数（轻微波动）============
+  (function() {
+    const el = document.getElementById('viewers');
+    let v = 124;
+    setInterval(() => {
+      v += Math.floor(Math.random() * 5) - 2;
+      v = Math.max(110, Math.min(155, v));
+      el.textContent = v;
+    }, 3500);
+  })();
+
+  // ============ 出价历史滚动更新 ============
+  (function() {
+    const listEl = document.getElementById('bidList');
+    const priceEl = document.getElementById('currentPrice');
+    const nextEl = document.getElementById('nextBidPrice');
+    const progressFill = document.getElementById('progressFill');
+    const lotDoneEl = document.getElementById('lotDone');
+
+    let current = 45000;
+    const step = 500;
+    const bidders = ['***48', '***12', '***07', '***33', '***21', '***56', '***88', '***04'];
+
+    function timeAgo(secs) {
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+      return `${m}:${s} 前`;
+    }
+
+    // 每 5 秒添加一条新出价
+    setInterval(() => {
+      current += step;
+      const bidder = bidders[Math.floor(Math.random() * bidders.length)];
+
+      // 更新当前价 + 下次出价金额
+      priceEl.textContent = current.toLocaleString();
+      nextEl.textContent = '¥' + (current + step).toLocaleString();
+
+      // 先把所有现有行标记为「非领先」，时间 +5 秒
+      Array.from(listEl.children).forEach(row => {
+        row.classList.remove('leading');
+        const t = row.querySelector('.time');
+        const m = parseInt(t.textContent.slice(0, 2), 10);
+        const s = parseInt(t.textContent.slice(3, 5), 10);
+        const total = m * 60 + s + 5;
+        t.textContent = timeAgo(total);
+      });
+
+      // 新行插到顶部 · 领先
+      const newRow = document.createElement('div');
+      newRow.className = 'bid-row leading';
+      newRow.innerHTML = `
+        <span class="bidder">商家 ${bidder}</span>
+        <span class="price">¥${current.toLocaleString()}</span>
+        <span class="time">刚刚</span>
+      `;
+      listEl.insertBefore(newRow, listEl.firstChild);
+
+      // 限定 3 条
+      while (listEl.children.length > 3) {
+        listEl.removeChild(listEl.lastChild);
+      }
+    }, 5000);
+
+    // 进度条 / 已拍数偶尔推进
+    let done = 8;
+    const total = 23;
+    setInterval(() => {
+      if (Math.random() < 0.3 && done < total) {
+        done += 1;
+        lotDoneEl.textContent = done;
+        progressFill.style.width = (done / total * 100) + '%';
+      }
+    }, 12000);
+  })();
+
+  // ============ 关注按钮切换 ============
+  (function() {
+    const btn = document.getElementById('followBtn');
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('followed')) {
+        btn.classList.remove('followed');
+        btn.textContent = '+ 关注';
+      } else {
+        btn.classList.add('followed');
+        btn.textContent = '已关注';
+      }
+    });
+  })();
+</script>
+</body>
+</html>

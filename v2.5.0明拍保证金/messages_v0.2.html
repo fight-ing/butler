@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 消息中心 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF0E0;
+    --success: #2F855A; --success-bg: #E8F5EE;
+    --warning: #C05621; --danger: #C53030; --info: #2B6CB0; --info-bg: #E8F0FA;
+    --purple: #6B46C1; --purple-bg: #F3EEFA;
+    --gray-bg: #F0EFEB;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 12px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .nav-left, .nav-right {
+    display: flex; align-items: center; gap: 4px;
+    min-width: 80px;
+  }
+  .nav-right { justify-content: flex-end; }
+  .nav-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+  .nav-btn {
+    height: 28px;
+    padding: 0 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    border-radius: 14px;
+    gap: 4px;
+  }
+  .nav-btn.text {
+    color: var(--brand-700);
+    font-weight: 500;
+  }
+  .nav-btn.icon-only {
+    width: 32px; padding: 0;
+  }
+  .nav-btn svg { width: 20px; height: 20px; }
+
+  /* Category strip */
+  .cat-strip {
+    background: var(--bg-card);
+    padding: 14px 8px 16px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    position: relative;
+  }
+  .cat-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    position: relative;
+  }
+  .cat-icon-wrap svg { width: 22px; height: 22px; }
+  .cat-icon-wrap.sys { background: linear-gradient(135deg, #9A9A9A, #6B6B6B); }
+  .cat-icon-wrap.auction { background: linear-gradient(135deg, var(--brand-400), var(--anpai-orange)); }
+  .cat-icon-wrap.order { background: linear-gradient(135deg, #4FA3FF, var(--info)); }
+  .cat-icon-wrap.logistics { background: linear-gradient(135deg, #5CC788, var(--success)); }
+  .cat-icon-wrap.cs { background: linear-gradient(135deg, #A78BDB, var(--purple)); }
+  .cat-badge {
+    position: absolute;
+    top: -4px; right: -6px;
+    min-width: 17px; height: 17px;
+    padding: 0 4px;
+    background: var(--live-red);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg-card);
+  }
+  .cat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* Filter tabs */
+  .filter-tabs {
+    background: var(--bg-page);
+    padding: 10px 12px 6px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-tab {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .filter-tab.active {
+    background: var(--brand-700);
+    color: white;
+    border-color: var(--brand-700);
+    font-weight: 600;
+  }
+  .filter-tab .count {
+    background: rgba(0,0,0,0.08);
+    color: inherit;
+    padding: 0 5px;
+    border-radius: 8px;
+    font-size: 10px;
+    line-height: 14px;
+  }
+  .filter-tab.active .count {
+    background: rgba(255,255,255,0.25);
+  }
+
+  /* Message list */
+  .msg-list {
+    padding: 4px 12px 16px;
+  }
+
+  /* Date divider */
+  .date-divider {
+    display: flex; align-items: center;
+    margin: 14px 4px 8px;
+    gap: 8px;
+  }
+  .date-divider::before, .date-divider::after {
+    content: ''; flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .date-divider span {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  /* Message card */
+  .msg-card {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    padding: 12px 14px 12px 18px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .msg-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+  }
+  .msg-card.urgent::before { background: var(--live-red); }
+  .msg-card.auction::before { background: var(--anpai-orange); }
+  .msg-card.order::before { background: var(--info); }
+  .msg-card.logistics::before { background: var(--success); }
+  .msg-card.sys::before { background: var(--text-tertiary); }
+  .msg-card.cs::before { background: var(--purple); }
+
+  .msg-card.read { opacity: 0.6; background: var(--bg-subtle); }
+
+  .msg-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .msg-icon {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: white;
+  }
+  .msg-icon svg { width: 14px; height: 14px; }
+  .msg-icon.urgent { background: var(--live-red); }
+  .msg-icon.auction { background: var(--anpai-orange); }
+  .msg-icon.order { background: var(--info); }
+  .msg-icon.logistics { background: var(--success); }
+  .msg-icon.sys { background: var(--text-tertiary); }
+  .msg-icon.cs { background: var(--purple); }
+
+  .msg-title {
+    font-size: 14px; font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .msg-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .msg-dot {
+    width: 7px; height: 7px;
+    background: var(--live-red);
+    border-radius: 50%;
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+  .msg-card.read .msg-dot { display: none; }
+
+  .msg-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .msg-body strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .msg-body .highlight {
+    color: var(--brand-700);
+    font-weight: 600;
+  }
+  .msg-body .price {
+    color: var(--mingpai-deep);
+    font-weight: 700;
+  }
+  .msg-body .countdown {
+    color: var(--live-red);
+    font-weight: 600;
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+
+  .msg-actions {
+    display: flex; gap: 8px;
+    flex-wrap: wrap;
+  }
+  .msg-btn {
+    height: 28px;
+    padding: 0 14px;
+    border-radius: 14px;
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 3px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  .msg-btn.primary {
+    background: linear-gradient(135deg, var(--brand-400), var(--brand-500));
+    color: white;
+    border-color: var(--brand-500);
+  }
+  .msg-btn.danger {
+    background: var(--live-red);
+    color: white;
+    border-color: var(--live-red);
+  }
+  .msg-btn.ghost {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border-color: var(--border);
+  }
+  .msg-status-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--text-tertiary);
+    background: var(--gray-bg);
+    font-weight: 500;
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- Nav bar -->
+    <div class="navbar">
+      <div class="nav-left">
+        <div class="nav-btn icon-only">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+      </div>
+      <div class="nav-title">消息中心</div>
+      <div class="nav-right">
+        <div class="nav-btn text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+          全部已读
+        </div>
+        <div class="nav-btn icon-only">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 类别图标卡 -->
+    <div class="cat-strip">
+      <div class="cat-item">
+        <div class="cat-icon-wrap sys">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="cat-badge">3</span>
+        </div>
+        <span class="cat-label">系统通知</span>
+      </div>
+      <div class="cat-item">
+        <div class="cat-icon-wrap auction">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>
+          <span class="cat-badge">8</span>
+        </div>
+        <span class="cat-label">拍卖提醒</span>
+      </div>
+      <div class="cat-item">
+        <div class="cat-icon-wrap order">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <span class="cat-badge">2</span>
+        </div>
+        <span class="cat-label">订单消息</span>
+      </div>
+      <div class="cat-item">
+        <div class="cat-icon-wrap logistics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span class="cat-badge">1</span>
+        </div>
+        <span class="cat-label">物流通知</span>
+      </div>
+      <div class="cat-item">
+        <div class="cat-icon-wrap cs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3v4zM3 19a2 2 0 0 0 2 2h1v-6H3v4z"/></svg>
+        </div>
+        <span class="cat-label">客服消息</span>
+      </div>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="filter-tabs">
+      <div class="filter-tab active">全部 <span class="count">14</span></div>
+      <div class="filter-tab">未读 <span class="count">8</span></div>
+      <div class="filter-tab">@我的</div>
+      <div class="filter-tab">重要</div>
+    </div>
+
+    <!-- 消息流 -->
+    <div class="msg-list">
+
+      <!-- Today -->
+      <div class="date-divider"><span>今天</span></div>
+
+      <!-- 1. 红色紧急 - 出价被超 -->
+      <div class="msg-card urgent">
+        <div class="msg-head">
+          <div class="msg-icon urgent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <span class="msg-title">您的出价被超出 · HERMÈS Birkin 25</span>
+          <span class="msg-time">10 分钟前</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body">您在明拍 <strong>20260513008</strong> 的代理上限被对手超过，当前价 <span class="price">¥85,500</span>，是否提高代理上限？</div>
+        <div class="msg-actions">
+          <button class="msg-btn danger">立即处理 ›</button>
+          <button class="msg-btn ghost">放弃</button>
+        </div>
+      </div>
+
+      <!-- 2. 橙色拍卖 - 暗拍截标 -->
+      <div class="msg-card auction">
+        <div class="msg-head">
+          <div class="msg-icon auction">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <span class="msg-title">暗拍即将截标</span>
+          <span class="msg-time">25 分钟前</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body">第 24 期暗拍距截标 <span class="countdown">01:00:00</span>，您出价的 <strong>12 件</strong>商品排名即将公开</div>
+        <div class="msg-actions">
+          <button class="msg-btn primary">查看出价 ›</button>
+        </div>
+      </div>
+
+      <!-- 3. 蓝色订单 - 中拍成功 -->
+      <div class="msg-card order">
+        <div class="msg-head">
+          <div class="msg-icon order">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="msg-title">中拍成功 · 待支付</span>
+          <span class="msg-time">1h 前</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body">您在直播间中拍 <strong>LV Speedy 30</strong>，价格 <span class="price">¥4,200</span>，已进入购物车（剩余 <span class="countdown">03h 45m</span> 支付）</div>
+        <div class="msg-actions">
+          <button class="msg-btn primary">去支付 ›</button>
+          <button class="msg-btn">订单详情</button>
+        </div>
+      </div>
+
+      <!-- 4. 绿色物流 - 已签收 -->
+      <div class="msg-card logistics">
+        <div class="msg-head">
+          <div class="msg-icon logistics">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span class="msg-title">已签收 · 请尽快验货</span>
+          <span class="msg-time">2h 前</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body"><strong>CARTIER 蓝气球</strong>已签收，<span class="highlight">7 天质保期</span>开始，请尽快开箱验货</div>
+        <div class="msg-actions">
+          <button class="msg-btn primary">立即评价</button>
+          <button class="msg-btn">申请售后</button>
+        </div>
+      </div>
+
+      <!-- 5. 灰色系统 - 图录发布 -->
+      <div class="msg-card sys">
+        <div class="msg-head">
+          <div class="msg-icon sys">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <span class="msg-title">5/15 春拍图录发布</span>
+          <span class="msg-time">09:00</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body">春季精品大场图录已发布，<strong>89 件爱马仕 &amp; 珠宝精品</strong>已上线，建议提前收藏重点拍品</div>
+        <div class="msg-actions">
+          <button class="msg-btn primary">查看图录 ›</button>
+        </div>
+      </div>
+
+      <!-- Yesterday -->
+      <div class="date-divider"><span>昨天</span></div>
+
+      <!-- 6. 橙色拍卖 - 直播开播 -->
+      <div class="msg-card auction">
+        <div class="msg-head">
+          <div class="msg-icon auction">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="23 7 16 12 23 17 23 7" fill="currentColor"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          </div>
+          <span class="msg-title">您关注的直播开播</span>
+          <span class="msg-time">18:30</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body"><strong>陈鉴定师 Chanel 包袋专场</strong>已开播，本场 32 件起拍 ¥6,000 起</div>
+        <div class="msg-actions">
+          <button class="msg-btn primary">进入直播 ›</button>
+        </div>
+      </div>
+
+      <!-- 7. 紫色客服 - 保证金到账 -->
+      <div class="msg-card cs">
+        <div class="msg-head">
+          <div class="msg-icon cs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <span class="msg-title">保证金到账提醒</span>
+          <span class="msg-time">15:18</span>
+          <span class="msg-dot"></span>
+        </div>
+        <div class="msg-body">您本次充值 <span class="price">¥50,000</span> 已到账，当前可参拍上限 <span class="highlight">¥1,000,000</span></div>
+        <div class="msg-actions">
+          <button class="msg-btn">查看账户 ›</button>
+        </div>
+      </div>
+
+      <!-- 2 days ago -->
+      <div class="date-divider"><span>2 天前</span></div>
+
+      <!-- 8. 红色紧急 - 订单超时 -->
+      <div class="msg-card urgent read">
+        <div class="msg-head">
+          <div class="msg-icon urgent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <span class="msg-title">订单超时警告</span>
+          <span class="msg-time">5/9 14:00</span>
+        </div>
+        <div class="msg-body">订单 <strong>OD20260508001</strong> 剩余 30 分钟未支付，超时将扣除保证金 <span class="price">¥425</span></div>
+        <div class="msg-actions">
+          <span class="msg-status-tag">已超时 · 已扣款</span>
+        </div>
+      </div>
+
+      <!-- 9. 蓝色订单 - 发货通知 -->
+      <div class="msg-card order">
+        <div class="msg-head">
+          <div class="msg-icon order">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <span class="msg-title">商家已发货</span>
+          <span class="msg-time">5/9 11:42</span>
+        </div>
+        <div class="msg-body"><strong>ROLEX Daytona 116500LN</strong> 已由京都中古工坊发出，顺丰速运 SF1234567890123</div>
+        <div class="msg-actions">
+          <button class="msg-btn primary">查看物流 ›</button>
+        </div>
+      </div>
+
+      <!-- 一周前 -->
+      <div class="date-divider"><span>一周前</span></div>
+
+      <!-- 10. 灰色系统 - 规则更新 -->
+      <div class="msg-card sys read">
+        <div class="msg-head">
+          <div class="msg-icon sys">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <span class="msg-title">规则更新通知</span>
+          <span class="msg-time">5/4</span>
+        </div>
+        <div class="msg-body">暗拍保证金调整为 <strong>¥5,000</strong>，<span class="highlight">5/12 生效</span>，未达标商家请及时补缴</div>
+        <div class="msg-actions">
+          <button class="msg-btn ghost">查看详情 ›</button>
+        </div>
+      </div>
+
+      <!-- 11. 紫色客服 - 售后处理结果 -->
+      <div class="msg-card cs read">
+        <div class="msg-head">
+          <div class="msg-icon cs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3v4zM3 19a2 2 0 0 0 2 2h1v-6H3v4z"/></svg>
+          </div>
+          <span class="msg-title">售后申请已处理</span>
+          <span class="msg-time">5/3</span>
+        </div>
+        <div class="msg-body">您的售后申请 <strong>RT20260503002</strong> 已通过，退款 <span class="price">¥3,200</span> 将于 1-3 个工作日内到账</div>
+        <div class="msg-actions">
+          <span class="msg-status-tag">已完成</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

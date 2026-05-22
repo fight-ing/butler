@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 保证金账户 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF0E0;
+    --success: #2F855A; --success-bg: #E8F5EE;
+    --warning: #C05621; --danger: #C53030; --info: #2B6CB0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-page);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-page);
+  }
+  .navbar .nav-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .navbar .nav-btn svg { width: 22px; height: 22px; }
+  .navbar .nav-title {
+    font-size: 16px; font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Hero card */
+  .hero {
+    margin: 4px 12px 12px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #FFC300 0%, #FF8000 55%, #E65100 100%);
+    padding: 18px 18px 16px;
+    color: #FFFFFF;
+    position: relative;
+    box-shadow: var(--shadow-md);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -30px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    left: -30px; bottom: -50px;
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .hero-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-label .std {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    padding: 1px 6px;
+    background: rgba(255,255,255,0.14);
+    border-radius: 3px;
+  }
+  .hero-amount {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 4px 0 8px;
+    color: #FFFFFF;
+    position: relative; z-index: 1;
+    font-feature-settings: "tnum";
+  }
+  .hero-amount::before {
+    content: '¥';
+    font-size: 18px;
+    font-weight: 500;
+    margin-right: 3px;
+    opacity: 0.95;
+  }
+  .hero-sub {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.88);
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .qmark-small {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.30);
+    font-size: 9px;
+    font-weight: 700;
+    margin-left: 4px;
+    cursor: help;
+    vertical-align: 1px;
+  }
+  .hero-frozen {
+    font-size: 12px;
+    color: rgba(255,255,255,0.88);
+    position: relative; z-index: 1;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.16);
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .hero-frozen .v { font-weight: 700; }
+  .hero-actions {
+    display: flex; gap: 10px;
+    margin-top: 16px;
+    position: relative; z-index: 1;
+    align-items: center;
+  }
+  /* 主操作：充值 —— 大白色按钮占据主位 */
+  .hero-btn.primary {
+    flex: 1;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px;
+    background: #FFFFFF;
+    color: var(--brand-700);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  /* 次操作：提现 —— 弱化为小幽灵按钮 */
+  .hero-btn.withdraw {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+    color: rgba(255,255,255,0.85);
+    border: 1px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .hero-btn.withdraw svg { opacity: 0.85; }
+
+  /* 状态横条三态 */
+  .status-banner.warn {
+    background: var(--anpai-orange-bg);
+    color: var(--brand-700);
+    border-color: #FED7AA;
+  }
+  .status-banner.warn .si {
+    background: var(--brand-500);
+  }
+  .status-banner.warn .si-action {
+    background: var(--brand-500);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 14px;
+    border: none;
+    margin-left: auto;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(255,128,0,0.25);
+  }
+  .status-banner.warn .need {
+    font-weight: 700;
+    color: var(--brand-700);
+  }
+  .status-banner.danger {
+    background: var(--danger-bg, var(--live-red-bg));
+    color: var(--danger);
+    border-color: #FECACA;
+  }
+  .status-banner.danger .si {
+    background: var(--danger);
+  }
+  .status-banner.danger .si-action {
+    background: var(--danger);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 14px;
+    border: none;
+    margin-left: auto;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(197,48,48,0.25);
+  }
+
+  /* Status banner */
+  .status-banner {
+    margin: 0 12px 12px;
+    background: var(--success-bg);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    color: var(--success);
+    border: 1px solid #C8E6D2;
+  }
+  .status-banner .si {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--success);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .status-banner .si svg { width: 12px; height: 12px; }
+
+  /* (v0.3) 提现处理中卡片 */
+  .withdraw-card {
+    margin: 0 12px 12px;
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    border: 1px solid #BFDBFE;
+    border-radius: 10px;
+    padding: 12px 14px;
+    position: relative;
+  }
+  .withdraw-card .wc-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .withdraw-card .wc-icon {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    background: var(--info);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .withdraw-card .wc-icon svg { width: 13px; height: 13px; }
+  .withdraw-card .wc-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E40AF;
+    flex: 1;
+  }
+  .withdraw-card .wc-badge {
+    background: var(--info);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+    animation: pulse-i 1.6s infinite;
+  }
+  @keyframes pulse-i { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+  .withdraw-card .wc-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .withdraw-card .wc-row .wc-amt {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1E40AF;
+    font-variant-numeric: tabular-nums;
+  }
+  .withdraw-card .wc-row .wc-amt::before {
+    content: '¥';
+    font-size: 13px;
+    color: var(--info);
+    margin-right: 1px;
+    font-weight: 500;
+  }
+  .withdraw-card .wc-meta {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .withdraw-card .wc-meta b { color: var(--info); font-weight: 600; }
+  .withdraw-card .wc-actions {
+    margin-top: 10px;
+    display: flex; gap: 8px;
+  }
+  .withdraw-card .wc-btn {
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: 18px;
+    border: 1px solid var(--info);
+    background: white;
+    color: var(--info);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .withdraw-card .wc-btn.cancel {
+    border-color: rgba(220,38,38,0.30);
+    color: var(--danger);
+  }
+  .withdraw-card .wc-btn.cancel:hover {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+  }
+
+  /* 取消确认弹窗 */
+  .modal-mask {
+    position: absolute; inset: 0;
+    background: rgba(15,23,42,0.55);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+  }
+  .modal-mask.show { opacity: 1; pointer-events: auto; }
+  .confirm-modal {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 86%;
+    max-width: 320px;
+    background: white;
+    border-radius: 14px;
+    z-index: 101;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.20s;
+    overflow: hidden;
+  }
+  .confirm-modal.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+  .cm-body { padding: 22px 20px 16px; text-align: center; }
+  .cm-icon {
+    width: 44px; height: 44px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: var(--warning-bg);
+    color: var(--warning);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cm-icon svg { width: 22px; height: 22px; }
+  .cm-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+  .cm-sub {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .cm-sub b { color: var(--info); font-weight: 600; }
+  .cm-foot {
+    display: flex;
+    border-top: 1px solid var(--border);
+  }
+  .cm-btn {
+    flex: 1;
+    padding: 13px 0;
+    border: none;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .cm-btn.cancel { color: var(--text-secondary); border-right: 1px solid var(--border); }
+  .cm-btn.confirm { color: var(--danger); font-weight: 600; }
+  .cm-btn:hover { background: var(--bg-page); }
+
+  /* Rule card */
+  .rule {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .rule-head {
+    padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 14px; font-weight: 600;
+  }
+  .rule-head .left {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rule-head .left::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .rule-head .toggle {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 2px;
+  }
+  .rule-body {
+    padding: 0 14px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    display: none;
+  }
+  .rule.open .rule-body { display: block; }
+  .rule.open .toggle .arrow { transform: rotate(180deg); }
+  .rule-body .item {
+    display: flex; gap: 8px;
+    padding: 5px 0;
+    border-top: 0;
+  }
+  .rule-body .item:first-child { border-top: none; padding-top: 0; }
+  .rule-body .k {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    width: 78px;
+  }
+  .rule-body .v { flex: 1; color: var(--text-primary); }
+  .rule-body .v.warn { color: var(--danger); font-weight: 500; }
+
+  /* Tabs */
+  .tabs {
+    margin: 0 12px;
+    display: flex;
+    gap: 6px;
+    padding: 4px 0 10px;
+  }
+  .tabs .t {
+    padding: 5px 12px;
+    border-radius: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .tabs .t.active {
+    background: var(--brand-500);
+    border-color: var(--brand-500);
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+
+  /* Flow list */
+  .flow {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  /* (v0.3 还原):单行布局 — 左 icon + 中标题描述时间 + 右金额(扣款分应扣/实扣/原因) */
+  .flow-row {
+    display: flex; align-items: flex-start;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    gap: 10px;
+  }
+  .flow-row:first-child { border-top: none; }
+  .flow-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .flow-icon svg { width: 16px; height: 16px; }
+  .flow-icon.charge   { background: var(--success-bg); color: var(--success); }
+  .flow-icon.deduct   { background: var(--live-red-bg); color: var(--live-red); }
+  .flow-icon.refund   { background: var(--brand-100); color: var(--brand-700); }
+  .flow-icon.withdraw { background: #E8EDF7; color: var(--info); }
+
+  .flow-info { flex: 1; min-width: 0; line-height: 1.4; }
+  .flow-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 3px;
+  }
+  .flow-type-tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1.5px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+  .flow-type-tag.charge   { background: var(--success-bg); color: var(--success); }
+  .flow-type-tag.deduct   { background: var(--live-red-bg); color: var(--live-red); }
+  .flow-type-tag.refund   { background: var(--brand-100); color: var(--brand-700); }
+  .flow-type-tag.withdraw { background: #E8EDF7; color: var(--info); }
+  .flow-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+  .flow-desc b { color: var(--text-primary); font-weight: 500; }
+  .flow-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 右侧金额列 */
+  .flow-right {
+    flex-shrink: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    min-width: 96px;
+    padding-top: 2px;
+  }
+  .flow-amount {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .flow-amount.in    { color: var(--success); }
+  .flow-amount.out   { color: var(--live-red); }
+  .flow-amount.waived{ color: var(--success); }
+
+  /* 扣款的"应扣 / 实扣 / 原因" */
+  .flow-due {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+  }
+  .flow-due.strike { text-decoration: line-through; }
+  /* (v0.3) flow-reason 已不用 — 原因合并到 flow-desc 内容 */
+  .flow-reason { display: none; }
+
+  /* 状态标签:处理中 */
+  .flow-status {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1.5px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+  .flow-status.pending {
+    background: var(--warning-bg);
+    color: var(--warning);
+  }
+  .flow-status.done {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  .flow-status.cancel {
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+  }
+  /* 取消状态金额置灰且划线 */
+  .flow-amount.muted {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+    text-decoration-color: rgba(0,0,0,0.30);
+  }
+  /* (v0.3)记录里不再有取消按钮 — 移到主页 withdraw-card */
+  .flow-cancel { display: none; }
+
+  /* 兼容旧 class 不再使用 */
+  .flow-deduct-pair { display: none; }
+  .flow-amount-old {
+    font-size: 10px;
+    color: var(--success);
+    margin-top: 2px;
+    background: var(--success-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    display: inline-block;
+    font-weight: 500;
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- Nav bar -->
+    <div class="navbar">
+      <div class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">保证金账户</div>
+      <div class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-label">
+        <span>可用保证金 <span class="qmark-small" title="账户余额 − 提现处理中">?</span></span>
+        <span class="std">标准额 ¥5,000</span>
+      </div>
+      <div class="hero-amount">2,500.00</div>
+      <div class="hero-sub">账户余额 ¥4,500 · 提现冻结 ¥2,000</div>
+      <div class="hero-actions">
+        <button class="hero-btn primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          补缴保证金 ¥500
+        </button>
+        <a class="hero-btn withdraw" href="deposit-withdraw_v0.2.html" style="text-decoration:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+          提现
+        </a>
+      </div>
+    </div>
+
+    <!-- (v0.3) 提现处理中卡片 -->
+    <div class="withdraw-card">
+      <div class="wc-head">
+        <span class="wc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5"/><polyline points="5 12 12 19 19 12"/></svg>
+        </span>
+        <span class="wc-title">保证金提现处理中</span>
+        <span class="wc-badge">处理中</span>
+      </div>
+      <div class="wc-row">
+        <span class="wc-amt">2,000.00</span>
+      </div>
+      <div class="wc-meta">
+        申请时间 2026-05-12 09:32 · 预计 <b>5-7 个工作日</b>内到账<br>
+        到账前可主动取消申请,款项原路退回保证金账户。
+      </div>
+      <div class="wc-actions">
+        <button class="wc-btn cancel" onclick="openCancelModal()">取消申请</button>
+      </div>
+    </div>
+
+    <!-- Status banner —— 保证金不足态（橙色） -->
+    <div class="status-banner warn">
+      <div class="si">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <span>保证金不足 · 需补 <span class="need">¥500</span> 才能参拍</span>
+      <button class="si-action">立即补缴</button>
+    </div>
+
+    <!-- 备用：充足态 / 已扣完态（隐藏，文档参考用）-->
+    <!--
+    <div class="status-banner">
+      <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <span>保证金充足 ¥5,000 · 可正常参与所有渠道拍卖</span>
+    </div>
+    <div class="status-banner danger">
+      <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span>保证金已扣完 · 需充值 <strong>¥5,000</strong> 才能继续参拍</span>
+      <button class="si-action">立即充值</button>
+    </div>
+    -->
+
+
+    <!-- Rule card (折叠) -->
+    <div class="rule open" id="ruleCard">
+      <div class="rule-head" onclick="document.getElementById('ruleCard').classList.toggle('open')">
+        <div class="left">保证金规则</div>
+        <span class="toggle">展开/收起 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="rule-body">
+        <div class="item"><span class="k">标准额度</span><span class="v">¥5,000 <span style="color:var(--text-tertiary);">· 固定金额，不可多缴</span></span></div>
+        <div class="item"><span class="k">违约扣款</span><span class="v">商品金额 1%（最低 ¥100 / 最高 ¥2,000）</span></div>
+        <div class="item"><span class="k">应扣 vs 实扣</span><span class="v">扣款记录区分<b>应扣</b>(规则计算值)与<b>实扣</b>(实际划扣值);命中 VIP / 白名单等规则时实扣可减免</span></div>
+        <div class="item"><span class="k">违约处置</span><span class="v warn">旧单不再追，新拍前必须补足至 ¥5,000</span></div>
+        <div class="item"><span class="k">扣款下限</span><span class="v">最多扣至 ¥0，扣完后须充值才能继续参拍</span></div>
+        <div class="item"><span class="k">提现到账</span><span class="v">提现申请 <b>5–7 个工作日</b>内到账,期间可主动取消申请</span></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="t active">全部</div>
+      <div class="t">扣款</div>
+      <div class="t">充值</div>
+      <div class="t">退还</div>
+      <div class="t">提现</div>
+    </div>
+
+    <!-- Flow list (v0.3:单行 · 左icon + 中标题描述时间 + 右金额/应扣/实扣/原因) -->
+    <div class="flow">
+
+      <!-- ─── 扣款 4 条 ─── -->
+
+      <div class="flow-row">
+        <span class="flow-icon deduct">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag deduct">扣款</span>暗拍中拍未下单</div>
+          <div class="flow-desc">暗拍20260505白天场 838292838328 号拍品中拍未下单</div>
+          <div class="flow-time">2026-05-05 17:42</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-due">应扣 ¥ 500.00</div>
+          <div class="flow-amount out">−500.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon deduct">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag deduct">扣款</span>明拍中拍未下单</div>
+          <div class="flow-desc">明拍20260505日 838292838328 号拍品中拍未下单</div>
+          <div class="flow-time">2026-05-05 15:38</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-due">应扣 ¥ 850.00</div>
+          <div class="flow-amount out">−850.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon deduct">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag deduct">扣款</span>直播加购未下单</div>
+          <div class="flow-desc">20260505下午场直播 838292838328 号加购未下单</div>
+          <div class="flow-time">2026-05-05 19:18</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-due strike">应扣 ¥ 320.00</div>
+          <div class="flow-amount waived">¥ 0.00</div>
+          <div class="flow-reason">未扣 · VIP 白名单豁免</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon deduct">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag deduct">扣款</span>订单超时未支付</div>
+          <div class="flow-desc">订单 OD29393993939 超时未支付</div>
+          <div class="flow-time">2026-05-04 22:01</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-due">应扣 ¥ 1,200.00</div>
+          <div class="flow-amount out">−1,200.00</div>
+        </div>
+      </div>
+
+      <!-- ─── 退还 4 条 ─── -->
+
+      <div class="flow-row">
+        <span class="flow-icon refund">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag refund">退还</span>暗拍加购扣款退还</div>
+          <div class="flow-desc">暗拍20260505白天场 838292838328 号中拍未下单扣款退还,原因:商家协商一致退还</div>
+          <div class="flow-time">2026-05-06 10:22</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+500.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon refund">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag refund">退还</span>明拍中拍未下单退还</div>
+          <div class="flow-desc">明拍20260505日 838292838328 号拍品中拍未下单扣款退还,原因:用户申诉成功,平台核实后退还</div>
+          <div class="flow-time">2026-05-06 09:15</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+850.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon refund">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag refund">退还</span>直播加购未下单退还</div>
+          <div class="flow-desc">20260505下午场直播 838292838328 号加购未下单扣款退还,原因:平台运营活动返还</div>
+          <div class="flow-time">2026-05-06 11:48</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+320.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon refund">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag refund">退还</span>订单超时未支付退还</div>
+          <div class="flow-desc">订单 OD29393993939 超时未支付扣款退还,原因:支付通道延迟,用户补付完成后扣款撤销</div>
+          <div class="flow-time">2026-05-05 14:03</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+1,200.00</div>
+        </div>
+      </div>
+
+      <!-- ⑤ 退还 · 提现申请取消(NEW)-->
+      <div class="flow-row">
+        <span class="flow-icon refund">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag refund">退还</span>提现申请取消</div>
+          <div class="flow-desc">用户主动取消提现申请,提现金额已退回保证金账户</div>
+          <div class="flow-time">2026-04-26 16:30</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+1,500.00</div>
+        </div>
+      </div>
+
+      <!-- ─── 充值 2 条 ─── -->
+
+      <div class="flow-row">
+        <span class="flow-icon charge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag charge">充值</span>首次充值保证金</div>
+          <div class="flow-desc">入驻平台首次缴纳保证金</div>
+          <div class="flow-time">2026-04-20 14:18</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+5,000.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon charge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag charge">充值</span>补缴保证金</div>
+          <div class="flow-desc">保证金余额不足补缴</div>
+          <div class="flow-time">2026-04-28 10:40</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount in">+850.00</div>
+        </div>
+      </div>
+
+      <!-- ─── 提现 3 条(处理中 / 已完成 / 已取消)─── -->
+
+      <div class="flow-row">
+        <span class="flow-icon withdraw">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><polyline points="5 12 12 19 19 12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag withdraw">提现</span>保证金提现 <span class="flow-status pending">处理中</span></div>
+          <div class="flow-desc">保证金余额申请提现 · 预计 5-7 个工作日内到账</div>
+          <div class="flow-time">2026-05-12 09:32</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount out">−2,000.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon withdraw">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><polyline points="5 12 12 19 19 12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag withdraw">提现</span>保证金提现 <span class="flow-status done">已完成</span></div>
+          <div class="flow-desc">保证金余额申请提现 · 已到账银行卡 ****4521</div>
+          <div class="flow-time">2026-04-25 09:32(到账 04-30)</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount out">−1,000.00</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <span class="flow-icon withdraw">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><polyline points="5 12 12 19 19 12"/></svg>
+        </span>
+        <div class="flow-info">
+          <div class="flow-title"><span class="flow-type-tag withdraw">提现</span>保证金提现 <span class="flow-status cancel">已取消</span></div>
+          <div class="flow-desc">保证金余额申请提现 · 用户主动取消,款项已退回保证金账户</div>
+          <div class="flow-time">2026-04-26 16:30</div>
+        </div>
+        <div class="flow-right">
+          <div class="flow-amount out muted">−1,500.00</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;padding:0 0 12px;font-size:12px;color:var(--text-tertiary);">已显示最近 5 笔 · 查看全部 ›</div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="tab-label">我的竞拍</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="tab-label">购物车</span>
+        <span class="tab-badge">3</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+    <!-- 取消提现 二次确认弹窗 -->
+    <div class="modal-mask" id="cancelMask"></div>
+    <div class="confirm-modal" id="cancelModal">
+      <div class="cm-body">
+        <div class="cm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="cm-title">取消提现申请?</div>
+        <div class="cm-sub">
+          当前提现金额 <b>¥ 2,000.00</b><br>
+          取消后款项将原路退回保证金账户。
+        </div>
+      </div>
+      <div class="cm-foot">
+        <button class="cm-btn cancel" onclick="closeCancelModal()">再想想</button>
+        <button class="cm-btn confirm" onclick="confirmCancelWithdraw()">确认取消</button>
+      </div>
+    </div>
+
+  </div>
+
+<script src="_shell-hook.js"></script>
+<script>
+  function openCancelModal() {
+    document.getElementById('cancelMask').classList.add('show');
+    document.getElementById('cancelModal').classList.add('show');
+  }
+  function closeCancelModal() {
+    document.getElementById('cancelMask').classList.remove('show');
+    document.getElementById('cancelModal').classList.remove('show');
+  }
+  function confirmCancelWithdraw() {
+    closeCancelModal();
+    alert('演示稿:提现申请已取消,¥ 2,000 已退回保证金账户');
+  }
+  document.getElementById('cancelMask').addEventListener('click', closeCancelModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCancelModal(); });
+  window.openCancelModal = openCancelModal;
+</script>
+</body>
+</html>

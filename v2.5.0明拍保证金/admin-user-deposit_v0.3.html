@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中古优品 · 后台 · 用户保证金</title>
+<style>
+  :root {
+    --primary: #2563EB; --primary-light: #DBEAFE; --primary-deep: #1D4ED8;
+    --success: #15803D; --success-bg: #DCFCE7;
+    --warn: #D97706; --warn-bg: #FEF3C7;
+    --danger: #DC2626; --danger-bg: #FEE2E2;
+    --info: #0EA5E9; --info-bg: #E0F2FE;
+    --profit: #7C3AED; --profit-bg: #EDE9FE;
+    --text-primary: #1F2937; --text-secondary: #4B5563;
+    --text-tertiary: #9CA3AF; --text-quaternary: #D1D5DB;
+    --bg-page: #F3F4F6; --bg-card: #FFFFFF; --bg-subtle: #F9FAFB;
+    --bg-hover: #F3F4F6;
+    --border: #E5E7EB; --border-strong: #D1D5DB;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+    --sidebar: #1F2937;
+    --sidebar-hover: #374151;
+    --sidebar-active: #2563EB;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 顶部 header */
+  .top-header {
+    background: var(--bg-card);
+    height: 48px;
+    display: flex; align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    position: sticky; top: 0; z-index: 30;
+  }
+  .top-header .logo { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .top-header .logo .dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; }
+  .top-header .crumb { color: var(--text-tertiary); font-size: 13px; }
+  .top-header .crumb b { color: var(--text-primary); font-weight: 500; }
+  .top-header .right { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--text-secondary); font-size: 12px; }
+
+  /* 整体两栏:左侧菜单 + 右侧内容 */
+  .layout { display: flex; min-height: calc(100vh - 48px); }
+
+  /* ===== 左侧菜单 ===== */
+  .sidebar {
+    width: 220px;
+    background: var(--sidebar);
+    color: rgba(255,255,255,0.85);
+    flex-shrink: 0;
+    padding: 12px 0 18px;
+    overflow-y: auto;
+  }
+  .side-group-head {
+    padding: 10px 18px 8px;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.50);
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    text-transform: none;
+  }
+  .side-group-head svg { width: 13px; height: 13px; opacity: 0.7; }
+  .side-item {
+    display: flex; align-items: center;
+    padding: 9px 18px 9px 36px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.78);
+    text-decoration: none;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.12s;
+  }
+  .side-item:hover { background: var(--sidebar-hover); color: white; }
+  .side-item.active {
+    background: var(--sidebar-active);
+    color: white;
+    font-weight: 600;
+    border-left-color: var(--brand-300, #FFC300);
+  }
+  .side-group + .side-group { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+  /* ===== 主体 ===== */
+  .main { flex: 1; padding: 16px 24px 28px; min-width: 0; overflow-x: auto; }
+  .page-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 4px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .page-title .tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+
+  /* (v0.3) 内部 tab 切换:用户保证金 / 保证金变动明细 */
+  .tab-bar {
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: var(--bg-card);
+    border-radius: 4px 4px 0 0;
+    padding: 0 6px;
+    box-shadow: var(--shadow-sm);
+  }
+  .tab-item {
+    padding: 12px 22px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    margin-bottom: -1px;
+    user-select: none;
+  }
+  .tab-item:hover { color: var(--primary); }
+  .tab-item.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* 快捷筛选 pill(可点 toggle 状态) */
+  .quick-stats {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .quick-stats.inline {
+    margin-left: 12px;
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    gap: 6px;
+  }
+  .quick-stats .qs-label {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin-right: 4px;
+  }
+  .quick-stats.inline .qs-pill {
+    padding: 4px 11px;
+    font-size: 12px;
+  }
+  .quick-stats .qs-pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    border-radius: 14px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.12s;
+    line-height: 1.2;
+  }
+  .quick-stats .qs-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .quick-stats .qs-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+  }
+  .quick-stats .qs-pill .ct {
+    background: rgba(255,255,255,0.16);
+    padding: 0 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 700;
+  }
+  .quick-stats .qs-pill.active .ct {
+    background: rgba(255,255,255,0.30);
+    color: white;
+  }
+  .quick-stats .qs-pill.white .ct { background: var(--success-bg); color: var(--success); }
+  .quick-stats .qs-pill.ok .ct    { background: var(--success-bg); color: var(--success); }
+  .quick-stats .qs-pill.warn .ct  { background: var(--warn-bg); color: var(--warn); }
+  .quick-stats .qs-pill.bad .ct   { background: var(--danger-bg); color: var(--danger); }
+  .quick-stats .qs-pill.active.white .ct,
+  .quick-stats .qs-pill.active.ok .ct,
+  .quick-stats .qs-pill.active.warn .ct,
+  .quick-stats .qs-pill.active.bad .ct {
+    background: rgba(255,255,255,0.30); color: white;
+  }
+
+  /* (v0.3) ? 问号 tooltip - 口径说明 */
+  .qmark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: help;
+    position: relative;
+    font-family: serif;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-left: 4px;
+    vertical-align: 1px;
+  }
+  .qmark:hover { background: var(--primary); z-index: 999; }
+  .qmark[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: white;
+    padding: 9px 13px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    width: 240px;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .qmark[data-tip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1F2937;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 999;
+  }
+  .qmark[data-tip]:hover::after,
+  .qmark[data-tip]:hover::before { opacity: 1; }
+
+  /* KPI/列表 卡需要溢出可见以容纳 tooltip */
+  .kpi-row .kpi-card { position: relative; overflow: visible; }
+  .list-card { position: relative; }
+  .list-toolbar { position: relative; }
+
+  /* 权限多标签 */
+  .perm-tags {
+    display: flex; flex-wrap: wrap; gap: 3px;
+  }
+  .perm-tag {
+    font-size: 10.5px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .perm-tag.locked {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-color: rgba(220,38,38,0.20);
+    font-weight: 500;
+  }
+  .perm-tag.free {
+    background: var(--success-bg);
+    color: var(--success);
+    border-color: rgba(21,128,61,0.20);
+    font-weight: 500;
+  }
+
+  /* (v0.3) 流水 type-tag(供 panel-flow 用) */
+  .type-tag {
+    font-size: 10.5px; font-weight: 700;
+    padding: 1.5px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+  .type-tag.deduct  { background: var(--danger-bg); color: var(--danger); }
+  .type-tag.refund  { background: var(--success-bg); color: var(--success); }
+  .type-tag.charge  { background: var(--success-bg); color: var(--success); }
+  .type-tag.withdraw{ background: var(--info-bg); color: var(--info); }
+  .badge.pending { background: var(--warn-bg); color: var(--warn); }
+  .badge.pending .dot { animation: pulse 1.4s infinite; }
+  .badge.done    { background: var(--success-bg); color: var(--success); }
+  .badge.cancel  { background: var(--bg-subtle); color: var(--text-tertiary); border: 1px solid var(--border); }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  .act-link.success { color: var(--success); font-weight: 600; }
+  .act-link.danger  { color: var(--danger); }
+  .row-act { display: flex; flex-direction: column; gap: 3px; }
+
+  /* 筛选区(简版) */
+  .filter-card {
+    background: var(--bg-card);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-card .label {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .filter-card .input,
+  .filter-card .select {
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    padding: 5px 9px;
+    height: 30px;
+    background: var(--bg-card);
+    font-size: 12.5px;
+    color: var(--text-primary);
+    outline: none;
+    width: 160px;
+  }
+  .filter-card .select { cursor: pointer; }
+  .btn {
+    padding: 6px 14px;
+    font-size: 12.5px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: white; }
+  .btn.primary:hover { background: var(--primary-deep); border-color: var(--primary-deep); }
+  .btn svg { width: 12px; height: 12px; }
+
+  /* KPI 摘要 4 块 */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .kpi-card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+    border-left: 3px solid var(--primary);
+  }
+  .kpi-card.ok    { border-left-color: var(--success); }
+  .kpi-card.warn  { border-left-color: var(--warn); }
+  .kpi-card.bad   { border-left-color: var(--danger); }
+  .kpi-card .l {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .kpi-card .v {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.4px;
+    line-height: 1.1;
+  }
+  .kpi-card.ok .v { color: var(--success); }
+  .kpi-card.warn .v { color: var(--warn); }
+  .kpi-card.bad .v { color: var(--danger); }
+  .kpi-card .v.money::before { content: '¥'; font-size: 13px; font-weight: 500; color: var(--text-tertiary); margin-right: 1px; }
+
+  /* table */
+  .list-card {
+    background: var(--bg-card);
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .list-toolbar {
+    padding: 11px 16px;
+    display: flex; align-items: center;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .list-toolbar .title { font-size: 13.5px; font-weight: 700; }
+  .list-toolbar .count { color: var(--text-tertiary); font-size: 12px; }
+  table.list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .list-table thead th {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: left;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .list-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .list-table tbody tr:hover { background: var(--bg-hover); }
+  .list-table .user-cell {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .list-table .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFD7A8, #FF8000);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .list-table .nick { font-weight: 500; color: var(--text-primary); }
+  .list-table .uid {
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+  }
+  .list-table .amount {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .list-table .amount::before { content: '¥'; font-size: 11px; color: var(--text-tertiary); font-weight: 500; margin-right: 1px; }
+  .list-table .amount.low { color: var(--warn); }
+  .list-table .amount.zero { color: var(--danger); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .badge.ok    { background: var(--success-bg); color: var(--success); }
+  .badge.warn  { background: var(--warn-bg); color: var(--warn); }
+  .badge.bad   { background: var(--danger-bg); color: var(--danger); }
+  .badge.muted { background: var(--bg-subtle); color: var(--text-tertiary); border: 1px solid var(--border); }
+
+  .act-link {
+    color: var(--primary);
+    font-size: 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    text-decoration: none;
+  }
+  .act-link:hover { text-decoration: underline; }
+
+  .pager {
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+  .pager .pg-num {
+    width: 28px; height: 28px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+  .pager .pg-num.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+
+  /* ===== 明细弹窗 ===== */
+  .modal-mask {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.55);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+  }
+  .modal-mask.show { opacity: 1; pointer-events: auto; }
+  .detail-modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: 720px;
+    max-width: 92vw;
+    max-height: 88vh;
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 101;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.20s;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .detail-modal.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+  .dm-head {
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #EFF6FF, #FFFFFF);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dm-head .title { font-size: 15px; font-weight: 700; }
+  .dm-head .sub { font-size: 11.5px; color: var(--text-tertiary); margin-left: 6px; }
+  .dm-head .close {
+    margin-left: auto;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    color: var(--text-secondary);
+  }
+  .dm-head .close:hover { background: var(--danger-bg); color: var(--danger); }
+  .dm-head .close svg { width: 14px; height: 14px; }
+  .dm-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+
+  /* 用户信息卡 */
+  .user-hero {
+    display: flex; gap: 14px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #FFF8E1, #FFFFFF);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .user-hero .av {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFD7A8, #FF8000);
+    color: white;
+    font-size: 22px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .user-hero .info { flex: 1; }
+  .user-hero .nick {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .user-hero .meta {
+    margin-top: 4px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .user-hero .meta b { color: var(--text-secondary); font-weight: 500; font-family: 'SF Mono', Menlo, monospace; }
+
+  /* 余额拆解 */
+  .deposit-split {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .deposit-split .cell {
+    padding: 13px 14px;
+    border-right: 1px solid var(--border);
+  }
+  .deposit-split .cell:last-child { border-right: none; }
+  .deposit-split .l { font-size: 11.5px; color: var(--text-tertiary); margin-bottom: 3px; }
+  .deposit-split .v {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .deposit-split .v::before { content: '¥'; font-size: 12px; color: var(--text-tertiary); font-weight: 500; margin-right: 1px; }
+  .deposit-split .cell.ok .v { color: var(--success); }
+  .deposit-split .cell.warn .v { color: var(--warn); }
+  .deposit-split .cell.bad .v { color: var(--danger); }
+
+  /* 子标题 */
+  .dm-section-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    margin: 18px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+  }
+  .dm-section-title .ico {
+    width: 3px; height: 14px;
+    background: var(--primary);
+    border-radius: 2px;
+    margin-right: 8px;
+  }
+  .dm-section-title .count {
+    margin-left: 6px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  /* 紧凑流水 */
+  /* 全部变动记录滚动容器 */
+  .mini-flow-scroll {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .mini-flow-scroll::-webkit-scrollbar { width: 6px; }
+  .mini-flow-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+  .mini-flow-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+  .mini-flow-scroll thead th {
+    position: sticky; top: 0; z-index: 1;
+  }
+  table.mini-flow {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .mini-flow thead th {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 7px 10px;
+    font-weight: 500;
+    font-size: 11.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mini-flow tbody td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mini-flow tbody tr:last-child td { border-bottom: none; }
+  .mini-flow .type-tag {
+    font-size: 10px; font-weight: 700;
+    padding: 1.5px 6px;
+    border-radius: 3px;
+  }
+  .mini-flow .type-tag.deduct  { background: var(--danger-bg); color: var(--danger); }
+  .mini-flow .type-tag.refund  { background: var(--success-bg); color: var(--success); }
+  .mini-flow .type-tag.charge  { background: var(--success-bg); color: var(--success); }
+  .mini-flow .type-tag.withdraw{ background: var(--info-bg); color: var(--info); }
+  .mini-flow .amt {
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .mini-flow .amt.in { color: var(--success); }
+  .mini-flow .amt.out { color: var(--danger); }
+  .mini-flow .amt.muted { color: var(--text-tertiary); text-decoration: line-through; }
+  .mini-flow .time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 顶部 header -->
+  <div class="top-header">
+    <div class="logo"><span class="dot"></span>智赢管家</div>
+    <div class="crumb"><b>用户管理</b> · 保证金</div>
+    <div class="right">
+      <span>3428122913276</span>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- 左侧菜单 -->
+    <aside class="sidebar">
+      <div class="side-group">
+        <div class="side-group-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m9 7 8 8"/></svg>
+          明拍管理
+        </div>
+        <a class="side-item" href="admin-mingpai-simple_v0.3.html">明拍商品</a>
+      </div>
+      <div class="side-group">
+        <div class="side-group-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+          用户管理
+        </div>
+        <a class="side-item" href="#">用户列表</a>
+        <a class="side-item active" href="admin-user-deposit_v0.3.html">保证金</a>
+        <a class="side-item" href="#">邀请信息</a>
+      </div>
+    </aside>
+
+    <!-- 主体 -->
+    <main class="main">
+
+      <div class="page-title">
+        保证金
+        <span class="tag">用户管理</span>
+      </div>
+
+      <!-- 内部 Tab 切换 -->
+      <div class="tab-bar">
+        <div class="tab-item active" data-tab="user">用户保证金</div>
+        <div class="tab-item" data-tab="flow">保证金变动明细</div>
+      </div>
+
+      <!-- ============ Panel 1:用户保证金 ============ -->
+      <div class="panel active" id="panel-user">
+
+      <!-- KPI(放在筛选上方) -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="l">用户总数 <span class="qmark" data-tip="= 缴纳过保证金的用户 + 白名单用户。未缴纳保证金且非白名单的注册用户不计入。">?</span></div>
+          <div class="v">2,438</div>
+        </div>
+        <div class="kpi-card ok">
+          <div class="l">保证金余额合计 <span class="qmark" data-tip="Σ 所有用户当前账户余额(含提现冻结)。反映平台沉淀资金总额。">?</span></div>
+          <div class="v money">11,830,500</div>
+        </div>
+        <div class="kpi-card warn">
+          <div class="l">保证金不足用户 <span class="qmark" data-tip="账户余额 < 标准额 ¥5,000 的用户数。这些用户需补缴后才能继续参拍。">?</span></div>
+          <div class="v">87</div>
+        </div>
+        <div class="kpi-card bad">
+          <div class="l">权限受限用户 <span class="qmark" data-tip="任一参拍渠道权限被限制(暗拍/明拍/直播)的用户数。原因通常为保证金不足或违约累计。">?</span></div>
+          <div class="v">12</div>
+        </div>
+      </div>
+
+      <!-- 详细筛选 -->
+      <div class="filter-card">
+        <span class="label">用户搜索</span>
+        <input class="input" placeholder="昵称 / 用户ID" style="width:200px;" />
+        <span class="label">保证金状态</span>
+        <select class="select"><option>全部</option><option>正常</option><option>不足</option><option>提现冻结中</option></select>
+        <span class="label">权限限制</span>
+        <select class="select"><option>全部</option><option>无限制</option><option>暗拍出价限制</option><option>明拍出价限制</option><option>直播出价限制</option></select>
+        <span class="label">缴纳时间</span>
+        <input class="input" placeholder="开始 ~ 结束" style="width:160px;" />
+        <button class="btn primary">查询</button>
+        <button class="btn">重置</button>
+        <button class="btn">导出</button>
+      </div>
+
+      <!-- 用户列表 -->
+      <div class="list-card">
+        <div class="list-toolbar">
+          <span class="title">用户列表</span>
+          <span class="count">共 2,438 名</span>
+          <div class="quick-stats inline">
+            <span class="qs-pill active" data-quick="all">全部 <span class="ct">2,438</span></span>
+            <span class="qs-pill white" data-quick="white">白名单 <span class="ct">10</span><span class="qmark" data-tip="VIP / 内部白名单用户,扣款规则命中白名单时实扣可减免。">?</span></span>
+            <span class="qs-pill ok"    data-quick="ok">保证金正常 <span class="ct">20</span><span class="qmark" data-tip="账户余额 ≥ 标准额 ¥5,000,可正常参与所有渠道拍卖。">?</span></span>
+            <span class="qs-pill warn"  data-quick="warn">保证金不足 <span class="ct">10</span><span class="qmark" data-tip="账户余额 < 标准额 ¥5,000(不含 0)。需补缴后才能继续参拍。">?</span></span>
+            <span class="qs-pill bad"   data-quick="empty">已扣完 <span class="ct">29</span><span class="qmark" data-tip="账户余额 = ¥0.00。完全限制所有参拍权限,须充值后才能继续。">?</span></span>
+          </div>
+        </div>
+
+        <table class="list-table">
+          <thead>
+            <tr>
+              <th style="width:18%;">用户(昵称+ID)</th>
+              <th style="width:12%;">保证金余额</th>
+              <th style="width:14%;">保证金状态</th>
+              <th style="width:24%;">权限限制</th>
+              <th style="width:12%;">缴纳时间</th>
+              <th style="width:10%;">最近变动</th>
+              <th style="width:10%;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar">李</div>
+                  <div>
+                    <div class="nick">李铁</div>
+                    <div class="uid">ID U25876</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount">5,000.00</span></td>
+              <td><span class="badge ok"><span class="dot"></span>正常</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag free">无限制</span>
+                </div>
+              </td>
+              <td>2026-04-12</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/15 09:32</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#A5B4FC,#6366F1);">王</div>
+                  <div>
+                    <div class="nick">王伟</div>
+                    <div class="uid">ID U18244</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount low">2,500.00</span></td>
+              <td><span class="badge warn"><span class="dot"></span>提现冻结中</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag free">无限制</span>
+                </div>
+              </td>
+              <td>2025-11-08</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/12 09:32</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#FCA5A5,#EF4444);">陈</div>
+                  <div>
+                    <div class="nick">陈静</div>
+                    <div class="uid">ID U12365</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount low">3,200.00</span></td>
+              <td><span class="badge warn"><span class="dot"></span>不足</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag locked">暗拍出价</span>
+                  <span class="perm-tag">直播出价</span>
+                  <span class="perm-tag">明拍出价</span>
+                </div>
+              </td>
+              <td>2025-08-22</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/14 18:24</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#86EFAC,#22C55E);">赵</div>
+                  <div>
+                    <div class="nick">赵海</div>
+                    <div class="uid">ID U30725</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount">5,000.00</span></td>
+              <td><span class="badge ok"><span class="dot"></span>正常 · 白名单</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag free">无限制</span>
+                </div>
+              </td>
+              <td>2026-02-15</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/13 14:18</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#FDE68A,#F59E0B);">林</div>
+                  <div>
+                    <div class="nick">林春</div>
+                    <div class="uid">ID U27007</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount zero">0.00</span></td>
+              <td><span class="badge bad"><span class="dot"></span>已扣完</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag locked">暗拍出价</span>
+                  <span class="perm-tag locked">直播出价</span>
+                  <span class="perm-tag locked">明拍出价</span>
+                </div>
+              </td>
+              <td>2025-06-01</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/14 11:02</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#C4B5FD,#7C3AED);">周</div>
+                  <div>
+                    <div class="nick">周婷</div>
+                    <div class="uid">ID U33218</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount">5,000.00</span></td>
+              <td><span class="badge ok"><span class="dot"></span>正常</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag free">无限制</span>
+                </div>
+              </td>
+              <td>2025-12-20</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/10 16:48</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#7DD3FC,#0EA5E9);">吴</div>
+                  <div>
+                    <div class="nick">吴启明</div>
+                    <div class="uid">ID U41502</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount">8,500.00</span></td>
+              <td><span class="badge ok"><span class="dot"></span>正常 · VIP 白名单</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag free">无限制</span>
+                </div>
+              </td>
+              <td>2026-03-08</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/15 08:12</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar" style="background:linear-gradient(135deg,#FDA4AF,#E11D48);">钱</div>
+                  <div>
+                    <div class="nick">钱玲</div>
+                    <div class="uid">ID U28902</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="amount low">1,200.00</span></td>
+              <td><span class="badge bad"><span class="dot"></span>不足</span></td>
+              <td>
+                <div class="perm-tags">
+                  <span class="perm-tag locked">暗拍出价</span>
+                  <span class="perm-tag">直播出价</span>
+                  <span class="perm-tag">明拍出价</span>
+                </div>
+              </td>
+              <td>2025-09-14</td>
+              <td><span style="color:var(--text-tertiary);font-size:11px;">5/13 22:30</span></td>
+              <td><button class="act-link" onclick="openUserModal()">查看明细</button></td>
+            </tr>
+
+          </tbody>
+        </table>
+
+        <div class="pager">
+          <span>每页 20 条 · 共 2,438 条</span>
+          <span class="pg-num">‹</span>
+          <span class="pg-num active">1</span>
+          <span class="pg-num">2</span>
+          <span class="pg-num">3</span>
+          <span style="color:var(--text-tertiary);">…</span>
+          <span class="pg-num">122</span>
+          <span class="pg-num">›</span>
+        </div>
+      </div>
+
+      </div><!-- /panel-user -->
+
+      <!-- ============ Panel 2:保证金变动明细 ============ -->
+      <div class="panel" id="panel-flow">
+
+        <!-- KPI(放在筛选上方) -->
+        <div class="kpi-row" style="grid-template-columns:repeat(5,1fr);">
+          <div class="kpi-card warn">
+            <div class="l">待审核(处理中) <span class="qmark" data-tip="状态为"处理中"的变动数,主要是提现申请。管理员需及时审核同意或拒绝。">?</span></div>
+            <div class="v">8</div>
+          </div>
+          <div class="kpi-card">
+            <div class="l">本期提现申请 <span class="qmark" data-tip="本期(默认本月)所有提现申请数,含处理中/已完成/已取消三种状态。">?</span></div>
+            <div class="v">23</div>
+          </div>
+          <div class="kpi-card bad">
+            <div class="l">扣款笔数 <span class="qmark" data-tip="本期累计扣款变动数,含正常扣款与白名单豁免(应扣 ≠ 实扣)的记录。">?</span></div>
+            <div class="v">142</div>
+          </div>
+          <div class="kpi-card ok">
+            <div class="l">退还笔数 <span class="qmark" data-tip="本期累计退还变动数,含申诉成功/协商一致/提现取消等多种来源。">?</span></div>
+            <div class="v">35</div>
+          </div>
+          <div class="kpi-card">
+            <div class="l">变动总笔数 <span class="qmark" data-tip="本期全部变动记录数,扣款+充值+退还+提现 各类型合计。">?</span></div>
+            <div class="v">1,256</div>
+          </div>
+        </div>
+
+        <!-- 详细筛选 -->
+        <div class="filter-card">
+          <span class="label">用户</span>
+          <input class="input" placeholder="昵称 / 用户ID" style="width:180px;" />
+          <span class="label">变动类型</span>
+          <select class="select"><option>全部</option><option>扣款</option><option>充值</option><option>退还</option><option>提现</option></select>
+          <span class="label">状态</span>
+          <select class="select"><option>全部</option><option>处理中</option><option>已完成</option><option>已取消</option></select>
+          <span class="label">时间</span>
+          <input class="input" placeholder="开始 ~ 结束" style="width:160px;" />
+          <button class="btn primary">查询</button>
+          <button class="btn">重置</button>
+          <button class="btn">导出</button>
+        </div>
+
+        <!-- 变动列表 -->
+        <div class="list-card">
+          <div class="list-toolbar">
+            <span class="title">变动记录</span>
+            <span class="count">共 1,256 条</span>
+            <div class="quick-stats inline">
+              <span class="qs-pill active" data-quick="all">全部 <span class="ct">1,256</span></span>
+              <span class="qs-pill warn" data-quick="pending">处理中 <span class="ct">8</span><span class="qmark" data-tip="等待管理员审核的变动(主要是提现申请)。同意后打款、拒绝后退回保证金。">?</span></span>
+              <span class="qs-pill ok"   data-quick="done">已完成 <span class="ct">1,245</span><span class="qmark" data-tip="已结束的变动记录,扣款/充值/退还/提现成功到账等。">?</span></span>
+              <span class="qs-pill bad"  data-quick="cancel">已取消 <span class="ct">3</span><span class="qmark" data-tip="提现申请被用户主动撤销,或管理员拒绝后撤回的记录。">?</span></span>
+            </div>
+          </div>
+
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th style="width:11%;">ID</th>
+                <th style="width:13%;">用户(昵称+ID)</th>
+                <th style="width:9%;">类型</th>
+                <th style="width:27%;">标题 / 描述</th>
+                <th style="width:11%;text-align:right;">应变 / 实变</th>
+                <th style="width:9%;">状态</th>
+                <th style="width:9%;">时间</th>
+                <th style="width:11%;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- ① 提现处理中 → 需审核 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260512001</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">王伟</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U18244</div>
+                  </div>
+                </td>
+                <td><span class="type-tag withdraw">提现</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">保证金提现申请</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">原路退回 · 招商 ****4521 · 原因:退出平台不再采购</div>
+                </td>
+                <td><span style="font-weight:700;color:var(--danger);font-variant-numeric:tabular-nums;">−2,000.00</span></td>
+                <td><span class="badge pending"><span class="dot"></span>处理中</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);font-variant-numeric:tabular-nums;">05-12 09:32</span></td>
+                <td>
+                  <div class="row-act">
+                    <button class="act-link success" onclick="openFlowModal('pending')">同意</button>
+                    <button class="act-link danger" onclick="openFlowModal('pending')">拒绝</button>
+                    <button class="act-link" onclick="openFlowModal('pending')">查看详情</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- ② 扣款 已完成 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260510032</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">王伟</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U18244</div>
+                  </div>
+                </td>
+                <td><span class="type-tag deduct">扣款</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">暗拍中拍未下单</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">暗拍20260505白天场 838292838328 号拍品中拍未下单</div>
+                </td>
+                <td>
+                  <span style="font-size:11px;color:var(--text-tertiary);text-decoration:line-through;display:block;">¥500.00</span>
+                  <span style="font-weight:700;color:var(--danger);font-variant-numeric:tabular-nums;">−500.00</span>
+                </td>
+                <td><span class="badge done"><span class="dot"></span>已完成</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">05-10 14:32</span></td>
+                <td><button class="act-link" onclick="openFlowModal('done')">查看详情</button></td>
+              </tr>
+
+              <!-- ③ 扣款 白名单豁免 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260505018</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">陈静</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U12365</div>
+                  </div>
+                </td>
+                <td><span class="type-tag deduct">扣款</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">直播加购未下单</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">命中 VIP 白名单豁免</div>
+                </td>
+                <td>
+                  <span style="font-size:11px;color:var(--text-tertiary);text-decoration:line-through;display:block;">¥320.00</span>
+                  <span style="font-weight:500;color:var(--text-tertiary);font-variant-numeric:tabular-nums;">¥0.00</span>
+                </td>
+                <td><span class="badge done"><span class="dot"></span>已完成</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">05-05 19:18</span></td>
+                <td><button class="act-link" onclick="openFlowModal('done-waived')">查看详情</button></td>
+              </tr>
+
+              <!-- ④ 退还 已完成 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260506012</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">王伟</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U18244</div>
+                  </div>
+                </td>
+                <td><span class="type-tag refund">退还</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">明拍中拍未下单退还</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">原因:用户申诉成功,平台核实后退还</div>
+                </td>
+                <td><span style="font-weight:700;color:var(--success);font-variant-numeric:tabular-nums;">+850.00</span></td>
+                <td><span class="badge done"><span class="dot"></span>已完成</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">05-06 09:15</span></td>
+                <td><button class="act-link" onclick="openFlowModal('done')">查看详情</button></td>
+              </tr>
+
+              <!-- ⑤ 提现 已取消 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260426008</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">王伟</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U18244</div>
+                  </div>
+                </td>
+                <td><span class="type-tag withdraw">提现</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">保证金提现申请</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">用户主动取消,款项已退回保证金账户</div>
+                </td>
+                <td><span style="font-weight:500;color:var(--text-tertiary);text-decoration:line-through;font-variant-numeric:tabular-nums;">−1,500.00</span></td>
+                <td><span class="badge cancel"><span class="dot"></span>已取消</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">04-26 16:30</span></td>
+                <td><button class="act-link" onclick="openFlowModal('cancel')">查看详情</button></td>
+              </tr>
+
+              <!-- ⑥ 提现 已完成 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260425003</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">王伟</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U18244</div>
+                  </div>
+                </td>
+                <td><span class="type-tag withdraw">提现</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">保证金提现申请</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">已到账银行卡 ****4521</div>
+                </td>
+                <td><span style="font-weight:700;color:var(--danger);font-variant-numeric:tabular-nums;">−1,000.00</span></td>
+                <td><span class="badge done"><span class="dot"></span>已完成</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">04-25 09:32</span></td>
+                <td><button class="act-link" onclick="openFlowModal('done')">查看详情</button></td>
+              </tr>
+
+              <!-- ⑦ 充值 已完成 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260420001</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">李铁</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U25876</div>
+                  </div>
+                </td>
+                <td><span class="type-tag charge">充值</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">首次充值保证金</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">入驻平台首次缴纳保证金 · 对公转账</div>
+                </td>
+                <td><span style="font-weight:700;color:var(--success);font-variant-numeric:tabular-nums;">+5,000.00</span></td>
+                <td><span class="badge done"><span class="dot"></span>已完成</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">04-20 14:18</span></td>
+                <td><button class="act-link" onclick="openFlowModal('done')">查看详情</button></td>
+              </tr>
+
+              <!-- ⑧ 提现处理中 第二位用户 -->
+              <tr>
+                <td><span style="font-family:'SF Mono',Menlo,monospace;color:var(--text-tertiary);font-size:11px;">FL20260513004</span></td>
+                <td>
+                  <div style="line-height:1.3;">
+                    <div style="font-weight:500;">陈静</div>
+                    <div style="color:var(--text-tertiary);font-family:'SF Mono',Menlo,monospace;font-size:10.5px;">U12365</div>
+                  </div>
+                </td>
+                <td><span class="type-tag withdraw">提现</span></td>
+                <td>
+                  <div style="font-weight:600;color:var(--text-primary);margin-bottom:1px;">保证金提现申请</div>
+                  <div style="font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">原因:资金周转需要 · 收款 工行 ****8825</div>
+                </td>
+                <td><span style="font-weight:700;color:var(--danger);font-variant-numeric:tabular-nums;">−800.00</span></td>
+                <td><span class="badge pending"><span class="dot"></span>处理中</span></td>
+                <td><span style="font-size:11.5px;color:var(--text-secondary);">05-13 11:42</span></td>
+                <td>
+                  <div class="row-act">
+                    <button class="act-link success" onclick="openFlowModal('pending')">同意</button>
+                    <button class="act-link danger" onclick="openFlowModal('pending')">拒绝</button>
+                    <button class="act-link" onclick="openFlowModal('pending')">查看详情</button>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+
+          <div class="pager">
+            <span>每页 20 条 · 共 1,256 条</span>
+            <span class="pg-num">‹</span>
+            <span class="pg-num active">1</span>
+            <span class="pg-num">2</span>
+            <span class="pg-num">3</span>
+            <span style="color:var(--text-tertiary);">…</span>
+            <span class="pg-num">63</span>
+            <span class="pg-num">›</span>
+          </div>
+        </div>
+
+      </div><!-- /panel-flow -->
+
+    </main>
+  </div>
+
+  <!-- ===== 用户保证金明细 弹窗 ===== -->
+  <div class="modal-mask" id="modalMask"></div>
+  <div class="detail-modal" id="detailModal">
+    <div class="dm-head">
+      <span style="width:4px;height:14px;background:var(--primary);border-radius:2px;display:inline-block;margin-right:6px;"></span>
+      <span class="title">用户保证金明细</span>
+      <span class="sub">数据实时,关联订单 / 拍品可联动跳转</span>
+      <button class="close" id="modalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="dm-body">
+
+      <!-- 用户信息 -->
+      <div class="user-hero">
+        <div class="av">王</div>
+        <div class="info">
+          <div class="nick">王伟</div>
+          <div class="meta">
+            <span>ID <b>U18244</b></span>
+            <span>认证 <b>已实名</b></span>
+            <span>缴纳时间 <b>2025-11-08</b></span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge warn"><span class="dot"></span>提现冻结中</span>
+        </div>
+      </div>
+
+      <!-- 余额拆解 -->
+      <div class="deposit-split">
+        <div class="cell">
+          <div class="l">标准额</div>
+          <div class="v">5,000.00</div>
+        </div>
+        <div class="cell">
+          <div class="l">账户余额</div>
+          <div class="v">4,500.00</div>
+        </div>
+        <div class="cell warn">
+          <div class="l">提现冻结</div>
+          <div class="v">2,000.00</div>
+        </div>
+        <div class="cell ok">
+          <div class="l">可用保证金</div>
+          <div class="v">2,500.00</div>
+        </div>
+      </div>
+
+      <!-- 全部变动记录(滚动)-->
+      <div class="dm-section-title">
+        <span class="ico"></span>
+        全部变动记录
+        <span class="count">共 22 笔</span>
+      </div>
+
+      <div class="mini-flow-scroll">
+      <table class="mini-flow">
+        <thead>
+          <tr>
+            <th style="width:18%;">时间</th>
+            <th style="width:14%;">类型</th>
+            <th>变动标题</th>
+            <th style="width:14%;text-align:right;">金额</th>
+            <th style="width:12%;">状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="time">2026-05-12 09:32</span></td>
+            <td><span class="type-tag withdraw">提现</span></td>
+            <td>保证金提现申请</td>
+            <td class="amt out">−2,000.00</td>
+            <td><span class="badge warn"><span class="dot"></span>处理中</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-05-10 14:32</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>暗拍中拍未下单</td>
+            <td class="amt out">−500.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-05-08 11:24</span></td>
+            <td><span class="type-tag refund">退还</span></td>
+            <td>明拍中拍未下单退还</td>
+            <td class="amt in">+850.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-05-05 17:42</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>明拍中拍未下单</td>
+            <td class="amt out">−850.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-26 16:30</span></td>
+            <td><span class="type-tag withdraw">提现</span></td>
+            <td>保证金提现申请</td>
+            <td class="amt muted">−1,500.00</td>
+            <td><span class="badge muted"><span class="dot"></span>已取消</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-25 09:32</span></td>
+            <td><span class="type-tag withdraw">提现</span></td>
+            <td>保证金提现申请</td>
+            <td class="amt out">−1,000.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-20 14:18</span></td>
+            <td><span class="type-tag charge">充值</span></td>
+            <td>首次充值保证金</td>
+            <td class="amt in">+5,000.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-18 22:08</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>直播加购未下单</td>
+            <td class="amt out">−320.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-15 10:55</span></td>
+            <td><span class="type-tag refund">退还</span></td>
+            <td>暗拍加购扣款退还</td>
+            <td class="amt in">+200.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-12 16:38</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>订单超时未支付</td>
+            <td class="amt out">−1,200.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-10 11:22</span></td>
+            <td><span class="type-tag charge">充值</span></td>
+            <td>补缴保证金</td>
+            <td class="amt in">+1,500.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-08 09:18</span></td>
+            <td><span class="type-tag refund">退还</span></td>
+            <td>订单超时未支付退还</td>
+            <td class="amt in">+1,200.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-04-05 13:42</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>暗拍中拍未下单</td>
+            <td class="amt out">−800.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-03-28 17:55</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>直播加购未下单</td>
+            <td class="amt out">−480.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-03-22 14:18</span></td>
+            <td><span class="type-tag refund">退还</span></td>
+            <td>明拍中拍未下单退还</td>
+            <td class="amt in">+650.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-03-18 20:42</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>明拍中拍未下单</td>
+            <td class="amt out">−650.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-03-15 11:08</span></td>
+            <td><span class="type-tag withdraw">提现</span></td>
+            <td>保证金提现申请</td>
+            <td class="amt muted">−800.00</td>
+            <td><span class="badge muted"><span class="dot"></span>已取消</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-03-08 09:35</span></td>
+            <td><span class="type-tag charge">充值</span></td>
+            <td>补缴保证金</td>
+            <td class="amt in">+500.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-03-02 16:18</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>暗拍中拍未下单</td>
+            <td class="amt out">−500.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-02-25 13:42</span></td>
+            <td><span class="type-tag refund">退还</span></td>
+            <td>暗拍加购扣款退还</td>
+            <td class="amt in">+500.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2026-02-20 10:08</span></td>
+            <td><span class="type-tag deduct">扣款</span></td>
+            <td>订单超时未支付</td>
+            <td class="amt out">−320.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+          <tr>
+            <td><span class="time">2025-11-08 15:02</span></td>
+            <td><span class="type-tag charge">充值</span></td>
+            <td>首次充值保证金</td>
+            <td class="amt in">+5,000.00</td>
+            <td><span class="badge ok"><span class="dot"></span>已完成</span></td>
+          </tr>
+        </tbody>
+      </table>
+      </div><!-- /mini-flow-scroll -->
+
+    </div>
+  </div>
+
+<script>
+  // ===== Tab 切换(用户保证金 / 保证金变动明细) =====
+  function switchTab(name) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+    history.replaceState(null, '', '#' + name);
+  }
+  document.querySelectorAll('.tab-item').forEach(t => {
+    t.addEventListener('click', () => switchTab(t.dataset.tab));
+  });
+  // 初始化:按 URL hash
+  const initTab = (location.hash || '#user').slice(1);
+  if (['user', 'flow'].includes(initTab)) switchTab(initTab);
+
+  // ===== 快捷筛选 pill toggle =====
+  document.querySelectorAll('.qs-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      const group = p.parentElement;
+      const wasActive = p.classList.contains('active');
+      group.querySelectorAll('.qs-pill').forEach(x => x.classList.remove('active'));
+      if (!wasActive) p.classList.add('active');
+    });
+  });
+
+  // ===== 用户保证金明细 modal =====
+  const mask = document.getElementById('modalMask');
+  const modal = document.getElementById('detailModal');
+  function openUserModal() {
+    mask.classList.add('show');
+    modal.classList.add('show');
+  }
+  function closeUserModal() {
+    mask.classList.remove('show');
+    modal.classList.remove('show');
+  }
+  mask.addEventListener('click', closeUserModal);
+  document.getElementById('modalClose').addEventListener('click', closeUserModal);
+
+  // ===== 变动明细 modal(简化:复用 alert 演示)=====
+  function openFlowModal(type) {
+    const txt = type === 'pending'
+      ? '提现申请 · 待审核\n\n应扣:¥2,000.00\n实扣:¥2,000.00\n状态:处理中\n\n[同意] 打款至绑定卡 · [拒绝] 退回可用保证金'
+      : type === 'done-waived'
+        ? '变动详情 · 已完成(白名单豁免)\n\n应扣:¥320.00(划线)\n实扣:¥0.00\n状态:已完成\n未扣原因:VIP 白名单豁免'
+        : type === 'cancel'
+          ? '变动详情 · 已取消\n\n金额:−¥1,500.00(划线)\n状态:已取消\n用户主动取消提现申请'
+          : '变动详情 · 已完成\n\n金额:见列表\n状态:已完成';
+    alert('演示稿:\n' + txt);
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUserModal(); });
+  window.openUserModal = openUserModal;
+  window.openFlowModal = openFlowModal;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 拍卖工作台 · 暗拍 v0.2(左右对比稿)</title>
+<!--
+  本文件为暗拍样式的"左右两屏并排"对比稿,正在参与 + 历史出价同时可见。
+  正式实现已合并到 my-bids_v0.2.html 的暗拍子 Tab(含二级 Tab 切换 + 替换原"出价中/我被超" chip 风格)。
+  保留本文件作为视觉评审用途;2026-05-12 风格已与 my-bids 同步(圆角小、无阴影、边框细、背景淡)。
+-->
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.03); --border-strong: rgba(0,0,0,0.06);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --anpai-bg: #FFF8F7; --anpai-border: rgba(229,62,62,0.10);
+    --success: #2F855A; --success-bg: #EEF6F0;
+    --danger: #E53E3E; --danger-soft: #C53030;
+    --danger-bg: #FFF6F5;
+    --warning: #DD6B20; --warning-bg: #FFF8EF;
+    --shadow-sm: none;
+    --shadow-md: none;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE; -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex; justify-content: center; gap: 20px;
+    min-height: 100vh; padding: 20px;
+    flex-wrap: wrap;
+  }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 0;
+  }
+  .phone-label {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .phone-wrap { display: flex; flex-direction: column; }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Navbar */
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-back {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -4px;
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; text-align: center;
+    font-size: 17px; font-weight: 600;
+    margin-right: 28px;
+  }
+
+  /* 二级 Tab (正在参与 / 历史出价) */
+  .lvl2-tabs {
+    background: var(--bg-card);
+    padding: 0 36px;
+    display: flex;
+    justify-content: space-around;
+    border-bottom: 1px solid var(--border);
+  }
+  .lvl2-tab {
+    padding: 14px 6px 13px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    position: relative;
+    font-weight: 500;
+  }
+  .lvl2-tab.active {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .lvl2-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: 4px;
+    width: 38px; height: 4px;
+    background: var(--danger);
+    border-radius: 2px;
+  }
+
+  /* 专场顶部卡 */
+  .session-card {
+    margin: 12px;
+    background: var(--anpai-bg);
+    border: 1px solid var(--anpai-border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .session-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .session-title {
+    font-size: 15px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .countdown-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .countdown-pill .ico {
+    width: 14px; height: 14px;
+  }
+  .countdown-pill .digit {
+    background: #2D2D2D;
+    color: #FFFFFF;
+    font-size: 13px; font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+  }
+  .countdown-pill .sep { color: #2D2D2D; font-weight: 700; }
+  .session-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .session-info b {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .session-info .div {
+    width: 1px; height: 12px;
+    background: var(--border-strong);
+    display: inline-block;
+  }
+  .session-info .price {
+    color: var(--danger);
+    font-weight: 700;
+  }
+
+  /* 商品列表 */
+  .item-list { padding: 0 12px 80px; }
+  .item-card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .item-row {
+    display: flex;
+    padding: 12px;
+    gap: 12px;
+  }
+  .item-img {
+    width: 92px; height: 92px;
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(180,140,100,0.65);
+    font-size: 40px;
+    position: relative;
+  }
+  .item-info { flex: 1; min-width: 0; }
+  .item-tags {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .tag-verified {
+    background: #FFFFFF;
+    color: var(--text-primary);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 5px;
+    border: 1px solid #333;
+    border-radius: 3px;
+  }
+  .tag-grade {
+    background: #2D2D2D;
+    color: #FFFFFF;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .item-name {
+    font-size: 14px; font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 200px;
+    vertical-align: middle;
+  }
+  .price-line {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  .price-line .seg { margin-right: 10px; }
+  .price-line .label { color: var(--text-secondary); }
+  .price-line .val { color: var(--text-primary); }
+  .my-bid-line {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 4px;
+  }
+  .my-bid-line .v { color: var(--danger); font-weight: 700; }
+  .final-price-line {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-top: 4px;
+  }
+  .final-price-line b {
+    color: var(--danger);
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  /* 状态提示行 (正在参与:红色文案) */
+  .status-row {
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .status-msg {
+    font-size: 12px;
+    color: var(--danger);
+    flex: 1;
+    line-height: 1.5;
+  }
+  .status-msg.muted { color: var(--text-tertiary); }
+  .btn-action {
+    flex-shrink: 0;
+    background: #FFFFFF;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 13px;
+    padding: 5px 18px;
+    border-radius: 14px;
+    font-weight: 500;
+  }
+  .btn-action.outline-muted {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  /* 历史出价: 节省/精准/失败 文案行 */
+  .result-row {
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .result-msg {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .result-msg.save {
+    color: var(--danger);
+    background: var(--danger-bg);
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+  .result-msg.precise {
+    color: var(--warning);
+    background: var(--warning-bg);
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+  .result-msg.lost {
+    color: var(--text-tertiary);
+    padding: 0;
+  }
+  .result-msg b { font-weight: 700; }
+
+  /* 印章式徽章(右下角) */
+  .stamp {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2.5px solid var(--danger);
+    color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.2;
+    transform: rotate(-10deg);
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.92);
+    position: relative;
+  }
+  .stamp.lost {
+    border-color: var(--text-tertiary);
+    color: var(--text-tertiary);
+  }
+  .stamp::before,
+  .stamp::after {
+    content: '★';
+    position: absolute;
+    font-size: 8px;
+    line-height: 1;
+  }
+  .stamp::before { top: 6px; left: 50%; transform: translateX(-50%); }
+  .stamp::after { bottom: 6px; left: 50%; transform: translateX(-50%); }
+
+  /* History card layout (右印章) */
+  .history-card .item-row {
+    align-items: flex-start;
+  }
+  .history-result-wrap {
+    display: flex; align-items: center;
+    padding: 0 12px 12px;
+    gap: 12px;
+  }
+  .history-result-wrap .result-msg-wrap {
+    flex: 1;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  /* Show/hide tabs */
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- 左屏: 正在参与 -->
+<div class="phone-wrap">
+<div class="phone-label">📱 正在参与</div>
+<div class="phone">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="nav-title">我的竞拍</div>
+  </div>
+
+  <div class="lvl2-tabs">
+    <div class="lvl2-tab active">正在参与</div>
+    <div class="lvl2-tab">历史出价</div>
+  </div>
+
+  <!-- 专场卡(正在参与) -->
+  <div class="session-card">
+    <div class="session-head">
+      <div class="session-title">250524暗拍专场</div>
+      <div class="countdown-pill">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        距结拍
+        <span class="digit">59</span><span class="sep">:</span>
+        <span class="digit">57</span><span class="sep">:</span>
+        <span class="digit">57</span>
+      </div>
+    </div>
+    <div class="session-info">
+      本场暗拍出价 <b>3</b> 件,合计
+      <span class="price">¥ 220000</span>
+    </div>
+  </div>
+
+  <!-- 商品列表 -->
+  <div class="item-list">
+
+    <!-- 卡 1: 出价了,17 点后改价 → 不参与排名 -->
+    <div class="item-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士…</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 8500</span></span>
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+          </div>
+          <div class="my-bid-line">出价: <span class="v">¥ 8500</span></div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="status-msg">17 点后出价,不参与竞价排名</span>
+        <button class="btn-action">改价</button>
+      </div>
+    </div>
+
+    <!-- 卡 2: 出价了,排名第 3 -->
+    <div class="item-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士…</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 8500</span></span>
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+          </div>
+          <div class="my-bid-line">出价: <span class="v">¥ 8500</span></div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="status-msg">截止 17 点,你的排名第 3 名,可适当调整出价</span>
+        <button class="btn-action">改价</button>
+      </div>
+    </div>
+
+    <!-- 卡 3: 未出价 -->
+    <div class="item-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士…</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 8500</span></span>
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+          </div>
+          <div class="my-bid-line" style="color:var(--text-tertiary);font-weight:500;">暂未出价</div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="status-msg">由于您在 17 点未出价,暂未参与排名</span>
+        <button class="btn-action outline-muted">出价</button>
+      </div>
+    </div>
+
+    <!-- 卡 4: 出价了,排名未进入前三 -->
+    <div class="item-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士…</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 8500</span></span>
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+          </div>
+          <div class="my-bid-line">出价: <span class="v">¥ 8500</span></div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="status-msg">截止 17 点,你的排名未进入前三名,建议提高出价</span>
+        <button class="btn-action">改价</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+
+<!-- 右屏: 历史出价 -->
+<div class="phone-wrap">
+<div class="phone-label">📱 历史出价</div>
+<div class="phone">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="nav-title">我的竞拍</div>
+  </div>
+
+  <div class="lvl2-tabs">
+    <div class="lvl2-tab">正在参与</div>
+    <div class="lvl2-tab active">历史出价</div>
+  </div>
+
+  <!-- 专场卡(历史出价) -->
+  <div class="session-card">
+    <div class="session-head">
+      <div class="session-title">250524暗拍专场</div>
+      <div style="font-size:12px;color:var(--text-secondary);">2025-05-24 11:00:00~18:00:00</div>
+    </div>
+    <div class="session-info">
+      本场暗拍出价 <b>3</b> 件
+      <span class="div"></span>
+      竞得 <b>2</b> 件
+    </div>
+  </div>
+
+  <!-- 商品列表 -->
+  <div class="item-list">
+
+    <!-- 卡 1: 竞拍成功 - 节省 -->
+    <div class="item-card history-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士女</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 85000</span></span>
+            <span class="seg"><span class="label">第 2 名出价</span> <span class="val">¥ 8500</span></span>
+          </div>
+          <div class="price-line" style="margin-top:2px;">
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+            <span class="seg"><span class="label">您出价</span> <span class="val">¥ 8700</span></span>
+          </div>
+          <div class="final-price-line">最终成交价: <b>¥ 8700</b></div>
+        </div>
+      </div>
+      <div class="history-result-wrap">
+        <div class="result-msg-wrap">
+          <div class="result-msg save">本次暗拍为您节省了 <b>¥ 200</b> 元</div>
+        </div>
+        <div class="stamp">竞拍<br>成功</div>
+      </div>
+    </div>
+
+    <!-- 卡 2: 竞拍成功 - 精准 -->
+    <div class="item-card history-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士女</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 85000</span></span>
+            <span class="seg"><span class="label">第 2 名出价</span> <span class="val">¥ 8500</span></span>
+          </div>
+          <div class="price-line" style="margin-top:2px;">
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+            <span class="seg"><span class="label">您出价</span> <span class="val">¥ 8700</span></span>
+          </div>
+          <div class="final-price-line">最终成交价: <b>¥ 8700</b></div>
+        </div>
+      </div>
+      <div class="history-result-wrap">
+        <div class="result-msg-wrap">
+          <div class="result-msg precise">恭喜老板!本次暗拍<b>精准出价</b></div>
+        </div>
+        <div class="stamp">竞拍<br>成功</div>
+      </div>
+    </div>
+
+    <!-- 卡 3: 竞拍失败 -->
+    <div class="item-card history-card">
+      <div class="item-row">
+        <div class="item-img">◆</div>
+        <div class="item-info">
+          <div class="item-tags">
+            <span class="tag-verified">已验</span>
+            <span class="tag-grade">S 级</span>
+            <span class="item-name">香奈儿女士单肩包香奈儿女士女</span>
+          </div>
+          <div class="price-line">
+            <span class="seg"><span class="label">起拍价</span> <span class="val">¥ 85000</span></span>
+            <span class="seg"><span class="label">第 2 名出价</span> <span class="val">¥ 8500</span></span>
+          </div>
+          <div class="price-line" style="margin-top:2px;">
+            <span class="seg"><span class="label">加价幅度</span> <span class="val">¥ 200</span></span>
+            <span class="seg"><span class="label">您出价</span> <span class="val">¥ 8700</span></span>
+          </div>
+          <div class="final-price-line" style="color:var(--text-secondary);">您出价: <b style="color:var(--text-tertiary);">¥ 8700</b></div>
+        </div>
+      </div>
+      <div class="history-result-wrap">
+        <div class="result-msg-wrap">
+          <div class="result-msg lost">您的出价比别人低,请再接再厉</div>
+        </div>
+        <div class="stamp lost">竞拍<br>失败</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+</body>
+</html>

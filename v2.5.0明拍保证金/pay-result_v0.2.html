@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 支付结果 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --mingpai-deep: #E65100; --mingpai-deep-bg: #FFF0E0;
+    --success: #2F855A; --success-bg: #E6F4EA;
+    --warning: #C05621; --warning-bg: #FFF4E5;
+    --danger: #C53030; --danger-bg: #FFF1F0;
+    --info: #2B6CB0; --info-bg: #EBF4FB;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 84px; /* bottom buttons */
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-page);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-page);
+    position: relative;
+  }
+  .navbar .nav-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .navbar .nav-btn svg { width: 22px; height: 22px; }
+  .navbar .nav-title {
+    font-size: 16px; font-weight: 600;
+    color: var(--text-primary);
+  }
+  /* Demo 状态切换器 */
+  .demo-toggle {
+    position: absolute;
+    top: 6px; right: 12px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: inline-flex; align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .demo-toggle svg { width: 11px; height: 11px; }
+  .demo-toggle .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+  .demo-toggle.success .dot { background: var(--success); }
+  .demo-toggle.failed .dot { background: var(--danger); }
+  .demo-toggle.refunded .dot { background: var(--info); }
+  .demo-toggle.timeout .dot { background: var(--text-tertiary); }
+
+  /* Hero result */
+  .hero {
+    padding: 32px 20px 22px;
+    text-align: center;
+    position: relative;
+  }
+  .hero-icon-wrap {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .hero-icon-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    opacity: 0.18;
+    animation: ringPulse 2s infinite;
+  }
+  @keyframes ringPulse {
+    0% { transform: scale(0.85); opacity: 0.5; }
+    100% { transform: scale(1.25); opacity: 0; }
+  }
+  /* 状态：成功 */
+  .state-success .hero-icon-wrap { background: var(--success); }
+  .state-success .hero-icon-wrap::before { background: var(--success); }
+  /* 状态：失败 */
+  .state-failed .hero-icon-wrap { background: var(--danger); }
+  .state-failed .hero-icon-wrap::before { background: var(--danger); }
+  /* 状态：已退款 */
+  .state-refunded .hero-icon-wrap { background: var(--info); }
+  .state-refunded .hero-icon-wrap::before { background: var(--info); }
+  /* 状态：超时取消 */
+  .state-timeout .hero-icon-wrap { background: var(--text-tertiary); }
+  .state-timeout .hero-icon-wrap::before { background: var(--text-tertiary); }
+
+  .hero-icon-wrap svg {
+    width: 44px; height: 44px;
+    color: white;
+    position: relative; z-index: 1;
+  }
+  .hero-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .state-success .hero-title { color: var(--success); }
+  .state-failed .hero-title { color: var(--danger); }
+  .state-refunded .hero-title { color: var(--info); }
+  .state-timeout .hero-title { color: var(--text-secondary); }
+
+  .hero-sub {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+  }
+  .hero-amount {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-feature-settings: "tnum";
+    letter-spacing: -0.5px;
+  }
+  .hero-amount::before {
+    content: '¥';
+    font-size: 18px;
+    font-weight: 600;
+    margin-right: 4px;
+    vertical-align: 3px;
+    color: var(--text-secondary);
+  }
+  .state-failed .hero-amount,
+  .state-timeout .hero-amount {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+  }
+  .state-failed .hero-amount::before,
+  .state-timeout .hero-amount::before {
+    color: var(--text-tertiary);
+  }
+  .hero-amount-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  /* 订单信息卡 */
+  .card {
+    margin: 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .order-info {
+    padding: 14px;
+  }
+  .info-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .info-row .l {
+    color: var(--text-tertiary);
+  }
+  .info-row .r {
+    color: var(--text-primary);
+    font-weight: 500;
+    max-width: 60%;
+    text-align: right;
+    word-break: break-all;
+  }
+  .info-row .r.mono {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-weight: 600;
+  }
+
+  /* 进度条 */
+  .progress-card {
+    margin: 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px 14px 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .progress-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .progress-title::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .progress-steps {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    position: relative;
+    padding: 0 8px;
+  }
+  .progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 13px; left: 28px; right: 28px;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .step {
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative; z-index: 1;
+  }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+  .step-dot svg { width: 14px; height: 14px; }
+  .step.done .step-dot {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+  .step.pending .step-dot {
+    background: var(--bg-card);
+    border-color: var(--brand-300);
+    color: var(--brand-700);
+    animation: stepPulse 2s infinite;
+  }
+  @keyframes stepPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,128,0,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(255,128,0,0); }
+  }
+  .step-text {
+    text-align: center;
+    line-height: 1.3;
+  }
+  .step-text .label {
+    font-size: 11px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .step.done .step-text .label {
+    color: var(--success);
+  }
+  .step.pending .step-text .label {
+    color: var(--brand-700);
+  }
+  .step.future .step-text .label {
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+  .step-text .sub {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* 推荐 section */
+  .rec-section {
+    margin: 0 12px 14px;
+  }
+  .rec-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 4px 12px;
+  }
+  .rec-title {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rec-title::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .rec-more {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .rec-scroll {
+    display: flex; gap: 10px;
+    overflow-x: auto;
+    margin: 0 -12px;
+    padding: 0 12px 4px;
+    scrollbar-width: none;
+  }
+  .rec-scroll::-webkit-scrollbar { display: none; }
+  .rec-item {
+    flex-shrink: 0;
+    width: 130px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .rec-thumb {
+    width: 100%; height: 110px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 32px;
+    position: relative;
+  }
+  .rec-tag {
+    position: absolute;
+    top: 6px; left: 6px;
+    color: white;
+    font-size: 9px; font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 2px;
+  }
+  .rec-tag.anpai { background: var(--anpai-orange); }
+  .rec-tag.mingpai { background: var(--mingpai-deep); }
+  .rec-info { padding: 8px 10px; }
+  .rec-brand {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+  }
+  .rec-name {
+    font-size: 12px;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    margin: 1px 0 4px;
+  }
+  .rec-price {
+    font-size: 13px; font-weight: 700;
+    color: var(--brand-700);
+  }
+  .rec-price::before { content: '¥'; font-size: 10px; }
+
+  /* 失败原因提示 */
+  .fail-reason {
+    margin: 0 12px 14px;
+    padding: 12px 14px;
+    background: var(--danger-bg);
+    border: 1px solid #FFB3B3;
+    border-radius: 10px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .fail-reason .ico {
+    width: 16px; height: 16px;
+    color: var(--danger);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .fail-reason-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .fail-reason-text strong {
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .fail-reason-text .desc {
+    color: var(--text-secondary);
+    margin-top: 2px;
+    display: block;
+    font-size: 11px;
+  }
+
+  /* 退款进度卡 */
+  .refund-card {
+    margin: 0 12px 14px;
+    padding: 12px 14px;
+    background: var(--info-bg);
+    border: 1px solid #BEDBF1;
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .refund-card .ico {
+    width: 22px; height: 22px;
+    color: var(--info);
+    flex-shrink: 0;
+  }
+  .refund-card-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .refund-card-text strong {
+    color: var(--info);
+    font-weight: 700;
+  }
+  .refund-card-text .sub {
+    color: var(--text-secondary);
+    font-size: 11px;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* 底部按钮 */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 12px 14px 16px;
+    display: flex; gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    height: 44px;
+    border-radius: 22px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+    font-family: inherit;
+  }
+  .btn.ghost {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-strong);
+  }
+  .btn.primary {
+    background: linear-gradient(135deg, #FFA526, #FF8000 50%, #E65100);
+    color: white;
+    box-shadow: 0 2px 8px rgba(255,128,0,0.3);
+  }
+  .btn.danger {
+    background: linear-gradient(135deg, #E53E3E, #C53030);
+    color: white;
+    box-shadow: 0 2px 8px rgba(197,48,48,0.25);
+  }
+  .btn.info {
+    background: linear-gradient(135deg, #4299E1, #2B6CB0);
+    color: white;
+    box-shadow: 0 2px 8px rgba(43,108,176,0.25);
+  }
+
+  /* state-toggled visibility */
+  .if-success { display: none; }
+  .if-failed { display: none; }
+  .if-refunded { display: none; }
+  .if-timeout { display: none; }
+  .state-success .if-success { display: block; }
+  .state-success .if-success.flex { display: flex; }
+  .state-failed .if-failed { display: block; }
+  .state-failed .if-failed.flex { display: flex; }
+  .state-refunded .if-refunded { display: block; }
+  .state-refunded .if-refunded.flex { display: flex; }
+  .state-timeout .if-timeout { display: block; }
+  .state-timeout .if-timeout.flex { display: flex; }
+</style>
+</head>
+<body>
+  <div class="phone state-success" id="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- Nav bar with demo toggle -->
+    <div class="navbar">
+      <div class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">
+        <span class="if-success">支付完成</span>
+        <span class="if-failed">支付失败</span>
+        <span class="if-refunded">已退款</span>
+        <span class="if-timeout">超时取消</span>
+      </div>
+      <div class="demo-toggle success" id="demoToggle">
+        <span class="dot"></span>
+        <span id="demoText">成功</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-icon-wrap">
+        <!-- 成功：对勾 -->
+        <svg class="if-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        <!-- 失败：X -->
+        <svg class="if-failed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <!-- 退款：圆形箭头 -->
+        <svg class="if-refunded" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        <!-- 超时：时钟 -->
+        <svg class="if-timeout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+
+      <div class="hero-title">
+        <span class="if-success">支付成功</span>
+        <span class="if-failed">支付失败</span>
+        <span class="if-refunded">已退款</span>
+        <span class="if-timeout">订单已超时取消</span>
+      </div>
+
+      <div class="hero-sub">
+        <span class="if-success">订单已生效，商家将尽快备货发货</span>
+        <span class="if-failed">支付未完成，请重新尝试</span>
+        <span class="if-refunded">退款已原路返回，预计 1-3 个工作日到账</span>
+        <span class="if-timeout">订单已自动取消，保证金已扣除</span>
+      </div>
+
+      <div class="hero-amount-label">
+        <span class="if-success">支付金额</span>
+        <span class="if-failed">应付金额</span>
+        <span class="if-refunded">退款金额</span>
+        <span class="if-timeout">未支付金额</span>
+      </div>
+      <div class="hero-amount">43,010</div>
+    </div>
+
+    <!-- 失败原因 -->
+    <div class="fail-reason if-failed flex">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="fail-reason-text">
+        <strong>失败原因：</strong>银行卡余额不足
+        <span class="desc">订单仍在倒计时内，请尽快重新支付，否则将扣除保证金 ¥425</span>
+      </div>
+    </div>
+
+    <!-- 退款进度 -->
+    <div class="refund-card if-refunded flex">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      <div class="refund-card-text">
+        <strong>退款已发起</strong>
+        <span class="sub">原路返回至 微信支付 · 预计 1-3 个工作日到账</span>
+      </div>
+    </div>
+
+    <!-- 超时扣保证金提示 -->
+    <div class="fail-reason if-timeout flex" style="background:#FFF4E5;border-color:#FFD8A8;">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--warning);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="fail-reason-text">
+        <strong style="color:var(--warning);">违约金已扣除：¥425</strong>
+        <span class="desc">订单超过 4 小时未支付，按规则自动取消并扣除商品金额 1% 作为违约金</span>
+      </div>
+    </div>
+
+    <!-- 订单信息 -->
+    <div class="card">
+      <div class="order-info">
+        <div class="info-row">
+          <span class="l">订单号</span>
+          <span class="r mono">OD20260511004</span>
+        </div>
+        <div class="info-row">
+          <span class="l">商品</span>
+          <span class="r">CHANEL Classic Flap CF25</span>
+        </div>
+        <div class="info-row">
+          <span class="l">中拍价</span>
+          <span class="r">¥ 42,500</span>
+        </div>
+        <div class="info-row">
+          <span class="l if-success">支付方式</span>
+          <span class="l if-failed">支付方式</span>
+          <span class="l if-refunded">退款方式</span>
+          <span class="l if-timeout">订单状态</span>
+          <span class="r if-success">微信支付</span>
+          <span class="r if-failed" style="color:var(--danger);">微信支付（失败）</span>
+          <span class="r if-refunded" style="color:var(--info);">微信支付 · 原路</span>
+          <span class="r if-timeout" style="color:var(--text-tertiary);">已取消</span>
+        </div>
+        <div class="info-row">
+          <span class="l if-success">支付时间</span>
+          <span class="l if-failed">尝试时间</span>
+          <span class="l if-refunded">退款时间</span>
+          <span class="l if-timeout">取消时间</span>
+          <span class="r">2026-05-11 14:58:32</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部按钮 -->
+    <div class="bottom-bar">
+      <!-- 成功 -->
+      <button class="btn ghost if-success flex">继续逛逛</button>
+      <button class="btn primary if-success flex">查看订单</button>
+      <!-- 失败 -->
+      <button class="btn ghost if-failed flex">取消订单</button>
+      <button class="btn danger if-failed flex">重新支付</button>
+      <!-- 已退款 -->
+      <button class="btn ghost if-refunded flex">查看退款详情</button>
+      <button class="btn info if-refunded flex">返回订单</button>
+      <!-- 超时取消 -->
+      <button class="btn ghost if-timeout flex">查看违约记录</button>
+      <button class="btn primary if-timeout flex">返回首页</button>
+    </div>
+
+  </div>
+
+<script>
+  // Demo 状态切换
+  (function() {
+    const states = [
+      { key: 'success', label: '成功' },
+      { key: 'failed',  label: '失败' },
+      { key: 'refunded', label: '已退款' },
+      { key: 'timeout', label: '超时取消' },
+    ];
+    // 支持 query 参数初始化：?state=failed
+    const params = new URLSearchParams(location.search);
+    const init = params.get('state') || 'success';
+    let idx = Math.max(0, states.findIndex(s => s.key === init));
+    const phone = document.getElementById('phone');
+    const toggle = document.getElementById('demoToggle');
+    const text = document.getElementById('demoText');
+
+    function apply() {
+      const s = states[idx];
+      phone.className = 'phone state-' + s.key;
+      toggle.className = 'demo-toggle ' + s.key;
+      text.textContent = s.label;
+    }
+    toggle.addEventListener('click', () => {
+      idx = (idx + 1) % states.length;
+      apply();
+    });
+    apply();
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

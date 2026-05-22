@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>用户画像 · 后管 · v0.3(示意)</title>
+<style>
+  :root {
+    --primary: #FF8000;
+    --primary-dark: #E65100;
+    --primary-light: #FFF8E1;
+    --bg-page: #F5F5F5;
+    --bg-card: #FFFFFF;
+    --bg-soft: #FAFAFA;
+    --border: #E8E8E8;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9A9A9A;
+    --success: #4CAF50;
+    --warn: #F57C00;
+    --danger: #E53935;
+    --info: #1976D2;
+    --info-bg: #E3F2FD;
+    --success-bg: #E8F5E9;
+    --primary-bg: #FFF1E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  /* Top bar */
+  .topbar {
+    height: 52px;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px;
+    position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .crumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .crumb .sep { color: var(--text-tertiary); }
+  .crumb .here { color: var(--text-primary); font-weight: 600; }
+  .crumb a { color: var(--text-secondary); text-decoration: none; }
+  .crumb a:hover { color: var(--primary-dark); }
+  .topbar .spacer { flex: 1; }
+  .topbar .demo-tag {
+    font-size: 11px; color: var(--warn);
+    background: #FFF3E0;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* Page */
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 18px 60px;
+  }
+
+  /* User header card */
+  .user-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 26px;
+    display: flex; gap: 22px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-size: 30px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name {
+    font-size: 20px; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .uid-tag {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-soft);
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .badges { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+  .b {
+    display: inline-flex; align-items: center;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .b.cert { background: var(--info-bg); color: var(--info); }
+  .b.vip { background: var(--primary-light); color: var(--primary-dark); }
+  .b.whitelist { background: var(--success-bg); color: var(--success); }
+
+  .meta {
+    display: flex; gap: 22px;
+    font-size: 12.5px; color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+  .meta b { color: var(--text-primary); font-weight: 600; }
+  .meta .sep { color: var(--text-tertiary); }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .stat-card .l {
+    font-size: 12px; color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+  .stat-card .v {
+    font-size: 22px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-card .v.money::before { content: '¥'; font-size: 13px; margin-right: 1px; }
+  .stat-card .v.up { color: var(--success); }
+  .stat-card .v.warn { color: var(--warn); }
+  .stat-card .v.danger { color: var(--danger); }
+  .stat-card .sub {
+    margin-top: 4px;
+    font-size: 11.5px; color: var(--text-tertiary);
+  }
+
+  /* 示意说明 */
+  .demo-hint {
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+  .demo-hint .title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .demo-hint b { color: var(--text-primary); font-weight: 600; }
+  .demo-hint ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+  }
+  .demo-hint li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="crumb">
+    <a href="admin-mingpai-simple_v0.3.html">明拍货品</a>
+    <span class="sep">/</span>
+    <span class="here">用户画像</span>
+  </div>
+  <span class="spacer"></span>
+  <span class="demo-tag">示意页面</span>
+</div>
+
+<div class="page">
+
+  <!-- 用户头卡 -->
+  <div class="user-card">
+    <div class="avatar" id="avatar">收</div>
+    <div class="user-info">
+      <div class="user-name">
+        <span id="nick">收藏家张三</span>
+        <span class="uid-tag" id="uid2">U10086</span>
+        <span class="badges">
+          <span class="b cert">已认证</span>
+          <span class="b vip">VIP</span>
+          <span class="b whitelist">白名单</span>
+        </span>
+      </div>
+      <div class="meta">
+        <span>注册:<b>2024-08-15</b></span>
+        <span class="sep">·</span>
+        <span>地区:<b>上海</b></span>
+        <span class="sep">·</span>
+        <span>手机:<b>138****5266</b></span>
+        <span class="sep">·</span>
+        <span>实名:<b>已通过</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关键统计 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="l">可用保证金</div>
+      <div class="v money up">5,000</div>
+      <div class="sub">状态:正常</div>
+    </div>
+    <div class="stat-card">
+      <div class="l">累计中拍 / 出价</div>
+      <div class="v">12 / 38</div>
+      <div class="sub">中拍率 31.6%</div>
+    </div>
+    <div class="stat-card">
+      <div class="l">累计支付金额</div>
+      <div class="v money up">358,400</div>
+      <div class="sub">12 单 · 客单价 ¥29,866</div>
+    </div>
+    <div class="stat-card">
+      <div class="l">违约次数</div>
+      <div class="v">0</div>
+      <div class="sub">扣款合计 ¥0</div>
+    </div>
+  </div>
+
+  <!-- 示意说明 -->
+  <div class="demo-hint">
+    <div class="title">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      本页为示意原型,完整画像将接入运营 BI / 用户中心
+    </div>
+    后续可扩展但本期不做的内容:
+    <ul>
+      <li><b>最近参拍记录</b>:含明拍 / 暗拍出价历史 + 中拍 / 未中 / 流拍结果</li>
+      <li><b>保证金变动流水</b>:充值 / 违约扣减 / 提现到账</li>
+      <li><b>订单与履约</b>:支付明细 / 物流跟踪 / 申诉记录</li>
+      <li><b>运营操作</b>:发送站内信 / 移出白名单 / 封禁账户</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+  // 从 URL query 读 user_id / nick,渲染顶部
+  (function() {
+    const params = new URLSearchParams(location.search);
+    const uid = params.get('user_id') || 'U10086';
+    const nick = params.get('nick');
+    document.getElementById('uid2').textContent = uid;
+    if (nick) {
+      const n = decodeURIComponent(nick);
+      document.getElementById('nick').textContent = n;
+      document.getElementById('avatar').textContent = n.charAt(0) || '用';
+    }
+  })();
+</script>
+</body>
+</html>

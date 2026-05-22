@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 直播大厅 v0.1</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #FAFAFA; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: #ECEAE4; --border-strong: #D6D3CC;
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --live-red-bg: #FFF1F0;
+    --success: #2F855A; --info: #2B6CB0;
+    --shadow-sm: 0 1px 2px rgba(45,36,25,0.04);
+    --shadow-md: 0 2px 8px rgba(45,36,25,0.06);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #ECE8E0; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 24px 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-page);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar */
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-page);
+  }
+  .nav-back, .nav-act {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .nav-back svg, .nav-act svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; text-align: center;
+    font-size: 16px; font-weight: 600;
+  }
+
+  /* Filter tabs */
+  .filter-tabs {
+    display: flex; gap: 8px;
+    padding: 8px 16px 12px;
+    overflow-x: auto;
+    background: var(--bg-page);
+    scrollbar-width: none;
+  }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .filter-chip .count {
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 2px;
+    min-width: 16px; text-align: center;
+  }
+  .filter-chip.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+    font-weight: 600;
+  }
+  .filter-chip.active .count {
+    background: rgba(0,0,0,0.15);
+    color: var(--brand-900);
+  }
+
+  /* Section title */
+  .section { margin: 0 12px 14px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 4px 10px;
+  }
+  .section-title {
+    font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-title::before {
+    content: ''; width: 3px; height: 14px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .section-title .badge {
+    font-size: 10px; font-weight: 500;
+    background: var(--live-red); color: white;
+    padding: 1px 6px; border-radius: 8px;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .section-title .badge::before {
+    content: ''; width: 4px; height: 4px;
+    background: white; border-radius: 50%;
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  /* Live card - 大卡片 (正在直播) */
+  .live-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .live-cover {
+    height: 180px;
+    background: linear-gradient(135deg, #3a2a1a, #6b5239);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 50px;
+  }
+  .live-tag {
+    position: absolute; top: 10px; left: 10px;
+    background: var(--live-red); color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .live-tag::before {
+    content: ''; width: 5px; height: 5px;
+    background: white; border-radius: 50%;
+    animation: pulse 1.4s infinite;
+  }
+  .live-viewers {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.55); color: white;
+    font-size: 11px; padding: 3px 8px;
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .live-viewers svg { width: 12px; height: 12px; }
+  .live-current-item {
+    position: absolute; bottom: 10px; left: 10px; right: 10px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: white;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .live-current-item .thumb {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: rgba(255,255,255,0.6);
+  }
+  .live-current-item .info { flex: 1; }
+  .live-current-item .label {
+    font-size: 9px; color: rgba(255,255,255,0.7);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .live-current-item .name { font-size: 12px; margin-top: 1px; }
+  .live-current-item .price {
+    font-size: 16px; font-weight: 700;
+    color: var(--brand-300);
+  }
+  .live-current-item .price::before { content: '¥'; font-size: 11px; margin-right: 1px; }
+
+  .live-meta { padding: 12px 14px; }
+  .live-anchor {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .anchor-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    border: 2px solid var(--brand-200);
+  }
+  .anchor-info { flex: 1; }
+  .anchor-name {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .anchor-cert {
+    font-size: 9px; color: white;
+    background: var(--info);
+    padding: 1px 4px; border-radius: 2px;
+    font-weight: 500;
+  }
+  .anchor-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+  .follow-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--brand-500);
+    color: var(--brand-700);
+    font-size: 12px; font-weight: 600;
+    border-radius: 14px;
+    background: var(--brand-100);
+  }
+  .follow-btn.followed {
+    background: var(--bg-subtle);
+    color: var(--text-tertiary);
+    border-color: var(--border);
+  }
+
+  .live-title {
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .live-brands {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .brand-chip {
+    font-size: 10px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .live-stats {
+    display: flex; align-items: center;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    gap: 16px;
+  }
+  .stat-item { font-size: 11px; color: var(--text-secondary); }
+  .stat-item strong { color: var(--text-primary); font-weight: 600; font-size: 13px; }
+  .enter-btn {
+    margin-left: auto;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    font-size: 13px; font-weight: 700;
+    border-radius: 16px;
+    border: none;
+    display: flex; align-items: center; gap: 3px;
+    box-shadow: 0 2px 6px rgba(255,128,0,0.25);
+  }
+
+  /* Upcoming - 预告 */
+  .upcoming-card {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 12px;
+    display: flex; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .upcoming-cover {
+    width: 80px; height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 28px;
+    position: relative;
+  }
+  .upcoming-time {
+    position: absolute; bottom: 4px; left: 4px; right: 4px;
+    background: rgba(0,0,0,0.6); color: white;
+    font-size: 10px; text-align: center;
+    padding: 2px 0;
+    border-radius: 3px;
+  }
+  .upcoming-info { flex: 1; display: flex; flex-direction: column; }
+  .upcoming-title {
+    font-size: 14px; font-weight: 600;
+    margin-bottom: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .upcoming-anchor {
+    font-size: 11px; color: var(--text-secondary);
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 4px;
+  }
+  .upcoming-desc {
+    font-size: 11px; color: var(--text-tertiary);
+    margin-bottom: auto;
+  }
+  .upcoming-actions {
+    display: flex; gap: 6px; align-items: center;
+    margin-top: 6px;
+  }
+  .reserved-count {
+    font-size: 10px; color: var(--text-tertiary);
+    flex: 1;
+  }
+  .remind-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--brand-500);
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-size: 11px; font-weight: 600;
+    border-radius: 12px;
+  }
+  .remind-btn.set {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border-color: var(--border);
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- Nav -->
+    <div class="navbar">
+      <div class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">直播大厅</div>
+      <div class="nav-act">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-tabs">
+      <div class="filter-chip active">全部 <span class="count">12</span></div>
+      <div class="filter-chip">爱马仕</div>
+      <div class="filter-chip">LV / Gucci</div>
+      <div class="filter-chip">珠宝腕表</div>
+      <div class="filter-chip">服饰配饰</div>
+      <div class="filter-chip">我关注的</div>
+    </div>
+
+    <!-- 正在直播 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">正在直播 <span class="badge">3</span></div>
+      </div>
+
+      <!-- Live 1 -->
+      <div class="live-card">
+        <div class="live-cover">
+          ◆
+          <span class="live-tag">LIVE</span>
+          <span class="live-viewers">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 22a8 8 0 0 1 16 0"/></svg>
+            124
+          </span>
+          <div class="live-current-item">
+            <div class="thumb">◆</div>
+            <div class="info">
+              <div class="label">当前拍品 · Lot 08</div>
+              <div class="name">Hermès Birkin 25 Gold</div>
+            </div>
+            <div class="price">42,000</div>
+          </div>
+        </div>
+        <div class="live-meta">
+          <div class="live-anchor">
+            <div class="anchor-avatar">张</div>
+            <div class="anchor-info">
+              <div class="anchor-name">张鉴定师 <span class="anchor-cert">VIP</span></div>
+              <div class="anchor-desc">10 年中古经验 · 已认证</div>
+            </div>
+            <button class="follow-btn">+ 关注</button>
+          </div>
+          <div class="live-title">爱马仕专场 · Birkin / Kelly / Picotin 集合</div>
+          <div class="live-brands">
+            <span class="brand-chip">HERMÈS</span>
+            <span class="brand-chip">Birkin</span>
+            <span class="brand-chip">Kelly</span>
+            <span class="brand-chip">手袋</span>
+          </div>
+          <div class="live-stats">
+            <div class="stat-item">已上拍 <strong>8</strong> 件</div>
+            <div class="stat-item">成交 <strong>5</strong> 件</div>
+            <div class="stat-item">待拍 <strong>23</strong> 件</div>
+            <button class="enter-btn">进入 ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live 2 -->
+      <div class="live-card">
+        <div class="live-cover" style="background:linear-gradient(135deg,#2a2a3a,#4a4a6b);">
+          ◆
+          <span class="live-tag">LIVE</span>
+          <span class="live-viewers">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 22a8 8 0 0 1 16 0"/></svg>
+            98
+          </span>
+          <div class="live-current-item">
+            <div class="thumb">◆</div>
+            <div class="info">
+              <div class="label">当前拍品 · Lot 12</div>
+              <div class="name">LV Speedy 30 Monogram</div>
+            </div>
+            <div class="price">3,800</div>
+          </div>
+        </div>
+        <div class="live-meta">
+          <div class="live-anchor">
+            <div class="anchor-avatar">李</div>
+            <div class="anchor-info">
+              <div class="anchor-name">李鉴定师 <span class="anchor-cert">VIP</span></div>
+              <div class="anchor-desc">奢侈品鉴定师 · 已认证</div>
+            </div>
+            <button class="follow-btn followed">已关注</button>
+          </div>
+          <div class="live-title">LV / Gucci / Prada 综合专场</div>
+          <div class="live-brands">
+            <span class="brand-chip">LV</span>
+            <span class="brand-chip">Gucci</span>
+            <span class="brand-chip">Prada</span>
+          </div>
+          <div class="live-stats">
+            <div class="stat-item">已上拍 <strong>14</strong> 件</div>
+            <div class="stat-item">成交 <strong>9</strong> 件</div>
+            <div class="stat-item">待拍 <strong>18</strong> 件</div>
+            <button class="enter-btn">进入 ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live 3 -->
+      <div class="live-card">
+        <div class="live-cover" style="background:linear-gradient(135deg,#3a1a2a,#6b3a4b);">
+          ◆
+          <span class="live-tag">LIVE</span>
+          <span class="live-viewers">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 22a8 8 0 0 1 16 0"/></svg>
+            102
+          </span>
+          <div class="live-current-item">
+            <div class="thumb">◆</div>
+            <div class="info">
+              <div class="label">当前拍品 · Lot 05</div>
+              <div class="name">Rolex Datejust 36</div>
+            </div>
+            <div class="price">58,000</div>
+          </div>
+        </div>
+        <div class="live-meta">
+          <div class="live-anchor">
+            <div class="anchor-avatar">王</div>
+            <div class="anchor-info">
+              <div class="anchor-name">王鉴定师 <span class="anchor-cert">VIP</span></div>
+              <div class="anchor-desc">珠宝腕表专家</div>
+            </div>
+            <button class="follow-btn">+ 关注</button>
+          </div>
+          <div class="live-title">珠宝腕表专场 · Rolex / Cartier</div>
+          <div class="live-brands">
+            <span class="brand-chip">Rolex</span>
+            <span class="brand-chip">Cartier</span>
+            <span class="brand-chip">腕表</span>
+            <span class="brand-chip">珠宝</span>
+          </div>
+          <div class="live-stats">
+            <div class="stat-item">已上拍 <strong>6</strong> 件</div>
+            <div class="stat-item">成交 <strong>4</strong> 件</div>
+            <div class="stat-item">待拍 <strong>15</strong> 件</div>
+            <button class="enter-btn">进入 ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 即将开始 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">即将开始</div>
+        <span style="font-size:12px;color:var(--text-tertiary);">查看全部 ›</span>
+      </div>
+
+      <div class="upcoming-card">
+        <div class="upcoming-cover">
+          ◆
+          <span class="upcoming-time">19:30</span>
+        </div>
+        <div class="upcoming-info">
+          <div class="upcoming-title">Chanel 包袋&珠宝专场</div>
+          <div class="upcoming-anchor">主播 · 陈鉴定师</div>
+          <div class="upcoming-desc">预上拍 32 件 · CF / Coco / Boy</div>
+          <div class="upcoming-actions">
+            <span class="reserved-count">214 人已预约</span>
+            <button class="remind-btn">提醒我</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="upcoming-card">
+        <div class="upcoming-cover">
+          ◆
+          <span class="upcoming-time">21:00</span>
+        </div>
+        <div class="upcoming-info">
+          <div class="upcoming-title">Dior 综合专场</div>
+          <div class="upcoming-anchor">主播 · 赵鉴定师</div>
+          <div class="upcoming-desc">预上拍 25 件 · Saddle / Lady / Book Tote</div>
+          <div class="upcoming-actions">
+            <span class="reserved-count">86 人已预约</span>
+            <button class="remind-btn set">已设提醒</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="upcoming-card">
+        <div class="upcoming-cover">
+          ◆
+          <span class="upcoming-time">明 10:00</span>
+        </div>
+        <div class="upcoming-info">
+          <div class="upcoming-title">珠宝玉器专场 · 翡翠 / 钻石</div>
+          <div class="upcoming-anchor">主播 · 周鉴定师</div>
+          <div class="upcoming-desc">预上拍 40 件 · GIA / NGTC 鉴定</div>
+          <div class="upcoming-actions">
+            <span class="reserved-count">158 人已预约</span>
+            <button class="remind-btn">提醒我</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">货品大厅</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="tab-label">消息</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

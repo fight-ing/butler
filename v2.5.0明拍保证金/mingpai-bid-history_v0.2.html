@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 出价记录 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.03); --border-strong: rgba(0,0,0,0.06);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --proxy-purple: #6B46C1; --proxy-bg: #EDE9FE;
+    --manual-green: #15803D; --manual-bg: #DCFCE7;
+    --danger: #E53E3E;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+  }
+
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-back {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -4px;
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; text-align: center;
+    font-size: 16px; font-weight: 600;
+    margin-right: 28px;
+    display: flex; flex-direction: column; line-height: 1.1;
+  }
+  .nav-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* 货品摘要(顶部小卡)*/
+  .lot-summary {
+    margin: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .lot-thumb {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(180,140,100,0.55);
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .lot-summary .info { flex: 1; min-width: 0; }
+  .lot-summary .brand { font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.5px; }
+  .lot-summary .name {
+    font-size: 13px; font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lot-summary .meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .lot-current { text-align: right; }
+  .lot-current .lbl { font-size: 10px; color: var(--text-tertiary); }
+  .lot-current .v {
+    font-size: 17px; font-weight: 700;
+    color: var(--brand-900);
+    line-height: 1.1;
+  }
+  .lot-current .v::before { content: '¥'; font-size: 11px; color: var(--brand-700); }
+
+  /* 统计带 */
+  .stats {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    text-align: center;
+  }
+  .stats .item { border-right: 1px solid var(--border); }
+  .stats .item:last-child { border-right: none; }
+  .stats .v {
+    font-size: 17px; font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .stats .v.mine { color: var(--proxy-purple); }
+  .stats .v.up   { color: var(--manual-green); }
+  .stats .l {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* Filter chips */
+  .filter-row {
+    margin: 0 12px 8px;
+    display: flex; gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 5px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .chip.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    border-color: var(--brand-500);
+    font-weight: 600;
+  }
+
+  /* 记录列表 */
+  .records-card {
+    margin: 0 12px 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .record-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .record-row:last-child { border-bottom: none; }
+  .record-row.mine { background: linear-gradient(95deg, #EDE9FE 0%, #FFFFFF 60%); }
+  .record-row.current-high::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--brand-500);
+  }
+  .record-left { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 3px; }
+  .record-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .record-anon {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .record-row.mine .record-anon { color: var(--proxy-purple); }
+  .record-mark {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .record-mark.proxy  { background: var(--proxy-bg); color: var(--proxy-purple); }
+  .record-mark.manual { background: var(--manual-bg); color: var(--manual-green); }
+  .record-mark.highest { background: var(--brand-100); color: var(--brand-700); }
+  .record-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .record-time b { color: var(--text-secondary); font-weight: 600; }
+  .record-amt {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .record-amt .v {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+  .record-amt .v::before { content: '¥'; font-size: 11px; }
+  .record-amt .delta {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+  .record-amt .delta.up { color: var(--manual-green); }
+
+  /* 日期分组 */
+  .date-group {
+    padding: 8px 14px 4px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background: var(--bg-page);
+    font-weight: 500;
+    border-top: 1px solid var(--border);
+  }
+  .records-card .date-group:first-child {
+    border-top: none;
+  }
+
+  /* 加载提示 */
+  .load-more {
+    text-align: center;
+    padding: 14px 0 24px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .load-more b { color: var(--brand-700); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <div class="navbar">
+      <div class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">
+        出价记录
+        <span class="nav-sub">20260513002 · Daytona 116500LN</span>
+      </div>
+    </div>
+
+    <!-- 货品摘要 -->
+    <div class="lot-summary">
+      <div class="lot-thumb">◆</div>
+      <div class="info">
+        <div class="brand">ROLEX</div>
+        <div class="name">Daytona 116500LN 熊猫盘</div>
+        <div class="meta">距结拍 00:38:24 · 已 12 次出价</div>
+      </div>
+      <div class="lot-current">
+        <div class="lbl">当前价</div>
+        <div class="v">252,000</div>
+      </div>
+    </div>
+
+    <!-- 统计 -->
+    <div class="stats" style="grid-template-columns:repeat(3,1fr);">
+      <div class="item">
+        <div class="v">12</div>
+        <div class="l">总次数</div>
+      </div>
+      <div class="item">
+        <div class="v mine">3</div>
+        <div class="l">我的竞拍</div>
+      </div>
+      <div class="item">
+        <div class="v">5</div>
+        <div class="l">参拍商家</div>
+      </div>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="filter-row">
+      <div class="chip active">全部 12</div>
+      <div class="chip">仅我的 3</div>
+      <div class="chip">代理出价 2</div>
+      <div class="chip">手动出价 1</div>
+    </div>
+
+    <!-- 记录列表(完整版) -->
+    <div class="records-card">
+
+      <div class="date-group">今日 · 5/13</div>
+
+      <div class="record-row mine current-high">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">我 (***88)</span>
+            <span class="record-mark proxy">代理</span>
+            <span class="record-mark highest">当前最高</span>
+          </div>
+          <div class="record-time">14:18:32 · 距上次 +03:12</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">252,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***48</span>
+          </div>
+          <div class="record-time">14:15:20 · 距上次 +03:08</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">250,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***12</span>
+          </div>
+          <div class="record-time">14:12:12 · 距上次 +03:48</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">248,000</div>
+          <div class="delta up">+ ¥3,000</div>
+        </div>
+      </div>
+
+      <div class="record-row mine">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">我 (***88)</span>
+            <span class="record-mark manual">手动</span>
+          </div>
+          <div class="record-time">14:08:24 · 距上次 +03:14</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">245,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***48</span>
+          </div>
+          <div class="record-time">14:05:10 · 距上次 +03:58</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">243,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***12</span>
+          </div>
+          <div class="record-time">14:01:12 · 距上次 +03:48</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">241,000</div>
+          <div class="delta up">+ ¥1,000</div>
+        </div>
+      </div>
+
+      <div class="record-row mine">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">我 (***88)</span>
+            <span class="record-mark proxy">代理</span>
+          </div>
+          <div class="record-time">13:58:24 · 距上次 +02:48</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">240,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***90</span>
+          </div>
+          <div class="record-time">13:55:36 · 距上次 +03:24</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">238,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***48</span>
+          </div>
+          <div class="record-time">13:52:12 · 距上次 +03:54</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">236,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***12</span>
+          </div>
+          <div class="record-time">13:48:18 · 距上次 +02:42</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">234,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***48</span>
+          </div>
+          <div class="record-time">13:45:36 · 距上次 +05:12</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">232,000</div>
+          <div class="delta up">+ ¥2,000</div>
+        </div>
+      </div>
+
+      <div class="record-row">
+        <div class="record-left">
+          <div class="record-top">
+            <span class="record-anon">商家 ***90</span>
+          </div>
+          <div class="record-time">13:40:24 · 首次出价</div>
+        </div>
+        <div class="record-amt">
+          <div class="v">230,000</div>
+          <div class="delta">起拍价</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="load-more">
+      显示全部 <b>12</b> 条 · 已到底部
+    </div>
+
+  </div>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

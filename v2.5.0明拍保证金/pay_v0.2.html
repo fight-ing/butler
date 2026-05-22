@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 统一收银台 v0.3</title>
+<style>
+  :root {
+    --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --live-red: #E53E3E; --mingpai-deep: #E65100; --anpai-orange: #FF8000;
+    --listing-blue: #2B6CB0;
+    --pay-alipay: #1677FF;
+    --pay-wechat: #07C160;
+    --pay-bank: #E65100;
+    --success: #2F855A;
+    --danger: #DC2626;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 76px;
+  }
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    background: var(--bg-card);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+  .navbar {
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-back {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -4px;
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .nav-title {
+    flex: 1; text-align: center;
+    font-size: 17px; font-weight: 600;
+    margin-right: 28px;
+  }
+
+  /* 头部金额区 */
+  .pay-head {
+    background: var(--bg-card);
+    padding: 18px 16px 22px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .cd-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .cd-time {
+    margin-left: 4px;
+    font-family: 'SF Mono', Menlo, monospace;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .cd-digit {
+    background: #1A1A1A;
+    color: white;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  .cd-sep { color: #1A1A1A; font-weight: 700; }
+  .amount-big {
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 8px 0 6px;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .amount-big::before {
+    content: '¥';
+    font-size: 20px;
+    font-weight: 600;
+    margin-right: 2px;
+    vertical-align: 5px;
+  }
+  .amount-fee {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+
+  /* 订单来源类型(统一收银台标识)*/
+  .order-source-bar {
+    margin: 12px 12px 0;
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+  }
+  .source-label {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .source-list {
+    flex: 1;
+    display: flex; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .src-pill {
+    display: inline-flex; align-items: center;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-primary);
+    padding: 0;
+    background: transparent;
+  }
+  .src-pill + .src-pill::before {
+    content: '·';
+    margin: 0 8px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+  .src-pill .n {
+    margin-left: 4px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .source-arrow {
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+
+  /* 支付方式列表 */
+  .pay-methods {
+    margin: 10px 12px 0;
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .pm-row {
+    display: flex; align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .pm-row:last-child { border-bottom: none; }
+  .pm-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    margin-right: 12px;
+  }
+  .pm-icon svg { width: 18px; height: 18px; }
+  .pm-icon.alipay { background: var(--pay-alipay); }
+  .pm-icon.wechat { background: var(--pay-wechat); }
+  .pm-icon.bank   { background: var(--pay-bank); }
+  .pm-info { flex: 1; min-width: 0; line-height: 1.4; }
+  .pm-name {
+    font-size: 14px; font-weight: 600;
+    color: var(--text-primary);
+  }
+  .pm-fee {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+  .pm-fee.free { color: var(--success); font-weight: 500; }
+  .pm-radio {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-card);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pm-radio.checked {
+    background: var(--brand-500);
+    border-color: var(--brand-500);
+  }
+  .pm-radio.checked::after {
+    content: '';
+    width: 8px; height: 8px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* 银行转账子项 */
+  .pm-bank-extra {
+    background: var(--bg-card);
+    margin: 0 12px;
+    border-top: 1px dashed var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .pm-bank-extra svg {
+    width: 14px; height: 14px;
+    color: var(--text-tertiary);
+  }
+  .pm-bank-extra .arrow { margin-left: auto; color: var(--text-tertiary); }
+
+  /* Sticky footer */
+  .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 12px 14px 22px;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 13px 0;
+    background: #1A1A1A;
+    color: white;
+    border: none;
+    border-radius: 22px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <div class="navbar">
+      <div class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">支付订单</div>
+    </div>
+
+    <!-- 头部:倒计时 + 金额 + 免通道费徽章 -->
+    <div class="pay-head">
+      <div class="cd-label">
+        支付剩余时间
+        <span class="cd-time">
+          <span class="cd-digit">23</span><span class="cd-sep">:</span>
+          <span class="cd-digit">59</span><span class="cd-sep">:</span>
+          <span class="cd-digit">59</span>
+        </span>
+      </div>
+      <div class="amount-big">8,503</div>
+      <span class="amount-fee">免通道费</span>
+    </div>
+
+    <!-- 订单来源类型 (统一收银台标识) -->
+    <div class="order-source-bar">
+      <span class="source-label">订单来源</span>
+      <div class="source-list">
+        <span class="src-pill mingpai">明拍中拍<span class="n">1</span></span>
+        <span class="src-pill anpai">暗拍中拍<span class="n">1</span></span>
+        <span class="src-pill listing">挂售<span class="n">1</span></span>
+      </div>
+      <span class="source-arrow">›</span>
+    </div>
+
+    <!-- 支付方式 -->
+    <div class="pay-methods">
+
+      <div class="pm-row">
+        <div class="pm-icon alipay">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-1.5 12c-3-1-5.5-2-7.5-3 0 0 1.5-2.5 2-4.5h-4v-1h2.5V6h1v1.5H14v1h-3.5c-.3.7-.6 1.5-1 2 .8.2 2 .6 4 1.3.4-.5.7-1 1-1.5l1 .5c-.3.5-.6 1-.9 1.5 1.3.5 2.5 1 3 1.3z"/></svg>
+        </div>
+        <div class="pm-info">
+          <div class="pm-name">支付宝支付</div>
+          <div class="pm-fee">需额外支付通道费 0.6%</div>
+        </div>
+        <div class="pm-radio"></div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-icon wechat">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 4C4.9 4 2 6.5 2 9.5c0 1.7 1 3.3 2.6 4.3l-.6 1.8 2-1c.8.2 1.6.4 2.5.4-.2-.5-.3-1.1-.3-1.7 0-3 2.9-5.5 6.5-5.5h.4C14 6.6 11.5 4 8.5 4zm-2.2 3.5c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7zm4.5 0c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7zM14.5 9c-3 0-5.5 2.1-5.5 4.7s2.5 4.8 5.5 4.8c.7 0 1.3-.1 1.9-.3l1.7.9-.5-1.5c1.4-.9 2.4-2.2 2.4-3.9 0-2.6-2.5-4.7-5.5-4.7zm-2 2.5c.3 0 .6.2.6.5s-.3.5-.6.5-.6-.2-.6-.5.3-.5.6-.5zm3.7 0c.3 0 .6.2.6.5s-.3.5-.6.5-.6-.2-.6-.5.3-.5.6-.5z"/></svg>
+        </div>
+        <div class="pm-info">
+          <div class="pm-name">微信支付</div>
+          <div class="pm-fee">需额外支付通道费 0.6%</div>
+        </div>
+        <div class="pm-radio"></div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-icon bank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10M19 21V10M2 10l10-6 10 6M9 21V14M15 21V14"/></svg>
+        </div>
+        <div class="pm-info">
+          <div class="pm-name">银行转账付款</div>
+          <div class="pm-fee free">免通道费 · 1分钟确认到账状态</div>
+        </div>
+        <div class="pm-radio checked"></div>
+      </div>
+
+    </div>
+
+    <!-- 银行转账子项 -->
+    <div class="pm-bank-extra">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      添加付款人信息后可银行转账
+      <span class="arrow">›</span>
+    </div>
+
+    <!-- Sticky footer -->
+    <div class="footer">
+      <button class="submit-btn">确认支付</button>
+    </div>
+
+  </div>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

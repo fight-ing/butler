@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 首页 v0.1</title>
+<style>
+  /* ========== Design Tokens ========== */
+  :root {
+    /* 品牌色 - 美团黄橙体系 */
+    --brand-900: #B34700;     /* 深焦糖 - 强调最重 */
+    --brand-700: #E65100;     /* 深橙 - 主色 hover/active */
+    --brand-500: #FF8000;     /* 主橙 - 关键按钮/价格 */
+    --brand-400: #FFA526;     /* 橙黄过渡 */
+    --brand-300: #FFC300;     /* 美团黄 - 品牌主色 */
+    --brand-200: #FFE082;     /* 浅黄 - 标签底 */
+    --brand-100: #FFF8E1;     /* 极浅黄 - 卡片底纹 */
+    --brand-50:  #FFFBF0;     /* 页面 tint */
+
+    /* 中性色 */
+    --bg-page: #FAFAFA;
+    --bg-card: #FFFFFF;
+    --bg-subtle: #F7F7F5;
+    --border: #ECEAE4;
+    --border-strong: #D6D3CC;
+
+    /* 文字 */
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9A9A9A;
+    --text-inverse: #FFFFFF;
+
+    /* 状态色 - 三大渠道 */
+    --live-red: #E53E3E;
+    --live-red-bg: #FFF1F0;
+    --anpai-orange: #FF8000;
+    --anpai-orange-bg: #FFF4E5;
+    --mingpai-gold: #E65100;
+    --mingpai-gold-bg: #FFF0E0;
+
+    /* 功能状态 */
+    --success: #2F855A;
+    --warning: #C05621;
+    --danger: #C53030;
+    --info: #2B6CB0;
+
+    /* 间距 */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+
+    /* 圆角 */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* 阴影 */
+    --shadow-sm: 0 1px 2px rgba(45,36,25,0.04);
+    --shadow-md: 0 2px 8px rgba(45,36,25,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary);
+    background: #ECE8E0;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 0;
+  }
+
+  /* ========== Phone Frame ========== */
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px;
+    overflow: hidden;
+    padding-bottom: 60px; /* tab bar */
+  }
+
+  /* ========== Status Bar (iOS) ========== */
+  .status-bar {
+    height: 44px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-page);
+  }
+  .status-bar .icons { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+
+  /* ========== Top App Bar ========== */
+  .topbar {
+    background: var(--bg-page);
+    padding: 8px 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .merchant {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .merchant-info { display: flex; flex-direction: column; line-height: 1.2; }
+  .merchant-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
+    max-width: 90px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .merchant-badge {
+    font-size: 10px;
+    color: var(--brand-700);
+    font-weight: 500;
+    margin-top: 1px;
+    display: flex; align-items: center; gap: 2px;
+  }
+  .merchant-badge::before { content: '◆'; font-size: 8px; }
+
+  .search-box {
+    flex: 1;
+    height: 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .search-box svg { width: 14px; height: 14px; opacity: 0.5; }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    color: var(--text-primary);
+    flex-shrink: 0;
+  }
+  .icon-btn svg { width: 22px; height: 22px; }
+  .badge-dot {
+    position: absolute;
+    top: 2px; right: 2px;
+    min-width: 14px; height: 14px;
+    padding: 0 3px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-page);
+  }
+
+  /* ========== Quick Actions ========== */
+  .quick-bar {
+    background: var(--bg-card);
+    margin: 0 12px 12px;
+    border-radius: var(--radius-md);
+    padding: 14px 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .quick-icon {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-500);
+  }
+  .quick-icon svg { width: 24px; height: 24px; }
+  .quick-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .quick-num {
+    position: absolute;
+    top: -4px; right: calc(50% - 28px);
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    background: var(--live-red);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+  .quick-num.warn { background: var(--brand-500); }
+  .quick-num.gold { background: var(--brand-700); }
+
+  /* ========== Section ========== */
+  .section { margin: 0 12px 12px; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 4px 10px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title::before {
+    content: '';
+    width: 3px; height: 14px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .section-more {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; gap: 2px;
+  }
+
+  /* ========== Channel Cards ========== */
+  .channels {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .channel {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .channel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+  }
+  .channel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .channel-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .channel-icon svg { width: 18px; height: 18px; color: white; }
+
+  .channel-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  /* 直播 */
+  .channel-live .channel-icon { background: var(--live-red); }
+  .channel-live .channel-status {
+    background: var(--live-red-bg);
+    color: var(--live-red);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .channel-live .channel-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--live-red);
+    border-radius: 50%;
+    animation: pulse 1.4s infinite;
+  }
+
+  /* 暗拍 */
+  .channel-anpai .channel-icon { background: var(--anpai-orange); }
+  .channel-anpai .channel-status {
+    background: var(--anpai-orange-bg);
+    color: var(--anpai-orange);
+  }
+
+  /* 明拍 */
+  .channel-mingpai .channel-icon { background: var(--mingpai-gold); }
+  .channel-mingpai .channel-status {
+    background: var(--mingpai-gold-bg);
+    color: var(--mingpai-gold);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+
+  /* Channel Body */
+  .channel-body {
+    padding: 4px 16px 14px;
+  }
+  .channel-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .meta-item {
+    flex: 1;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  .meta-label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+  }
+  .meta-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .meta-unit { font-size: 10px; font-weight: 400; color: var(--text-secondary); }
+  .meta-value.red { color: var(--live-red); }
+  .meta-value.orange { color: var(--anpai-orange); }
+  .meta-value.gold { color: var(--brand-700); }
+
+  /* 直播 - 横向场次列表 */
+  .live-rooms {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 0 -16px;
+    padding: 0 16px;
+    scrollbar-width: none;
+  }
+  .live-rooms::-webkit-scrollbar { display: none; }
+  .live-room {
+    flex-shrink: 0;
+    width: 110px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .live-thumb {
+    width: 100%; height: 70px;
+    background: linear-gradient(135deg, #3a2a1a, #6b5239);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 22px;
+  }
+  .live-tag {
+    position: absolute;
+    top: 4px; left: 4px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .live-tag::before {
+    content: '';
+    width: 4px; height: 4px;
+    background: white;
+    border-radius: 50%;
+  }
+  .live-viewers {
+    position: absolute;
+    bottom: 4px; right: 4px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .live-info { padding: 6px 8px; }
+  .live-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    margin-bottom: 2px;
+  }
+  .live-desc {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* 暗拍 - 倒计时 */
+  .countdown {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .countdown-unit {
+    background: var(--anpai-orange);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'SF Mono', Menlo, monospace;
+    padding: 3px 6px;
+    border-radius: 3px;
+    min-width: 24px;
+    text-align: center;
+  }
+  .countdown-sep { color: var(--anpai-orange); font-weight: 600; }
+
+  .my-bid-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--anpai-orange-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid #FED7AA;
+    margin-top: 8px;
+  }
+  .my-bid-info .text { font-size: 12px; color: var(--text-primary); }
+  .my-bid-info .text strong { color: var(--anpai-orange); font-weight: 600; }
+  .my-bid-info .arrow { color: var(--anpai-orange); font-size: 12px; }
+
+  /* 明拍 - 预告 */
+  .mingpai-poster {
+    background: linear-gradient(135deg, #FF8000, #E65100 60%, #B34700);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .mingpai-poster::after {
+    content: '◆';
+    position: absolute;
+    right: -10px; top: -10px;
+    font-size: 80px;
+    color: rgba(255, 215, 100, 0.18);
+  }
+  .mingpai-tag {
+    display: inline-block;
+    font-size: 10px;
+    color: #FFE082;
+    border: 1px solid rgba(255,224,130,0.7);
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-bottom: 6px;
+    background: rgba(0,0,0,0.12);
+  }
+  .mingpai-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .mingpai-date {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    position: relative;
+    z-index: 1;
+  }
+  .mingpai-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-outline {
+    flex: 1;
+    height: 30px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.5);
+    color: #FFFFFF;
+    font-size: 12px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+  .btn-solid {
+    flex: 1;
+    height: 30px;
+    background: #FFD54F;
+    color: var(--brand-900);
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+
+  /* ========== Banner (焦点图) ========== */
+  .banner-wrap {
+    margin: 0 12px 12px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    height: 130px;
+    box-shadow: var(--shadow-md);
+  }
+  .banner-track {
+    display: flex;
+    width: 300%;
+    height: 100%;
+    transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .banner-slide {
+    width: 33.3333%;
+    height: 100%;
+    position: relative;
+    color: white;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .banner-slide::after {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .banner-slide::before {
+    content: '';
+    position: absolute;
+    right: 30px; bottom: -40px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .banner-slide.s1 { background: linear-gradient(120deg, #FFC300 0%, #FF8000 65%, #E65100 100%); }
+  .banner-slide.s2 { background: linear-gradient(120deg, #FF8000 0%, #E65100 60%, #B34700 100%); }
+  .banner-slide.s3 { background: linear-gradient(120deg, #FFD54F 0%, #FFA526 55%, #FF8000 100%); }
+
+  .banner-eyebrow {
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative; z-index: 1;
+  }
+  .banner-eyebrow .pill {
+    background: rgba(255,255,255,0.22);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .banner-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    position: relative; z-index: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.12);
+  }
+  .banner-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.92);
+    position: relative; z-index: 1;
+    margin-bottom: 10px;
+  }
+  .banner-cta {
+    align-self: flex-start;
+    background: #FFFFFF;
+    color: var(--brand-700);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    position: relative; z-index: 1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .banner-dots {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    z-index: 2;
+  }
+  .banner-dot {
+    width: 4px; height: 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+  .banner-dot.active {
+    width: 14px;
+    background: #FFFFFF;
+    border-radius: 2px;
+  }
+
+  /* ========== Announcement ========== */
+  .announce {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    margin: 0 12px 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .announce::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+  }
+  .announce-icon {
+    width: 16px; height: 16px;
+    color: var(--brand-500);
+    flex-shrink: 0;
+  }
+  .announce-list {
+    flex: 1;
+    height: 18px;
+    overflow: hidden;
+    position: relative;
+  }
+  .announce-item {
+    height: 18px;
+    line-height: 18px;
+    font-size: 12px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    animation: announceScroll 9s infinite;
+  }
+  .announce-item .tag {
+    display: inline-block;
+    color: var(--brand-700);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .announce-item .tag.warn { color: var(--danger); }
+  .announce-item .tag.info { color: var(--info); }
+  @keyframes announceScroll {
+    0%, 30%   { transform: translateY(0); }
+    33%, 63%  { transform: translateY(-18px); }
+    66%, 96%  { transform: translateY(-36px); }
+    100%      { transform: translateY(-54px); }
+  }
+  .announce-tag {
+    flex-shrink: 0;
+    background: var(--brand-300);
+    color: var(--brand-900);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .announce-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .announce-text strong { color: var(--text-primary); font-weight: 500; }
+
+  /* ========== Hot Items ========== */
+  .hot-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    margin: 0 -12px;
+    padding: 0 12px 4px;
+    scrollbar-width: none;
+  }
+  .hot-scroll::-webkit-scrollbar { display: none; }
+  .hot-item {
+    flex-shrink: 0;
+    width: 130px;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .hot-thumb {
+    width: 100%; height: 130px;
+    background: linear-gradient(135deg, var(--brand-100), #FFE0B2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-400);
+    font-size: 36px;
+    position: relative;
+  }
+  .hot-channel-tag {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .hot-channel-tag.live { background: var(--live-red); }
+  .hot-channel-tag.anpai { background: var(--anpai-orange); }
+  .hot-channel-tag.mingpai { background: var(--brand-700); }
+
+  .hot-info { padding: 8px 10px; }
+  .hot-brand {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+  }
+  .hot-name {
+    font-size: 12px;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    margin-bottom: 4px;
+  }
+  .hot-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .hot-price-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--live-red);
+  }
+  .hot-price-value::before { content: '¥'; font-size: 10px; margin-right: 1px; }
+  .hot-bids {
+    font-size: 10px;
+    color: var(--text-tertiary);
+  }
+
+  /* ========== Bottom Tab Bar ========== */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--text-tertiary);
+    position: relative;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 10px; }
+  .tab.active { color: var(--brand-500); font-weight: 600; }
+  .tab .tab-badge {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 18px);
+    min-width: 14px; height: 14px;
+    background: var(--live-red);
+    color: white;
+    font-size: 9px;
+    border-radius: 7px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--bg-card);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">
+        <span>●●●●●</span>
+        <span style="margin-left:6px;">📶</span>
+        <span>🔋</span>
+      </div>
+    </div>
+
+    <!-- Top app bar -->
+    <div class="topbar">
+      <div class="merchant">
+        <div class="avatar">沪</div>
+        <div class="merchant-info">
+          <div class="merchant-name">沪上中古集</div>
+          <div class="merchant-badge">认证商家 V4</div>
+        </div>
+      </div>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span>搜索品牌 / 货号 / 卖家</span>
+      </div>
+      <div class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="badge-dot">3</span>
+      </div>
+    </div>
+
+    <!-- Banner 焦点图 -->
+    <div class="banner-wrap">
+      <div class="banner-track" id="bannerTrack">
+        <div class="banner-slide s1">
+          <div class="banner-eyebrow"><span class="pill">春季大拍</span> 5.15 19:30 开拍</div>
+          <div class="banner-title">爱马仕 &amp; 珠宝专场</div>
+          <div class="banner-sub">已征集 89 件 · 起拍总值 ¥186 万</div>
+          <span class="banner-cta">立即预约 ›</span>
+        </div>
+        <div class="banner-slide s2">
+          <div class="banner-eyebrow"><span class="pill">本期暗拍</span> 距截标 02:14:33</div>
+          <div class="banner-title">247 件好货 一键参拍</div>
+          <div class="banner-sub">156 家商家在线 · 起拍 ¥300 起</div>
+          <span class="banner-cta">进入暗拍 ›</span>
+        </div>
+        <div class="banner-slide s3">
+          <div class="banner-eyebrow"><span class="pill">新人福利</span> 限本月</div>
+          <div class="banner-title">保证金减免 ¥3000</div>
+          <div class="banner-sub">认证商家完成首单即得专属权益</div>
+          <span class="banner-cta">查看权益 ›</span>
+        </div>
+      </div>
+      <div class="banner-dots">
+        <span class="banner-dot active" data-idx="0"></span>
+        <span class="banner-dot" data-idx="1"></span>
+        <span class="banner-dot" data-idx="2"></span>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="quick-bar">
+      <div class="quick-item">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg>
+        </div>
+        <span class="quick-label">我的竞价</span>
+        <span class="quick-num">12</span>
+      </div>
+      <div class="quick-item">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        </div>
+        <span class="quick-label">待付款</span>
+        <span class="quick-num warn">2</span>
+      </div>
+      <div class="quick-item">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        </div>
+        <span class="quick-label">待发货</span>
+        <span class="quick-num warn">5</span>
+      </div>
+      <div class="quick-item">
+        <div class="quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M8 15h2"/></svg>
+        </div>
+        <span class="quick-label">保证金</span>
+        <span class="quick-num gold">¥5万</span>
+      </div>
+    </div>
+
+    <!-- 三大渠道 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">三大交易渠道</div>
+      </div>
+
+      <div class="channels">
+        <!-- 直播 -->
+        <div class="channel channel-live">
+          <div class="channel-head">
+            <div class="channel-title">
+              <div class="channel-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7" fill="currentColor"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <span>直播</span>
+            </div>
+            <span class="channel-status">3 场进行中</span>
+          </div>
+          <div class="channel-body">
+            <div class="channel-meta">
+              <div class="meta-item">
+                <div class="meta-label">在线人数</div>
+                <div class="meta-value red">324<span class="meta-unit">人</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">今日已上拍</div>
+                <div class="meta-value">86<span class="meta-unit">件</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">最近成交</div>
+                <div class="meta-value red">¥4.2<span class="meta-unit">万</span></div>
+              </div>
+            </div>
+
+            <div class="live-rooms">
+              <div class="live-room">
+                <div class="live-thumb">
+                  ◆
+                  <span class="live-tag">LIVE</span>
+                  <span class="live-viewers">124人</span>
+                </div>
+                <div class="live-info">
+                  <div class="live-name">爱马仕专场</div>
+                  <div class="live-desc">张鉴定师</div>
+                </div>
+              </div>
+              <div class="live-room">
+                <div class="live-thumb">
+                  ◆
+                  <span class="live-tag">LIVE</span>
+                  <span class="live-viewers">98人</span>
+                </div>
+                <div class="live-info">
+                  <div class="live-name">LV / Gucci</div>
+                  <div class="live-desc">李鉴定师</div>
+                </div>
+              </div>
+              <div class="live-room">
+                <div class="live-thumb">
+                  ◆
+                  <span class="live-tag">LIVE</span>
+                  <span class="live-viewers">102人</span>
+                </div>
+                <div class="live-info">
+                  <div class="live-name">珠宝腕表</div>
+                  <div class="live-desc">王鉴定师</div>
+                </div>
+              </div>
+              <div class="live-room">
+                <div class="live-thumb" style="background:linear-gradient(135deg,#444,#666);">◆</div>
+                <div class="live-info">
+                  <div class="live-name">19:30 预告</div>
+                  <div class="live-desc">Chanel 专场</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 暗拍 -->
+        <div class="channel channel-anpai">
+          <div class="channel-head">
+            <div class="channel-title">
+              <div class="channel-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <span>暗拍</span>
+            </div>
+            <span class="channel-status">本期 247 件</span>
+          </div>
+          <div class="channel-body">
+            <div class="channel-meta">
+              <div class="meta-item">
+                <div class="meta-label">本期参拍商家</div>
+                <div class="meta-value">156<span class="meta-unit">家</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">起拍价区间</div>
+                <div class="meta-value">¥300<span class="meta-unit">起</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">距截标</div>
+                <div class="meta-value orange" style="font-size:13px;">02:14:33</div>
+              </div>
+            </div>
+
+            <div class="countdown" style="justify-content:center; margin-top:8px;">
+              <span class="countdown-unit">02</span>
+              <span class="countdown-sep">:</span>
+              <span class="countdown-unit">14</span>
+              <span class="countdown-sep">:</span>
+              <span class="countdown-unit" id="cdSec">33</span>
+            </div>
+
+            <div class="my-bid-info">
+              <div class="text">
+                我已出价 <strong>12 件</strong> · 当前领先 <strong>3 件</strong>
+              </div>
+              <span class="arrow">查看 ›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 明拍 -->
+        <div class="channel channel-mingpai">
+          <div class="channel-head">
+            <div class="channel-title">
+              <div class="channel-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>
+              </div>
+              <span>明拍</span>
+            </div>
+            <span class="channel-status">下一场 5/15</span>
+          </div>
+          <div class="channel-body">
+            <div class="channel-meta">
+              <div class="meta-item">
+                <div class="meta-label">已征集</div>
+                <div class="meta-value gold">89<span class="meta-unit">件</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">起拍总值</div>
+                <div class="meta-value">¥186<span class="meta-unit">万</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-label">已预约</div>
+                <div class="meta-value">214<span class="meta-unit">人</span></div>
+              </div>
+            </div>
+
+            <div class="mingpai-poster">
+              <span class="mingpai-tag">2026 春拍</span>
+              <div class="mingpai-name">春季精品专场 · 爱马仕 &amp; 珠宝</div>
+              <div class="mingpai-date">2026年5月15日 19:30 开拍 · 5月12日图录发布</div>
+              <div class="mingpai-actions">
+                <button class="btn-outline">查看图录</button>
+                <button class="btn-solid">预约提醒</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 公告 -->
+    <div class="announce">
+      <svg class="announce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+      <div class="announce-list">
+        <div class="announce-item"><span class="tag">公告</span>5/15 春拍图录将于 5/12 19:00 发布，敬请关注</div>
+        <div class="announce-item"><span class="tag warn">规则</span>本期暗拍保证金调整为 ¥5000，5/12 生效</div>
+        <div class="announce-item"><span class="tag info">新场</span>张鉴定师爱马仕专场 19:30 开播，已加入提醒</div>
+      </div>
+      <span style="color:var(--text-tertiary); font-size:11px;">查看全部 ›</span>
+    </div>
+
+    <!-- 热门标的 -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">热门标的</div>
+        <span class="section-more">查看更多 ›</span>
+      </div>
+      <div class="hot-scroll">
+        <div class="hot-item">
+          <div class="hot-thumb">◆<span class="hot-channel-tag anpai">暗拍</span></div>
+          <div class="hot-info">
+            <div class="hot-brand">HERMÈS</div>
+            <div class="hot-name">Birkin 25 Gold</div>
+            <div class="hot-price">
+              <span class="hot-price-value">68,000</span>
+              <span class="hot-bids">23 次出价</span>
+            </div>
+          </div>
+        </div>
+        <div class="hot-item">
+          <div class="hot-thumb">◆<span class="hot-channel-tag live">直播</span></div>
+          <div class="hot-info">
+            <div class="hot-brand">LOUIS VUITTON</div>
+            <div class="hot-name">Speedy 30 Mono</div>
+            <div class="hot-price">
+              <span class="hot-price-value">4,200</span>
+              <span class="hot-bids">直播中</span>
+            </div>
+          </div>
+        </div>
+        <div class="hot-item">
+          <div class="hot-thumb">◆<span class="hot-channel-tag mingpai">明拍</span></div>
+          <div class="hot-info">
+            <div class="hot-brand">ROLEX</div>
+            <div class="hot-name">Daytona 116500LN</div>
+            <div class="hot-price">
+              <span class="hot-price-value">240,000</span>
+              <span class="hot-bids">起拍价</span>
+            </div>
+          </div>
+        </div>
+        <div class="hot-item">
+          <div class="hot-thumb">◆<span class="hot-channel-tag anpai">暗拍</span></div>
+          <div class="hot-info">
+            <div class="hot-brand">CHANEL</div>
+            <div class="hot-name">Classic Flap CF25</div>
+            <div class="hot-price">
+              <span class="hot-price-value">52,000</span>
+              <span class="hot-bids">18 次出价</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        <span class="tab-label">首页</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">货品大厅</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge">8</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // Banner 自动轮播
+  (function() {
+    const track = document.getElementById('bannerTrack');
+    const dots = document.querySelectorAll('.banner-dot');
+    let idx = 0;
+    const total = 3;
+    function go(i) {
+      idx = (i + total) % total;
+      track.style.transform = `translateX(-${idx * 33.3333}%)`;
+      dots.forEach((d, k) => d.classList.toggle('active', k === idx));
+    }
+    setInterval(() => go(idx + 1), 4000);
+    dots.forEach((d, k) => d.addEventListener('click', () => go(k)));
+
+    // 触摸滑动
+    let startX = 0, deltaX = 0;
+    const wrap = track.parentElement;
+    wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; deltaX = 0; });
+    wrap.addEventListener('touchmove', e => { deltaX = e.touches[0].clientX - startX; });
+    wrap.addEventListener('touchend', () => {
+      if (Math.abs(deltaX) > 30) go(idx + (deltaX < 0 ? 1 : -1));
+    });
+  })();
+
+  // 简易倒计时
+  (function() {
+    let total = 2*3600 + 14*60 + 33;
+    const sec = document.getElementById('cdSec');
+    setInterval(() => {
+      total = Math.max(0, total - 1);
+      const h = String(Math.floor(total/3600)).padStart(2,'0');
+      const m = String(Math.floor((total%3600)/60)).padStart(2,'0');
+      const s = String(total%60).padStart(2,'0');
+      document.querySelectorAll('.countdown-unit')[0].textContent = h;
+      document.querySelectorAll('.countdown-unit')[1].textContent = m;
+      sec.textContent = s;
+    }, 1000);
+  })();
+</script>
+</body>
+</html>

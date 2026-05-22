@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=375, initial-scale=1, maximum-scale=1" />
+<title>保证金不足拦截弹窗 · v0.2</title>
+<style>
+  :root {
+    --brand-100: #FFF8E1;
+    --brand-500: #FF8000;
+    --brand-700: #E65100;
+    --brand-900: #B34700;
+    --bg-page: #F5F5F5;
+    --bg-card: #FFFFFF;
+    --border: #E0E0E0;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9A9A9A;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #000;
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+  .phone {
+    width: 375px;
+    margin: 0 auto;
+    background: var(--bg-page);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 模拟背景:出价 sheet(置灰 + 模糊,作为弹窗 backdrop)*/
+  .bg-sheet {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .bg-detail-area {
+    height: 280px;
+    background: linear-gradient(180deg, #DDE7F0 0%, #B8C6D6 100%);
+    opacity: 0.35;
+  }
+  .bg-sheet-card {
+    margin: -20px 0 0;
+    background: var(--bg-card);
+    border-radius: 16px 16px 0 0;
+    padding: 16px 14px;
+    opacity: 0.55;
+    filter: blur(0.6px);
+  }
+  .bg-sheet-card .ln-title {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .bg-sheet-card .ln {
+    height: 10px;
+    background: #ECECEC;
+    border-radius: 5px;
+    margin-bottom: 8px;
+  }
+  .bg-sheet-card .ln.short { width: 50%; }
+  .bg-sheet-card .ln.mid   { width: 75%; }
+  .bg-sheet-card .ln.long  { width: 100%; }
+  .bg-sheet-card .price-box {
+    background: #FAFAFA;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    margin: 12px 0;
+  }
+  .bg-sheet-card .price-box .num {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--brand-900);
+  }
+
+  /* 半透明遮罩 */
+  .dp-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+
+  /* 弹窗本体 */
+  .dp-box {
+    width: 100%;
+    max-width: 300px;
+    background: white;
+    border-radius: 14px;
+    padding: 24px 22px 18px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+  }
+  .dp-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFF1E0, #FFD8A8);
+    color: var(--brand-700);
+    margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dp-icon svg { width: 24px; height: 24px; }
+  .dp-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .dp-sub {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+  }
+  .dp-list {
+    list-style: none;
+    padding: 12px 14px;
+    margin: 0 0 18px;
+    text-align: left;
+    background: #FAFAFA;
+    border-radius: 8px;
+  }
+  .dp-list li {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    padding-left: 14px;
+    position: relative;
+  }
+  .dp-list li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    top: -2px;
+    color: var(--brand-500);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .dp-list b { color: var(--text-primary); font-weight: 700; }
+  .dp-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .dp-btn {
+    flex: 1;
+    padding: 11px 0;
+    border-radius: 22px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dp-btn.cancel {
+    background: #F3F3F3;
+    color: var(--text-secondary);
+  }
+  .dp-btn.primary {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    box-shadow: 0 4px 12px rgba(230,81,0,0.28);
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- 背景:模拟出价 sheet(置灰)-->
+  <div class="bg-sheet">
+    <div class="bg-detail-area"></div>
+    <div class="bg-sheet-card">
+      <div class="ln-title">我要出价</div>
+      <div class="price-box">
+        <div style="font-size:11px;color:#9A9A9A;margin-bottom:6px;">当前价</div>
+        <div class="num">¥ 253,000</div>
+      </div>
+      <div class="ln long"></div>
+      <div class="ln mid"></div>
+      <div class="ln short"></div>
+    </div>
+  </div>
+
+  <!-- 拦截弹窗(默认展示,本演示页为静态展示)-->
+  <div class="dp-mask">
+    <div class="dp-box">
+      <div class="dp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="6" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+          <path d="M6 14h4"/>
+        </svg>
+      </div>
+      <div class="dp-title">保证金余额不足</div>
+      <div class="dp-sub">平台标准 ¥5,000,缴纳后即可继续</div>
+      <ul class="dp-list">
+        <li>标准额 <b>¥5,000</b></li>
+        <li>出价 / 中拍 / 加购 / 下单均<b>不扣减余额</b>,违约才扣</li>
+      </ul>
+      <div class="dp-actions">
+        <button class="dp-btn cancel" id="dpCancel">取消</button>
+        <button class="dp-btn primary" id="dpGo">前往充值</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 交互:取消 → 回详情;前往充值 → 跳 deposit-pay
+  (function() {
+    const cancelBtn = document.getElementById('dpCancel');
+    const goBtn = document.getElementById('dpGo');
+    cancelBtn && cancelBtn.addEventListener('click', () => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'shell-back' }, '*');
+      } else {
+        history.back();
+      }
+    });
+    goBtn && goBtn.addEventListener('click', () => {
+      const url = 'deposit-pay_v0.2.html?source=bid&lot_id=20260513002';
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'shell-nav', page: url }, '*');
+      } else {
+        window.location.href = url;
+      }
+    });
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

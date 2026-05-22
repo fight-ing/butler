@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中古优品 · 暗拍 A vs B 并排对比稿 v0.2</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #ECECEA;
+    color: #1A1A1A;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px 40px;
+    gap: 24px;
+  }
+  .page-head {
+    text-align: center;
+    max-width: 880px;
+  }
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1A1A1A;
+    margin: 0 0 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: #6B6B6B;
+    line-height: 1.6;
+  }
+  .pair {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .badge.a {
+    background: #FFF1F0;
+    color: #C53030;
+    border: 1px solid rgba(229,62,62,0.18);
+  }
+  .badge.b {
+    background: #FFF8E1;
+    color: #B66A1A;
+    border: 1px solid #FFE082;
+  }
+  .badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .frame-wrap {
+    width: 395px;
+    height: 832px;
+    background: #FFFFFF;
+    border-radius: 28px;
+    padding: 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+  }
+  .frame-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 20px;
+    background: #F4F5F6;
+  }
+  .caption {
+    font-size: 12px;
+    color: #6B6B6B;
+    text-align: center;
+    max-width: 375px;
+    line-height: 1.5;
+  }
+  .caption b { color: #1A1A1A; font-weight: 600; }
+
+  /* 中间对比标题(差异点速览) */
+  .diff-table {
+    width: 100%;
+    max-width: 880px;
+    background: #FFFFFF;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .diff-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .diff-table th, .diff-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    vertical-align: top;
+  }
+  .diff-table th {
+    background: #F7F7F5;
+    font-weight: 600;
+    color: #6B6B6B;
+    font-size: 12px;
+  }
+  .diff-table th:nth-child(2) { color: #C53030; }
+  .diff-table th:nth-child(3) { color: #B66A1A; }
+  .diff-table td:first-child {
+    color: #6B6B6B;
+    font-size: 12px;
+    width: 130px;
+  }
+  .diff-table tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="page-head">
+      <h1 class="page-title">暗拍出价页 · A vs B 并排对比</h1>
+      <p class="page-sub">
+        左:方案 A(原方案 / 截图现状,印章风格)·
+        右:方案 B(探索版 / chip 风格)<br>
+        两屏均默认打开暗拍 Tab,可对比单件卡片信息密度、状态表达、视觉风格。
+      </p>
+    </div>
+
+    <div class="pair">
+
+      <!-- 方案 A -->
+      <div class="phone-wrap">
+        <div class="badge a"><span class="dot"></span>方案 A · 原方案(截图现状)</div>
+        <div class="frame-wrap">
+          <iframe src="my-bids_v0.2.html?tab=anpai" loading="lazy"></iframe>
+        </div>
+        <div class="caption"><b>正在参与 + 历史出价</b> 二级 Tab · 红色状态文案 · 印章式徽章("竞拍成功 / 失败")</div>
+      </div>
+
+      <!-- 方案 B -->
+      <div class="phone-wrap">
+        <div class="badge b"><span class="dot"></span>方案 B · 探索版(chip 风格)</div>
+        <div class="frame-wrap">
+          <iframe src="my-bids-anpai-original_v0.2.html" loading="lazy"></iframe>
+        </div>
+        <div class="caption"><b>出价中 / 我被超 / 已中拍 / 未中拍</b> 4 chip 风格 · 单 list 滚动 · 状态徽章在卡片内</div>
+      </div>
+
+    </div>
+
+    <!-- 差异点速览表 -->
+    <div class="diff-table">
+      <table>
+        <thead>
+          <tr>
+            <th>对比维度</th>
+            <th>方案 A · 原方案(印章)</th>
+            <th>方案 B · 探索版(chip)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>状态切分方式</td>
+            <td>二级 Tab(正在参与 / 历史出价),按时间段分</td>
+            <td>chip 筛选 + 单 list 混排,按状态分(出价中/我被超/已中拍/未中拍)</td>
+          </tr>
+          <tr>
+            <td>专场卡顶部</td>
+            <td>专场卡(粉红底 + 倒计时方块 + 合计金额)</td>
+            <td>规则提示条(暗拍规则说明)</td>
+          </tr>
+          <tr>
+            <td>单件卡片高度</td>
+            <td>较紧凑(图 + 标签 + 2 行价格 + 红色文案行)</td>
+            <td>较高(图 + brand + 名 + 元数据 + 3 列价格栅格 + 操作)</td>
+          </tr>
+          <tr>
+            <td>状态表达</td>
+            <td>红色文案 + 印章式圆形徽章(竞拍成功/失败)</td>
+            <td>左上方状态徽章("出价中"/"我被超"/"已中拍"/"未中拍")</td>
+          </tr>
+          <tr>
+            <td>关键差异化字段</td>
+            <td>第 2 名出价 / 节省金额 / "精准出价" 文案</td>
+            <td>当前最高(隐藏中/30min 公开)/ 倒计时紧急感</td>
+          </tr>
+          <tr>
+            <td>历史出价处理</td>
+            <td>独立 Tab,信息完整(最终成交价 + 节省/精准/失败文案)</td>
+            <td>混在主列表,标"已结束"灰色降饱和处理</td>
+          </tr>
+          <tr>
+            <td>评审待决</td>
+            <td>是否保留作为现状(无需改)</td>
+            <td>是否值得替换 A(明天讨论)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>

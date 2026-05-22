@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 暗拍单品详情 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F3EE; --bg-card: #FFFFFF; --bg-subtle: #F7F7F5;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.10);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --anpai-orange: #FF8000; --anpai-orange-bg: #FFF4E5;
+    --success: #2F855A; --warning: #C05621; --danger: #C53030; --info: #2B6CB0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 16px rgba(45,36,25,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #F4F3EE; -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; padding: 0; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 76px;
+  }
+
+  /* Scrollable content */
+  .scroll-area {
+    height: calc(812px - 76px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* Status bar (over image, white text) */
+  .status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 12;
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+
+  /* Nav bar transparent over image */
+  .navbar {
+    position: absolute;
+    top: 44px; left: 0; right: 0;
+    z-index: 12;
+    height: 44px; padding: 0 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.32);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+  }
+  .nav-btn svg { width: 18px; height: 18px; }
+  .nav-right { display: flex; gap: 8px; }
+
+  /* Image gallery */
+  .gallery {
+    position: relative;
+    width: 100%; height: 388px; /* 44 status + 44 nav + 300 image */
+    padding-top: 88px;
+    background: linear-gradient(135deg, #2a1f15 0%, #4a3826 50%, #6b5239 100%);
+    overflow: hidden;
+  }
+  .gallery::after {
+    content: '◆';
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 110px;
+    color: rgba(255,200,120,0.32);
+    text-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  }
+  .gallery-bottom-fade {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 50px;
+    background: linear-gradient(180deg, transparent, var(--bg-page));
+    z-index: 3;
+  }
+  .gallery-dots {
+    position: absolute;
+    left: 0; right: 0; bottom: 56px;
+    display: flex; justify-content: center; gap: 5px;
+    z-index: 2;
+  }
+  .gd {
+    width: 5px; height: 5px;
+    background: rgba(255,255,255,0.45);
+    border-radius: 50%;
+  }
+  .gd.active {
+    width: 16px; border-radius: 3px;
+    background: white;
+  }
+  .gallery-count {
+    position: absolute;
+    right: 14px; bottom: 60px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    z-index: 2;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .gallery-count svg { width: 11px; height: 11px; opacity: 0.85; }
+
+  /* Title area */
+  .title-area {
+    background: var(--bg-card);
+    padding: 14px 16px 12px;
+    margin: -20px 12px 0;
+    border-radius: 14px;
+    position: relative;
+    z-index: 4;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+  }
+  .brand-line {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .product-title {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .lot-line {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+  .lot-tag {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    color: var(--brand-700);
+    background: var(--brand-100);
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+  .lot-line .dot {
+    width: 2px; height: 2px;
+    background: var(--text-tertiary);
+    border-radius: 50%;
+  }
+
+  /* Anpai rule banner —— 去框，左侧色条 */
+  .rule-banner {
+    margin: 12px 16px 0;
+    padding: 0 0 0 10px;
+    background: transparent;
+    border: 0;
+    border-left: 2px solid var(--brand-500);
+    border-radius: 0;
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--brand-700);
+  }
+  .rule-banner .lock-ico {
+    width: 14px; height: 14px;
+    color: var(--brand-700);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .rule-banner strong { color: var(--brand-700); font-weight: 700; }
+
+  /* Section card */
+  .card {
+    background: var(--bg-card);
+    margin: 12px 12px 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 12px 14px 4px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--text-primary);
+  }
+  .card-title::before {
+    content: '';
+    width: 3px; height: 13px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .card-body { padding: 8px 14px 14px; }
+
+  /* Price card */
+  .price-card .card-body { padding: 6px 14px 14px; }
+  .price-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 0;
+  }
+  .price-row:last-of-type { border-bottom: none; }
+  .price-row .lbl {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .price-row .val {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .price-row .val::before { content: '¥'; font-size: 11px; margin-right: 1px; }
+  .price-row.mine {
+    background: linear-gradient(90deg, var(--brand-100) 0%, var(--brand-50) 100%);
+    margin: 6px -14px 0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border-bottom: none;
+  }
+  .price-row.mine .lbl {
+    color: var(--brand-700); font-weight: 600;
+  }
+  .price-row.mine .val {
+    font-size: 22px;
+    color: var(--brand-700);
+    font-weight: 800;
+  }
+  .price-row.mine .val::before { font-size: 13px; }
+  .mine-meta {
+    margin-top: 4px;
+    padding: 0 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .mine-meta .total-count strong { color: var(--brand-700); font-weight: 700; }
+  .history-toggle {
+    color: var(--brand-700);
+    display: flex; align-items: center; gap: 3px;
+  }
+  .history-toggle svg { width: 10px; height: 10px; transition: transform 0.2s; }
+  .history-toggle.open svg { transform: rotate(180deg); }
+
+  .history-list {
+    display: none;
+    margin: 8px -14px 0;
+    padding: 10px 14px;
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border);
+  }
+  .history-list.show { display: block; }
+  .hist-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0;
+    font-size: 12px;
+  }
+  .hist-time {
+    color: var(--text-tertiary);
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+  }
+  .hist-amount {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .hist-amount.latest {
+    color: var(--brand-700); font-weight: 700;
+  }
+  .hist-amount::before { content: '¥'; font-size: 10px; margin-right: 1px; }
+  .hist-tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--brand-200);
+    color: var(--brand-900);
+    margin-left: 6px;
+  }
+
+  /* Countdown row */
+  .countdown-row {
+    margin: 8px -14px 0;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #FF8000, #E65100);
+    color: white;
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: 0;
+  }
+  .cd-info {
+    display: flex; flex-direction: column;
+    gap: 2px;
+  }
+  .cd-info .lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+  }
+  .cd-info .lbl .pulse-dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: #FFD54F;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: pulse 1.4s infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .cd-info .hint {
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+  }
+  .cd-digits {
+    display: flex; align-items: center; gap: 3px;
+  }
+  .cd-unit {
+    background: rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    font-size: 18px; font-weight: 700;
+    font-family: 'SF Mono', Menlo, monospace;
+    padding: 4px 8px;
+    border-radius: 5px;
+    min-width: 38px; text-align: center;
+  }
+  .cd-sep { color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 700; }
+
+  /* Detail param table */
+  .param-table {
+    width: 100%;
+  }
+  .param-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+  .param-row:last-child { border-bottom: none; }
+  .param-row .k {
+    width: 78px;
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+  }
+  .param-row .v {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .cond-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .cond-pill .grade {
+    background: var(--brand-700);
+    color: white;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+  }
+
+  /* Cert info */
+  .cert-block {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0;
+  }
+  .cert-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .cert-info { flex: 1; min-width: 0; }
+  .cert-name {
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .cert-tag {
+    display: inline-block;
+    font-size: 9px;
+    background: var(--success); color: white;
+    padding: 1px 4px; border-radius: 2px;
+    font-weight: 600;
+  }
+  .cert-meta { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+  .cert-pdf {
+    width: 60px;
+    text-align: center;
+    color: var(--brand-700);
+    flex-shrink: 0;
+  }
+  .cert-pdf .ico {
+    width: 28px; height: 28px;
+    margin: 0 auto 2px;
+    background: var(--brand-100);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cert-pdf svg { width: 14px; height: 14px; }
+  .cert-pdf .lbl { font-size: 10px; }
+  .cert-conclusion {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #F0F8F2;
+    border-left: 3px solid var(--success);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .cert-conclusion .head {
+    color: var(--success);
+    font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 4px;
+  }
+  .cert-conclusion .head svg { width: 13px; height: 13px; }
+  .cert-conclusion .items {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-top: 5px;
+  }
+  .cert-conclusion .items span {
+    font-size: 10px;
+    background: white;
+    color: var(--success);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #C6E6D0;
+  }
+  .shop-row {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .shop-avatar {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #FFD54F, var(--brand-500));
+    color: var(--brand-900);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .shop-name { font-size: 12.5px; font-weight: 600; flex: 1; }
+  .shop-link { color: var(--text-tertiary); font-size: 11px; }
+
+  /* Attention bar */
+  .attention {
+    margin: 12px 12px 0;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .attention .ico {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .attention .ico svg { width: 15px; height: 15px; }
+  .attention strong { color: var(--brand-700); font-weight: 700; font-size: 13px; }
+
+  /* Rules brief */
+  .rules-brief .rule-item {
+    display: flex; gap: 8px;
+    padding: 6px 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .rules-brief .rule-item .num {
+    flex-shrink: 0;
+    width: 16px; height: 16px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    border-radius: 50%;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .rules-brief .more {
+    margin-top: 6px;
+    text-align: right;
+    font-size: 11px;
+    color: var(--brand-700);
+  }
+
+  /* Sticky bottom bid bar */
+  .bid-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 76px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 8px 14px;
+    gap: 10px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    z-index: 10;
+  }
+  .bid-icon-group {
+    display: flex; gap: 4px;
+    flex-shrink: 0;
+  }
+  .bid-icon {
+    width: 38px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 2px;
+    color: var(--text-secondary);
+  }
+  .bid-icon svg { width: 20px; height: 20px; }
+  .bid-icon.fav { color: var(--brand-500); }
+  .bid-icon .label { font-size: 10px; }
+  .bid-summary {
+    flex: 1;
+    min-width: 0;
+    padding-right: 4px;
+  }
+  .bid-summary .row1 {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    display: flex; gap: 6px;
+  }
+  .bid-summary .row1 .sep { color: var(--border-strong); }
+  .bid-summary .row2 {
+    font-size: 12px;
+    color: var(--text-primary);
+    margin-top: 2px;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .bid-summary .row2 .mine-val {
+    color: var(--brand-700);
+    font-weight: 800;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-summary .row2 .mine-val::before { content: '¥'; font-size: 11px; }
+  .bid-summary .row2 .start-val {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+    font-size: 11px;
+  }
+  .bid-main-btn {
+    flex-shrink: 0;
+    padding: 12px 22px;
+    background: linear-gradient(135deg, var(--brand-300) 0%, var(--brand-500) 50%, var(--brand-700) 100%);
+    color: white;
+    font-size: 15px; font-weight: 700;
+    border-radius: 26px;
+    border: none;
+    box-shadow: 0 3px 10px rgba(255,128,0,0.35);
+    letter-spacing: 1px;
+  }
+
+  /* Bid dialog */
+  .modal-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .modal-mask.show { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    width: 100%;
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 18px 18px 22px;
+    animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 700;
+  }
+  .modal-close {
+    width: 28px; height: 28px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close svg { width: 18px; height: 18px; }
+  .modal-sub {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+  }
+  .bid-current {
+    background: var(--bg-subtle);
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .bid-current .lbl { color: var(--text-secondary); }
+  .bid-current .val { color: var(--brand-700); font-weight: 700; font-size: 16px; }
+  .bid-current .val::before { content: '¥'; font-size: 11px; }
+
+  .bid-input-wrap {
+    border: 2px solid var(--brand-300);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: var(--brand-50);
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px;
+  }
+  .bid-input-wrap .yuan {
+    color: var(--brand-700);
+    font-size: 18px; font-weight: 700;
+  }
+  .bid-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brand-900);
+    font-variant-numeric: tabular-nums;
+  }
+  .bid-input-wrap .unit {
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+  .bid-quick-row {
+    display: flex; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .bid-quick {
+    flex: 1;
+    padding: 7px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .bid-warn {
+    background: #FFF3F3;
+    border-left: 3px solid var(--danger);
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    color: #8B2424;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .bid-warn strong { color: var(--danger); }
+  .modal-actions {
+    display: flex; gap: 10px;
+  }
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 22px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .modal-btn.cancel {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+  }
+  .modal-btn.confirm {
+    background: linear-gradient(135deg, var(--brand-300) 0%, var(--brand-500) 50%, var(--brand-700) 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(255,128,0,0.3);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status bar (over image) -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+    </div>
+
+    <!-- Nav bar (over image) -->
+    <div class="navbar">
+      <div class="nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-right">
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </div>
+        <div class="nav-btn">
+          <svg viewBox="0 0 24 24" fill="#FF8000" stroke="#FF8000" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="scroll-area">
+
+      <!-- Image gallery -->
+      <div class="gallery">
+        <div class="gallery-bottom-fade"></div>
+        <div class="gallery-count">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          1 / 5
+        </div>
+        <div class="gallery-dots">
+          <span class="gd active"></span>
+          <span class="gd"></span>
+          <span class="gd"></span>
+          <span class="gd"></span>
+          <span class="gd"></span>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <div class="title-area">
+        <div class="brand-line">HERMÈS · 爱马仕</div>
+        <div class="product-title">Birkin 25 Gold Togo PHW · 2023 全套</div>
+        <div class="lot-line">
+          <span class="lot-tag">202605130001</span>
+          <span>暗拍第 24 期</span>
+          <span class="dot"></span>
+          <span>白天场</span>
+          <span class="dot"></span>
+          <span>沪上中古集</span>
+        </div>
+      </div>
+
+      <!-- Anpai rule banner -->
+      <div class="rule-banner">
+        <svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div style="line-height:1.7;">
+          <strong>暗拍规则</strong>：本场出价金额全程隐藏，仅显示起拍价 / 我的竞拍 / 出价总次数。
+          <strong>结拍前 30 分钟</strong>开始公开排名（我领先 / 我被超）。
+          <div style="margin-top:6px;font-size:11px;color:var(--text-secondary);">
+            <strong style="color:var(--brand-700);">中拍规则</strong>：最高出价者中拍。中拍价 = <strong>第二名 + 一手</strong>；若第二名 &lt; 保留价，按 <strong>保留价 + 一手</strong> 成交。
+          </div>
+        </div>
+      </div>
+
+      <!-- Price card -->
+      <div class="card price-card">
+        <div class="card-head">
+          <div class="card-title">出价信息</div>
+        </div>
+        <div class="card-body">
+          <div class="price-row">
+            <span class="lbl">起拍价</span>
+            <span class="val">52,000</span>
+          </div>
+          <div class="price-row">
+            <span class="lbl">本件出价总次数</span>
+            <span class="val" style="font-size:14px;">23 次</span>
+          </div>
+          <div class="price-row mine">
+            <span class="lbl">我的最新出价</span>
+            <span class="val">68,000</span>
+          </div>
+          <div class="mine-meta">
+            <span class="total-count">您共出价 <strong>3</strong> 次（最新覆盖前次）</span>
+            <span class="history-toggle" id="histToggle">
+              查看出价历史
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+
+          <div class="history-list" id="histList">
+            <div class="hist-row">
+              <span class="hist-time">5/11 14:32</span>
+              <span class="hist-amount latest">68,000 <span class="hist-tag">最新</span></span>
+            </div>
+            <div class="hist-row">
+              <span class="hist-time">5/11 13:01</span>
+              <span class="hist-amount">58,000</span>
+            </div>
+            <div class="hist-row">
+              <span class="hist-time">5/11 09:15</span>
+              <span class="hist-amount">52,000</span>
+            </div>
+          </div>
+
+          <!-- Countdown row -->
+          <div class="countdown-row">
+            <div class="cd-info">
+              <div class="lbl"><span class="pulse-dot"></span>距本场截标</div>
+              <div class="hint">截标后 30min 公开排名</div>
+            </div>
+            <div class="cd-digits">
+              <span class="cd-unit" id="cdH">02</span>
+              <span class="cd-sep">:</span>
+              <span class="cd-unit" id="cdM">14</span>
+              <span class="cd-sep">:</span>
+              <span class="cd-unit" id="cdS">33</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product detail card -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">商品详情</div>
+          <span class="cond-pill"><span class="grade">S</span> 顶级品相</span>
+        </div>
+        <div class="card-body">
+          <div class="param-table">
+            <div class="param-row"><div class="k">品牌</div><div class="v">Hermès 爱马仕</div></div>
+            <div class="param-row"><div class="k">型号</div><div class="v">Birkin 25</div></div>
+            <div class="param-row"><div class="k">颜色</div><div class="v">Gold 金棕色</div></div>
+            <div class="param-row"><div class="k">材质</div><div class="v">Togo 牛皮</div></div>
+            <div class="param-row"><div class="k">五金</div><div class="v">PHW 钯金（哑光银色）</div></div>
+            <div class="param-row"><div class="k">出厂年份</div><div class="v">2023 年（U 刻）</div></div>
+            <div class="param-row"><div class="k">附件</div><div class="v">原盒 / 防尘袋 / 雨衣 / 购物票（全套）</div></div>
+            <div class="param-row"><div class="k">来源</div><div class="v">上游回收 · 已上传鉴定报告</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 店铺(原鉴定信息卡精简,仅保留店铺入口) -->
+      <div class="card">
+        <div class="card-body" style="padding: 12px 14px;">
+          <div class="shop-row" style="margin-top: 0; padding-top: 0; border-top: 0;">
+            <div class="shop-avatar">沪</div>
+            <div class="shop-name">沪上中古集 <span class="cert-tag" style="background:var(--brand-700);">认证</span></div>
+            <span class="shop-link">进店逛逛 ›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attention -->
+      <div class="attention">
+        <div class="ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+        </div>
+        <div>
+          <strong>12</strong> 商家关注此件 · 本件已收到 <strong>23</strong> 次出价
+        </div>
+      </div>
+
+      <!-- Rules brief -->
+      <div class="card rules-brief">
+        <div class="card-head">
+          <div class="card-title">平台规则</div>
+          <span class="history-toggle">完整规则 ›</span>
+        </div>
+        <div class="card-body">
+          <div class="rule-item">
+            <span class="num">1</span>
+            <span>保证金按出价金额 <strong style="color:var(--brand-700);">1%</strong> 实时冻结（最低 ¥100，最高 ¥2000），未中拍立即解冻。</span>
+          </div>
+          <div class="rule-item">
+            <span class="num">2</span>
+            <span>中拍后 <strong style="color:var(--brand-700);">4 小时</strong>内付款，逾期保证金扣除并标记违约。</span>
+          </div>
+          <div class="rule-item">
+            <span class="num">3</span>
+            <span>商品支持 <strong style="color:var(--brand-700);">7 天质保</strong>，鉴定不符可申请退货。</span>
+          </div>
+          <div class="rule-item">
+            <span class="num">4</span>
+            <span>同一件可多次加价，<strong>最新出价覆盖前次</strong>，提交后不可撤销。</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 20px;"></div>
+
+    </div>
+    <!-- /scroll-area -->
+
+    <!-- Sticky bid bar -->
+    <div class="bid-bar">
+      <div class="bid-icon-group">
+        <div class="bid-icon fav">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          <span class="label">已收藏</span>
+        </div>
+        <div class="bid-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span class="label">客服</span>
+        </div>
+      </div>
+      <div class="bid-summary">
+        <div class="row1">
+          <span>起拍 ¥52,000</span>
+          <span class="sep">·</span>
+          <span>共 23 次出价</span>
+        </div>
+        <div class="row2">
+          <span style="color:var(--text-secondary);font-size:11px;">我的竞拍</span>
+          <span class="mine-val">68,000</span>
+        </div>
+      </div>
+      <button class="bid-main-btn" id="openBid">立即出价</button>
+    </div>
+
+    <!-- Bid modal -->
+    <div class="modal-mask" id="bidModal">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">为这件出价</div>
+          <div class="modal-close" id="closeBid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+        </div>
+        <div class="modal-sub">202605130001 · HERMÈS Birkin 25 Gold Togo PHW</div>
+
+        <div class="bid-current">
+          <span class="lbl">我的当前出价</span>
+          <span class="val">68,000</span>
+        </div>
+
+        <div class="bid-input-wrap">
+          <span class="yuan">¥</span>
+          <input class="bid-input" type="text" value="72,000" inputmode="numeric" />
+          <span class="unit">元</span>
+        </div>
+
+        <div class="bid-quick-row">
+          <div class="bid-quick">+¥2,000</div>
+          <div class="bid-quick">+¥5,000</div>
+          <div class="bid-quick">+¥10,000</div>
+        </div>
+
+        <div class="bid-warn">
+          <strong>⚠ 出价提示：</strong>暗拍出价金额对所有人隐藏。出价后<strong>不可撤销</strong>，最新出价金额将覆盖前次（¥68,000）。保证金按 1% 冻结。
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn cancel" id="cancelBid">取消</button>
+          <button class="modal-btn confirm">确认出价 ¥72,000</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // Countdown
+  (function() {
+    let total = 2*3600 + 14*60 + 33;
+    const h = document.getElementById('cdH');
+    const m = document.getElementById('cdM');
+    const s = document.getElementById('cdS');
+    setInterval(() => {
+      total = Math.max(0, total - 1);
+      h.textContent = String(Math.floor(total/3600)).padStart(2,'0');
+      m.textContent = String(Math.floor((total%3600)/60)).padStart(2,'0');
+      s.textContent = String(total%60).padStart(2,'0');
+    }, 1000);
+  })();
+  // History toggle
+  (function() {
+    const t = document.getElementById('histToggle');
+    const l = document.getElementById('histList');
+    t.addEventListener('click', () => {
+      t.classList.toggle('open');
+      l.classList.toggle('show');
+    });
+  })();
+  // Bid modal
+  (function() {
+    const open = document.getElementById('openBid');
+    const close = document.getElementById('closeBid');
+    const cancel = document.getElementById('cancelBid');
+    const modal = document.getElementById('bidModal');
+    open.addEventListener('click', () => modal.classList.add('show'));
+    close.addEventListener('click', () => modal.classList.remove('show'));
+    cancel.addEventListener('click', () => modal.classList.remove('show'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('show');
+    });
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

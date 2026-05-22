@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 改代理价弹窗 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --proxy-purple: #6B46C1; --proxy-purple-2: #553C9A;
+    --proxy-bg: #EDE9FE; --proxy-bg-2: #F5F3FF;
+    --success: #15803D; --success-bg: #DCFCE7;
+    --danger: #DC2626; --danger-bg: #FEE2E2;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+  }
+
+  /* 模糊详情页背景 */
+  .bg-detail {
+    position: absolute; inset: 0;
+    background: var(--bg-page);
+    z-index: 1;
+    overflow: hidden;
+    filter: blur(1px) brightness(0.6);
+    opacity: 0.75;
+  }
+  .bg-status { height: 44px; background: var(--bg-card); padding: 0 20px; display:flex; align-items:center; justify-content:space-between; font-size:15px;font-weight:600;}
+  .bg-nav { height: 44px; background: var(--bg-card); border-bottom: 1px solid var(--border); display:flex;align-items:center;padding:0 16px;}
+  .bg-img {
+    width: 100%; height: 230px;
+    background: linear-gradient(135deg, #DDE7F0, #B8C6D6);
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(180,140,100,0.5);
+    font-size: 64px;
+  }
+  .bg-info {
+    padding: 14px; background: var(--bg-card);
+    margin: 12px; border-radius: 8px;
+  }
+
+  /* 遮罩 + 半屏 sheet */
+  .modal-mask {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+  .proxy-sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: var(--bg-card);
+    border-radius: 18px 18px 0 0;
+    z-index: 20;
+    max-height: 92%;
+    display: flex; flex-direction: column;
+    animation: slideUp 0.25s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .sheet-drag {
+    width: 36px; height: 4px;
+    background: var(--border-strong);
+    border-radius: 2px;
+    margin: 8px auto 0;
+  }
+
+  /* 紫色头部 */
+  .sheet-head {
+    padding: 14px 16px 12px;
+    background: linear-gradient(135deg, var(--proxy-bg-2) 0%, var(--proxy-bg) 100%);
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sheet-head .head-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--proxy-purple), var(--proxy-purple-2));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(107,70,193,0.30);
+  }
+  .sheet-head .head-icon svg { width: 18px; height: 18px; }
+  .head-text { flex: 1; line-height: 1.3; }
+  .head-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--proxy-purple-2);
+  }
+  .head-sub {
+    font-size: 11px;
+    color: var(--proxy-purple);
+    margin-top: 2px;
+    opacity: 0.85;
+  }
+  .sheet-close {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--proxy-purple-2);
+    cursor: pointer;
+  }
+  .sheet-close svg { width: 14px; height: 14px; }
+
+  /* 内容(可滚动) */
+  .sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 14px 0;
+  }
+
+  /* 当前状态对比 */
+  .state-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .state-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .state-box .lbl {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .state-box .val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .state-box .val::before {
+    content: '¥';
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-right: 1px;
+  }
+  .state-box.now { background: linear-gradient(155deg, #FFFFFF 0%, #FFF8E1 100%); border-color: var(--brand-100); }
+  .state-box.now .val { color: var(--brand-900); }
+  .state-box.now .val::before { color: var(--brand-700); }
+  .state-box.proxy { background: linear-gradient(155deg, #FFFFFF 0%, var(--proxy-bg-2) 100%); border-color: rgba(107,70,193,0.20); }
+  .state-box.proxy .val { color: var(--proxy-purple-2); }
+  .state-box.proxy .val::before { color: var(--proxy-purple); }
+
+  /* 价格设置 */
+  .set-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .set-title {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex; align-items: center;
+  }
+  .set-title .step {
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin: 0 4px;
+  }
+  .set-title .stride {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: var(--text-tertiary);
+  }
+  .set-control {
+    display: grid;
+    grid-template-columns: 50px 1fr 50px;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .set-step {
+    background: var(--bg-page);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--proxy-purple);
+    user-select: none;
+  }
+  .set-step.disabled { color: var(--text-tertiary); opacity: 0.45; cursor: not-allowed; }
+  .set-step .op { font-size: 22px; font-weight: 600; line-height: 1; }
+  .set-step .label { font-size: 10px; margin-top: 3px; }
+  .set-amount {
+    background: var(--proxy-bg-2);
+    border: 2px solid var(--proxy-purple);
+    border-radius: 8px;
+    text-align: center;
+    padding: 9px 4px;
+    line-height: 1.2;
+  }
+  .set-amount .lbl {
+    font-size: 10.5px;
+    color: var(--proxy-purple);
+  }
+  .set-amount .v {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--proxy-purple-2);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .set-amount .v::before {
+    content: '¥';
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--proxy-purple);
+    margin-right: 2px;
+    vertical-align: 3px;
+  }
+  .set-quick {
+    margin-top: 10px;
+    display: flex; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .quick-chip {
+    flex: 1;
+    text-align: center;
+    padding: 6px 0;
+    background: var(--bg-page);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .quick-chip:hover { background: var(--proxy-bg-2); color: var(--proxy-purple); }
+  .set-budget {
+    margin-top: 10px;
+    padding: 7px 10px;
+    background: var(--proxy-bg-2);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--proxy-purple-2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .set-budget b { color: var(--proxy-purple-2); font-weight: 700; }
+
+  /* 代理规则说明 */
+  .rules-card {
+    background: var(--proxy-bg-2);
+    border: 1px solid rgba(107,70,193,0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .rules-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--proxy-purple-2);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .rules-title svg { width: 13px; height: 13px; }
+  .rule-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .rule-item:last-child { margin-bottom: 0; }
+  .rule-num {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    background: var(--proxy-purple);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .rule-body { flex: 1; }
+  .rule-body b { color: var(--proxy-purple-2); font-weight: 700; }
+  .rule-body .ex {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background: rgba(255,255,255,0.6);
+    padding: 5px 8px;
+    border-radius: 5px;
+    border-left: 2px solid var(--proxy-purple);
+  }
+  .rule-body .ex b { color: var(--proxy-purple); font-weight: 600; }
+
+  /* (v0.3) 简化规则:无序列表样式 */
+  .rules-lite {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rules-lite li {
+    position: relative;
+    padding: 4px 0 4px 18px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-primary);
+  }
+  .rules-lite li::before {
+    content: '';
+    position: absolute;
+    left: 4px; top: 12px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--proxy-purple);
+  }
+  .rules-lite li b { color: var(--proxy-purple-2); font-weight: 700; }
+  .rules-more {
+    margin-top: 8px;
+    text-align: right;
+    font-size: 11.5px;
+  }
+  .rules-more a {
+    color: var(--proxy-purple-2);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* Sticky footer */
+  .sheet-footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .btn-cancel {
+    flex: 1;
+    padding: 12px 0;
+    background: var(--bg-card);
+    color: var(--danger);
+    border: 1px solid rgba(220,38,38,0.30);
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* 取消代理 二次确认弹窗 */
+  .confirm-mask {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 30;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .confirm-mask.show { display: flex; }
+  .confirm-box {
+    width: 300px;
+    background: var(--bg-card);
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .confirm-head {
+    padding: 18px 18px 6px;
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .confirm-body {
+    padding: 0 18px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .confirm-body .now {
+    background: var(--proxy-bg-2);
+    color: var(--proxy-purple-2);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .confirm-body .now b { font-weight: 700; color: var(--proxy-purple-2); }
+  .confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+  }
+  .confirm-btn {
+    padding: 14px 0;
+    background: var(--bg-card);
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border);
+  }
+  .confirm-btn:last-child { border-right: none; }
+  .confirm-btn.danger { color: var(--danger); font-weight: 700; }
+  .btn-save {
+    flex: 1.6;
+    padding: 12px 0;
+    background: linear-gradient(135deg, var(--proxy-purple), var(--proxy-purple-2));
+    color: white;
+    border: none;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(107,70,193,0.30);
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .btn-save .amt {
+    font-variant-numeric: tabular-nums;
+  }
+  .btn-save .amt::before {
+    content: '¥';
+    font-size: 11px;
+    margin-right: 1px;
+    opacity: 0.85;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- 模糊详情页背景 -->
+    <div class="bg-detail">
+      <div class="bg-status"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="bg-nav">← Daytona 116500LN</div>
+      <div class="bg-img">◆</div>
+      <div class="bg-info">商品参数 · 鉴定信息 · 出价记录…</div>
+    </div>
+
+    <!-- 遮罩 -->
+    <div class="modal-mask"></div>
+
+    <!-- 弹窗 sheet -->
+    <div class="proxy-sheet">
+
+      <div class="sheet-drag"></div>
+
+      <div class="sheet-head">
+        <div class="head-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+        </div>
+        <div class="head-text">
+          <div class="head-title">修改代理出价</div>
+          <div class="head-sub">20260513002 · Daytona 116500LN</div>
+        </div>
+        <div class="sheet-close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>
+
+      <div class="sheet-body">
+
+        <!-- 当前状态 -->
+        <div class="state-row">
+          <div class="state-box now">
+            <div class="lbl">当前价</div>
+            <div class="val">252,000</div>
+          </div>
+          <div class="state-box proxy">
+            <div class="lbl">当前代理上限</div>
+            <div class="val">260,000</div>
+          </div>
+        </div>
+
+        <!-- 价格设置 -->
+        <div class="set-card">
+          <div class="set-title">
+            设置新代理上限 · 加一手 <span class="step">¥ 1,000</span>
+          </div>
+          <div class="set-control">
+            <div class="set-step" id="step-minus">
+              <span class="op">−</span>
+              <span class="label">1 手</span>
+            </div>
+            <div class="set-amount">
+              <div class="lbl">新代理上限</div>
+              <div class="v" id="bid-total">280,000</div>
+            </div>
+            <div class="set-step" id="step-plus">
+              <span class="op">+</span>
+              <span class="label">1 手</span>
+            </div>
+          </div>
+          <!-- 快捷(按当前价 + N 手快速设置)-->
+          <div class="set-quick">
+            <div class="quick-chip" data-add="3">+3 手</div>
+            <div class="quick-chip" data-add="5">+5 手</div>
+            <div class="quick-chip" data-add="10">+10 手</div>
+            <div class="quick-chip" data-add="15">+15 手</div>
+          </div>
+          <div class="set-budget">
+            <span>系统将自动加价至此上限</span>
+          </div>
+        </div>
+
+        <!-- 代理出价规则(简化版) -->
+        <div class="rules-card">
+          <div class="rules-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            代理出价规则
+          </div>
+          <ul class="rules-lite">
+            <li>系统按加价幅度 <b>逐手</b>替您出价,始终只比对手高 1 手,不超过上限。</li>
+            <li>您手动出价视为接管,本次不走代理。</li>
+            <li>对手追到或超过上限,系统停止代理并提醒您。</li>
+          </ul>
+          <div class="rules-more">
+            <a href="mingpai-rules_v0.2.html">查看完整规则 ›</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sticky 底部 -->
+      <div class="sheet-footer">
+        <button class="btn-cancel" id="cancelProxy">取消代理</button>
+        <button class="btn-save">
+          保存代理上限 <span class="amt" id="footer-amt">280,000</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 二次确认弹窗(取消代理出价) -->
+    <div class="confirm-mask" id="confirmCancel">
+      <div class="confirm-box">
+        <div class="confirm-head">取消代理出价?</div>
+        <div class="confirm-body">
+          取消后,系统将<b>不再为您自动加价</b>。
+          <div class="now">
+            当前代理上限 <b>¥ 260,000</b><br>
+            剩余预算 <b>¥ 8,000</b> 将释放
+          </div>
+          您仍可重新设置代理价或切换为<b>手动出价</b>。
+        </div>
+        <div class="confirm-actions">
+          <button class="confirm-btn" id="confirmKeep">继续保留</button>
+          <button class="confirm-btn danger" id="confirmDanger">确认取消</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  (function() {
+    const CURRENT = 252000;
+    const STEP = 1000;
+    const MIN = 260000;    // 原代理上限
+    let bid = 280000;      // 默认新上限示例
+
+    const totalEl  = document.getElementById('bid-total');
+    const footerEl = document.getElementById('footer-amt');
+    const minusEl  = document.getElementById('step-minus');
+    const plusEl   = document.getElementById('step-plus');
+
+    function fmt(n) { return n.toLocaleString('en-US'); }
+    function render() {
+      totalEl.textContent  = fmt(bid);
+      footerEl.textContent = fmt(bid);
+      minusEl.classList.toggle('disabled', bid <= CURRENT + STEP);
+    }
+    minusEl.addEventListener('click', () => {
+      if (bid > CURRENT + STEP) { bid -= STEP; render(); }
+    });
+    plusEl.addEventListener('click', () => { bid += STEP; render(); });
+
+    // 快捷:按当前价 + N 手设置
+    document.querySelectorAll('.quick-chip[data-add]').forEach(c => {
+      c.addEventListener('click', () => {
+        const n = parseInt(c.dataset.add, 10) || 1;
+        bid = CURRENT + n * STEP;
+        render();
+      });
+    });
+
+    render();
+  })();
+
+  // 取消代理 二次确认
+  (function() {
+    const btn = document.getElementById('cancelProxy');
+    const mask = document.getElementById('confirmCancel');
+    const keep = document.getElementById('confirmKeep');
+    const danger = document.getElementById('confirmDanger');
+    if (!btn || !mask) return;
+    btn.addEventListener('click', () => mask.classList.add('show'));
+    keep.addEventListener('click', () => mask.classList.remove('show'));
+    danger.addEventListener('click', () => {
+      mask.classList.remove('show');
+      alert('演示稿:已取消代理出价,系统不再自动加价');
+    });
+    mask.addEventListener('click', (e) => {
+      if (e.target === mask) mask.classList.remove('show');
+    });
+  })();
+</script>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

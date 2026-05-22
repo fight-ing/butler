@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>明拍分享小程序封面 · v0.2</title>
+<style>
+  :root {
+    --brand-500: #FF8000;
+    --brand-700: #E65100;
+    --brand-900: #B34700;
+    --bg-page: #ECEFF1;
+    --bg-card: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9A9A9A;
+    --border: #E0E0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+  }
+
+  /* 画板布局 */
+  .canvas {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+  .canvas-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 10px;
+    color: var(--text-primary);
+  }
+  .canvas-title .b {
+    font-size: 11px;
+    background: var(--brand-500);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+  .canvas-sub {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    margin-bottom: 28px;
+  }
+  .row {
+    display: flex;
+    gap: 28px;
+    flex-direction: column;     /* 改为纵向排,避免横向溢出 */
+  }
+  .artboard {
+    background: var(--bg-card);
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+    padding: 16px 16px 18px;
+    width: 100%;
+    max-width: 480px;          /* 单卡最大宽,屏幕窄时自适应 */
+  }
+  .artboard-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .artboard-label .num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--brand-500);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+  }
+  .artboard-sub {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+  }
+  /* 示例代表(标题备注)*/
+  .artboard-note {
+    font-size: 12px;
+    color: var(--brand-700);
+    background: #FFF8E1;
+    border-left: 3px solid var(--brand-500);
+    padding: 6px 10px;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .artboard-note b { color: var(--text-primary); font-weight: 700; }
+  .frame {
+    background: #1a1a1a;
+    padding: 14px;
+    border-radius: 8px;
+  }
+  .frame-meta {
+    margin-top: 10px;
+    display: flex; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 11px;
+    background: #FFF8E1;
+    color: var(--brand-700);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .tag.gray {
+    background: #F2F2F2;
+    color: var(--text-secondary);
+  }
+
+  /* ───── 封面通用 ───── */
+  .cover {
+    background: linear-gradient(135deg, #FF8C1A 0%, #E65100 55%, #B34700 100%);
+    border-radius: 14px;
+    padding: 14px 14px 16px;
+    box-shadow: 0 8px 24px rgba(180,60,0,0.30);
+    position: relative;
+    overflow: hidden;
+    color: white;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -20%; right: -20%;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,224,178,0.30), transparent 70%);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -30%; left: -25%;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,193,7,0.25), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* 封面 A:5:4 横向商品分享(宽 = 容器宽度,自适应)*/
+  .cover.a {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+  }
+  .ca-tags {
+    display: flex; align-items: center; gap: 8px;
+    position: relative; z-index: 2;
+    flex-wrap: wrap;
+  }
+  .ca-brand-tag, .ca-date-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.32);
+    color: white;
+    padding: 3px 11px;
+    border-radius: 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+  .ca-brand-tag::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #FFE08A;
+  }
+  .ca-date-tag svg {
+    width: 11px; height: 11px;
+    color: #FFE08A;
+  }
+  .ca-row {
+    background: white;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 14px rgba(178,73,4,0.20);
+    position: relative; z-index: 2;
+    margin-top: 10px;
+    min-width: 0;
+  }
+  .ca-thumb {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, #ECECEC, #C8C8C8);
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(0,0,0,0.22);
+    font-size: 28px;
+  }
+  .ca-info {
+    flex: 1;
+    min-width: 0;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+  }
+  .ca-info .lbl {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+  .ca-info .price {
+    font-size: 22px; font-weight: 800;
+    color: var(--brand-700);
+    line-height: 1;
+    font-family: 'SF Pro Display', system-ui;
+    white-space: nowrap;
+  }
+  .ca-info .price::before {
+    content: '¥';
+    font-size: 13px;
+    margin-right: 1px;
+  }
+  .ca-info .cta {
+    margin-top: 4px;
+    align-self: flex-start;
+    background: linear-gradient(135deg, #FFB400, #FF8000);
+    color: white;
+    font-size: 12px; font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(255,128,0,0.40);
+    display: inline-flex; align-items: center; gap: 3px;
+    white-space: nowrap;
+  }
+  .ca-info .cta::after {
+    content: '›';
+    font-size: 14px;
+    margin-top: -2px;
+  }
+  .ca-foot {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.4px;
+    position: relative; z-index: 2;
+  }
+
+  /* 封面 B:高:宽 = 4:5 · 低调隆重 · 突出明拍 · 100% 容器宽自适应 */
+  .cover.b {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    padding: 0;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,224,138,0.08), transparent 55%),
+      linear-gradient(135deg, #B8470D 0%, #6A2A00 55%, #2E1100 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 主视觉:奢收多·拍卖(小字 + 金色) */
+  .cb-main {
+    font-size: 26px;
+    font-weight: 800;
+    color: #FFE08A;
+    letter-spacing: 3px;
+    text-indent: 3px;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    margin-bottom: 6px;
+    position: relative; z-index: 2;
+    font-family: 'STSong', 'Songti SC', 'SimSun', serif;
+  }
+  .cb-main .dot {
+    color: rgba(255,224,138,0.65);
+    margin: 0 2px;
+    font-weight: 400;
+  }
+  /* 中央细金线 + 双菱形分隔 */
+  .cb-divider {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    margin: 10px 0 14px;
+    position: relative; z-index: 2;
+  }
+  .cb-divider .line {
+    width: 36px; height: 0.6px;
+    background: rgba(255,224,138,0.7);
+  }
+  .cb-divider .diamond {
+    width: 5px; height: 5px;
+    background: #FFE08A;
+    transform: rotate(45deg);
+    opacity: 0.75;
+  }
+  .cb-tagline {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 4px;
+    text-indent: 4px;
+    margin-bottom: 5px;
+    position: relative; z-index: 2;
+  }
+  .cb-feat-line {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 2px;
+    text-indent: 2px;
+    margin-bottom: 20px;
+    position: relative; z-index: 2;
+  }
+  .cb-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: white;
+    color: var(--brand-700);
+    font-size: 13.5px; font-weight: 800;
+    padding: 9px 32px;
+    border-radius: 22px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+    letter-spacing: 2px;
+    text-indent: 2px;
+    position: relative; z-index: 2;
+  }
+  .cb-cta::after {
+    content: '›';
+    font-size: 16px;
+    margin-top: -2px;
+    text-indent: 0;
+  }
+
+  /* 文案 SSOT */
+  .ssot {
+    margin-top: 36px;
+    background: white;
+    border-radius: 10px;
+    padding: 18px 22px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .ssot .head {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ssot .head svg { width: 14px; height: 14px; color: var(--brand-700); }
+  .ssot ul {
+    margin: 4px 0 0;
+    padding-left: 18px;
+  }
+  .ssot li { margin-bottom: 4px; }
+  .ssot b { color: var(--text-primary); }
+  .ssot code {
+    background: #FFF8E1;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    color: var(--brand-700);
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="canvas-title">
+    明拍分享小程序封面
+    <span class="b">v0.2</span>
+  </div>
+  <div class="canvas-sub">用于分享至微信小程序 / 朋友圈 · 主色橙金渐变 · 与暗拍红主题对应</div>
+
+  <div class="row">
+
+    <!-- ─── 封面 A:商品分享(横向 5:4) ─── -->
+    <div class="artboard">
+      <div class="artboard-label">
+        <span class="num">A</span>
+        商品分享封面
+      </div>
+      <div class="artboard-sub">单品图录 · 商品图 + 起拍价 + 日期 · 用户分享单件拍品时使用</div>
+      <div class="artboard-note">示例代表:<b>HERMÈS Birkin 25 Gold Togo PHW · 2023 全套</b>(实际接入按 lot 数据)</div>
+      <div class="frame">
+        <div class="cover a">
+          <div class="ca-tags">
+            <div class="ca-brand-tag">奢收多 · 明拍</div>
+            <div class="ca-date-tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              2026/5/21
+            </div>
+          </div>
+
+          <div class="ca-row">
+            <div class="ca-thumb">◆</div>
+            <div class="ca-info">
+              <div class="lbl">起拍价</div>
+              <div class="price">68,000</div>
+              <div class="cta">去出价</div>
+            </div>
+          </div>
+
+          <div class="ca-foot">公开竞价 · 价高者得</div>
+        </div>
+      </div>
+      <div class="frame-meta">
+        <span class="tag">高:宽 = 4:5</span>
+        <span class="tag">375 × 300(手机屏宽)</span>
+        <span class="tag gray">含日期</span>
+      </div>
+    </div>
+
+    <!-- ─── 封面 B:明拍整体分享(横向 5:4 · 高端极简)─── -->
+    <div class="artboard">
+      <div class="artboard-label">
+        <span class="num">B</span>
+        明拍整体分享封面
+      </div>
+      <div class="artboard-sub">推广明拍业务 · 高端极简风 · 大字 hero + 金线装饰</div>
+      <div class="artboard-note">示例代表:<b>奢收多 · 明拍</b>(品牌业务整体推广,不绑定单品)</div>
+      <div class="frame">
+        <div class="cover b">
+          <div class="cb-main">奢收多<span class="dot">·</span>明拍</div>
+          <div class="cb-divider">
+            <span class="line"></span>
+            <span class="diamond"></span>
+            <span class="line"></span>
+          </div>
+          <div class="cb-tagline">透 明 竞 价 · 价 高 者 得</div>
+          <div class="cb-feat-line">公开记录 · 智能代理</div>
+          <div class="cb-cta">立即参与</div>
+        </div>
+      </div>
+      <div class="frame-meta">
+        <span class="tag">高:宽 = 4:5</span>
+        <span class="tag">100% 容器宽自适应</span>
+        <span class="tag gray">主标金色宋体 · 极简</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── 文案 SSOT ─── -->
+  <div class="ssot">
+    <div class="head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      文案 SSOT
+    </div>
+    <ul>
+      <li><b>商品分享(A · 高:宽=4:5,100% 容器宽)</b>:左上品牌 tag <code>奢收多 · 明拍</code> + 日期 tag <code>2026/5/21</code>;白卡内 商品图(80×80) + 「起拍价 ¥XX,XXX」+ 「去出价」橙色 CTA;底部小字「公开竞价 · 价高者得」。<b>排版紧凑、不切割文字</b></li>
+      <li><b>明拍整体分享(B · 高:宽=4:5,100% 容器宽)</b>:低调极简。**金色宋体大字 <code>奢收多 · 明拍</code>**(26px,#FFE08A) + 双菱形金线分隔 + 标语「透明竞价 · 价高者得」+ 一行卖点「公开记录 · 智能代理」+ 「立即参与」白色 CTA。<b>不含信封 / 不含"中古优品"品牌字 / 不含商品图;渐变深沉(深赭→暗酒红→近墨)</b></li>
+      <li>主色 <code>#FF8000 → #E65100</code> 渐变,装饰 <code>#FFE08A</code> 金色高光</li>
+      <li>与暗拍红 <code>#C62828</code> 主题对应,品牌识别度统一</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中古优品 · 失效归档</title>
+<style>
+  :root {
+    --canvas-bg: #E5E5E5;
+    --panel-bg: #FFFFFF;
+    --panel-border: #D9D9D9;
+    --text: #1A1A1A;
+    --text-2: #6B6B6B;
+    --text-3: #9A9A9A;
+    --accent: #FF8000;
+    --accent-deep: #E65100;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--canvas-bg);
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    height: 56px;
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--panel-border);
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 14px;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent-deep);
+    font-size: 13px; font-weight: 600;
+    text-decoration: none;
+    padding: 6px 12px;
+    background: #FFF1E0;
+    border-radius: 14px;
+    transition: background .15s;
+  }
+  .back-link:hover { background: #FFE0BB; }
+  .back-link svg { width: 13px; height: 13px; }
+  .title-block { display: flex; flex-direction: column; line-height: 1.2; }
+  .title-block .t1 { font-size: 14.5px; font-weight: 700; }
+  .title-block .t2 { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  .spacer { flex: 1; }
+  .count-info { font-size: 11.5px; color: var(--text-3); }
+
+  .canvas {
+    padding: 24px 28px 60px;
+  }
+  .row-section {
+    display: flex; flex-direction: column;
+    margin-bottom: 36px;
+  }
+  .row-label {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .row-label > span:first-child {
+    font-size: 14.5px; font-weight: 700;
+  }
+  .badge.gray {
+    font-size: 11px;
+    color: var(--text-3);
+    background: #E0E0E0;
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+  .row-desc {
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  .row {
+    display: flex; flex-wrap: wrap; gap: 20px;
+  }
+
+  .artboard {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    width: 380px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    overflow: hidden;
+    /* 整体视觉降级 */
+    opacity: 0.85;
+    filter: grayscale(0.15);
+    position: relative;
+  }
+  .artboard::before {
+    content: '已归档';
+    position: absolute;
+    top: 10px; right: 10px;
+    background: #9A9A9A;
+    color: white;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    z-index: 3;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    letter-spacing: 0.4px;
+  }
+  .artboard:hover {
+    opacity: 1;
+    filter: none;
+  }
+  .artboard-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid #EFEFEF;
+  }
+  .artboard-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #FFF;
+  }
+  .artboard-num.gray { background: #B0B0B0; }
+  .artboard-meta { display: flex; flex-direction: column; line-height: 1.25; }
+  .artboard-title { font-size: 13.5px; font-weight: 600; }
+  .artboard-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .artboard-frame {
+    width: 100%;
+    height: 720px;
+    background: #FAFAFA;
+    position: relative;
+    overflow: hidden;
+  }
+  .artboard-frame iframe {
+    width: 100%; height: 100%;
+    border: 0;
+    display: block;
+  }
+  .artboard-frame.loading::before {
+    content: '加载中...';
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-3);
+    font-size: 12px;
+  }
+  .artboard-frame.v0-1 iframe {
+    filter: sepia(0.1);
+  }
+  .artboard-foot {
+    padding: 8px 14px;
+    border-top: 1px solid #EFEFEF;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 11px;
+    background: #F3F3F3;
+    color: var(--text-2);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
+    返回画板
+  </a>
+  <div class="title-block">
+    <span class="t1">失效归档</span>
+    <span class="t2">v0.2 本批次不调整 + v0.1 历史版本</span>
+  </div>
+  <div class="spacer"></div>
+  <span class="count-info">仅作版本迭代参考</span>
+</div>
+
+<div class="canvas">
+
+  <!-- v0.2 失效归档 -->
+  <div class="row-section">
+    <div class="row-label">
+      <span>v0.2 失效归档 · 本批次不调整</span>
+      <span class="badge gray">v0.1 → v0.2 → <strong style="color:var(--accent);">v0.3</strong></span>
+      <span class="row-desc">仅作版本迭代参考,本期不进入需求释义</span>
+    </div>
+    <div class="row">
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A1</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">直播大厅</span>
+            <span class="artboard-sub">live_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="live_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">直播渠道 推迟 v1.5</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A2</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">直播间内</span>
+            <span class="artboard-sub">live-room_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="live-room_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">直播渠道 推迟 v1.5</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A3</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">暗拍 · 列表</span>
+            <span class="artboard-sub">anpai_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="anpai_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">暗拍业务 v0.3 不动</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A4</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">暗拍 · 单品</span>
+            <span class="artboard-sub">anpai-detail_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="anpai-detail_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">暗拍业务 v0.3 不动</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A5</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">暗拍 · 规则说明</span>
+            <span class="artboard-sub">anpai-rules_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="anpai-rules_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">已完成 v0.3 不动</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A6</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">暗拍 A vs B 对比稿</span>
+            <span class="artboard-sub">anpai-compare_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="anpai-compare_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">评审已定方案 A</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A7</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">我的竞拍 · 暗拍方案 B</span>
+            <span class="artboard-sub">my-bids-anpai-original_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="my-bids-anpai-original_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">chip 风格备份</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A8</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">消息中心</span>
+            <span class="artboard-sub">messages_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="messages_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">推迟下一批</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A9</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">物流跟踪</span>
+            <span class="artboard-sub">logistics_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="logistics_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">推迟下一批</span></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">A10</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">鉴定证书</span>
+            <span class="artboard-sub">cert_v0.2.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame loading"><iframe src="cert_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+        <div class="artboard-foot"><span class="tag">推迟下一批</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- v0.1 历史 -->
+  <div class="row-section">
+    <div class="row-label">
+      <span>v0.1 历史版本</span>
+      <span class="badge gray">已被 v0.2 替代</span>
+    </div>
+    <div class="row">
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">v1</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">首页(旧)</span>
+            <span class="artboard-sub">home_v0.1.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame v0-1 loading"><iframe src="home_v0.1.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">v1</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">直播(旧)</span>
+            <span class="artboard-sub">live_v0.1.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame v0-1 loading"><iframe src="live_v0.1.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">v1</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">暗拍(旧)</span>
+            <span class="artboard-sub">anpai_v0.1.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame v0-1 loading"><iframe src="anpai_v0.1.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+      </div>
+
+      <div class="artboard">
+        <div class="artboard-head">
+          <div class="artboard-num gray">v1</div>
+          <div class="artboard-meta">
+            <span class="artboard-title">明拍(旧)</span>
+            <span class="artboard-sub">mingpai_v0.1.html</span>
+          </div>
+        </div>
+        <div class="artboard-frame v0-1 loading"><iframe src="mingpai_v0.1.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
