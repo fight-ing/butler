@@ -126,6 +126,11 @@
     border: 1px solid var(--panel-border);
     box-shadow: none;
   }
+  .top-btn.admin {
+    background: linear-gradient(135deg, #4B5DCC, #2E3B91);
+    color: white;
+    box-shadow: 0 2px 8px rgba(46,59,145,0.30);
+  }
 
   .zoom-ctrl {
     display: flex; align-items: center; gap: 4px;
@@ -395,9 +400,9 @@
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       <span class="label">可交互原型</span>
     </a>
-    <a href="archive.html" class="top-btn ghost" title="失效归档">
-      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-      <span class="label">失效归档</span>
+    <a href="admin-mingpai-simple_v0.3.html" target="_blank" class="top-btn admin" title="管理后台">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="label">管理后台</span>
     </a>
     <span class="count-info">v0.3 当前批次</span>
     <div class="zoom-ctrl">
