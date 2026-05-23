@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>竞价虚拟报价 · 数据分配流程图</title>
+<style>
+  :root {
+    --brand-primary: #3370FF;
+    --brand-primary-bg: #E8F3FF;
+    --text-primary: #1F2329;
+    --text-secondary: #4E5969;
+    --text-tertiary: #86909C;
+    --text-disabled: #C9CDD4;
+    --bg-page: #F2F3F5;
+    --bg-card: #FFFFFF;
+    --bg-secondary: #FAFBFC;
+    --bg-hover: #F5F6F7;
+    --border-base: #E5E6EB;
+    --border-light: #F2F3F5;
+    --success: #00B42A;
+    --success-bg: #E6F7EC;
+    --warning: #FF7D00;
+    --warning-bg: #FFF1E8;
+    --error: #F53F3F;
+    --error-bg: #FFECE8;
+    --gold: #D87A16;
+    --gold-bg: #FFF7E6;
+    --shadow-card: 0 1px 4px rgba(0, 21, 41, 0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 24px;
+    min-width: 1280px;
+  }
+  .page-header {
+    background: var(--bg-card);
+    padding: 20px 24px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .page-title-wrap h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .page-title-wrap .subtitle {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .legend-dot.start { background: var(--success-bg); border-color: var(--success); }
+  .legend-dot.process { background: var(--brand-primary-bg); border-color: var(--brand-primary); }
+  .legend-dot.decision { background: var(--warning-bg); border-color: var(--warning); }
+  .legend-dot.data { background: var(--gold-bg); border-color: var(--gold); }
+  .legend-dot.end { background: var(--error-bg); border-color: var(--error); }
+  .legend-dot.async { background: #F5F6F7; border-color: var(--text-tertiary); }
+
+  .flow-section {
+    background: var(--bg-card);
+    border-radius: 6px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+    padding: 20px 24px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .section-num {
+    background: var(--brand-primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .section-subtitle {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-left: 8px;
+  }
+  .svg-container {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    padding: 16px 0;
+  }
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .node-text {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 13px;
+    fill: var(--text-primary);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .node-text-sm {
+    font-size: 11px;
+    fill: var(--text-tertiary);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .node-text-mono {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 11px;
+    fill: var(--text-secondary);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .edge {
+    stroke: var(--text-tertiary);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .edge-label {
+    font-family: -apple-system, 'PingFang SC', sans-serif;
+    font-size: 11px;
+    fill: var(--text-secondary);
+    text-anchor: middle;
+  }
+  .edge-label-bg {
+    fill: var(--bg-secondary);
+    stroke: var(--border-light);
+    stroke-width: 1;
+    rx: 3;
+    ry: 3;
+  }
+
+  .annotation {
+    background: var(--bg-secondary);
+    border-left: 3px solid var(--brand-primary);
+    padding: 10px 14px;
+    margin-top: 16px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .annotation strong { color: var(--text-primary); font-weight: 600; }
+  .annotation code {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    background: var(--brand-primary-bg);
+    color: var(--brand-primary);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  .state-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .state-table th {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .state-table td {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+  }
+  .state-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .state-pending { background: var(--warning-bg); color: var(--warning); }
+  .state-executed { background: var(--success-bg); color: var(--success); }
+  .state-skipped { background: var(--bg-hover); color: var(--text-tertiary); }
+  .state-expired { background: var(--error-bg); color: var(--error); }
+  .role-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin: 0 2px;
+  }
+  .role-appraiser { background: var(--brand-primary-bg); color: var(--brand-primary); }
+  .role-merchant { background: var(--gold-bg); color: var(--gold); }
+
+  .footer {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    padding: 16px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title-wrap">
+    <h1>竞价虚拟报价 · 数据分配流程图</h1>
+    <div class="subtitle">中古优品 ERP · 回收业务 · 竞价模块</div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot start"></div>起止节点</div>
+    <div class="legend-item"><div class="legend-dot process"></div>处理节点</div>
+    <div class="legend-item"><div class="legend-dot decision"></div>判断分支</div>
+    <div class="legend-item"><div class="legend-dot data"></div>数据写入</div>
+    <div class="legend-item"><div class="legend-dot async"></div>异步/延时</div>
+    <div class="legend-item"><div class="legend-dot end"></div>结果输出</div>
+  </div>
+</div>
+
+<!-- ============== 1. T0 分配阶段 ============== -->
+<div class="flow-section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">T0 分配阶段</span>
+    <span class="section-subtitle">竞价单创建瞬间一次性执行 · M 和 V 锁死</span>
+  </div>
+
+  <div class="svg-container">
+    <svg width="1200" height="660" viewBox="0 0 1200 660">
+      <defs>
+        <marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L8,5 L0,10 Z" fill="#86909C"/>
+        </marker>
+      </defs>
+
+      <!-- 起点 -->
+      <rect x="500" y="20" width="200" height="44" rx="6" ry="6" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="42" font-weight="600">竞价单创建</text>
+
+      <line class="edge" x1="600" y1="64" x2="600" y2="92" marker-end="url(#arrow1)"/>
+
+      <!-- 调度系统派单 -->
+      <rect x="380" y="92" width="440" height="84" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="112" font-weight="600">调度系统 v3.6 派单</text>
+      <text class="node-text-sm" x="600" y="134">输出真实账号列表(报价师 + 商家)</text>
+      <g transform="translate(490, 152)">
+        <rect x="0" y="0" width="64" height="18" rx="4" ry="4" fill="#E8F3FF"/>
+        <text x="32" y="9" font-size="10" font-family="-apple-system, PingFang SC" fill="#3370FF" text-anchor="middle" dominant-baseline="central">报价师</text>
+      </g>
+      <g transform="translate(566, 152)">
+        <rect x="0" y="0" width="54" height="18" rx="4" ry="4" fill="#FFF7E6"/>
+        <text x="27" y="9" font-size="10" font-family="-apple-system, PingFang SC" fill="#D87A16" text-anchor="middle" dominant-baseline="central">商家</text>
+      </g>
+
+      <line class="edge" x1="600" y1="176" x2="600" y2="204" marker-end="url(#arrow1)"/>
+
+      <!-- 计算 R_estimate -->
+      <rect x="380" y="204" width="440" height="72" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="224" font-weight="600">计算 R_estimate</text>
+      <text class="node-text-mono" x="600" y="246">R_estimate = COUNT(报价师 + 商家)</text>
+      <text class="node-text-sm" x="600" y="264">两类身份合计</text>
+
+      <line class="edge" x1="600" y1="276" x2="600" y2="306" marker-end="url(#arrow1)"/>
+
+      <!-- 判断 R<40 -->
+      <polygon points="600,306 750,356 600,406 450,356" fill="#FFF1E8" stroke="#FF7D00" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="348" font-weight="600">R_estimate &lt; 40?</text>
+      <text class="node-text-sm" x="600" y="368">分段判断</text>
+
+      <!-- 左:R<40 -->
+      <line class="edge" x1="450" y1="356" x2="280" y2="356" marker-end="url(#arrow1)"/>
+      <rect class="edge-label-bg" x="332" y="342" width="40" height="20"/>
+      <text class="edge-label" x="352" y="354">是</text>
+
+      <rect x="80" y="322" width="200" height="68" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="180" y="342" font-weight="600">公式分支 A</text>
+      <text class="node-text-mono" x="180" y="364">M = randInt(50, 99)</text>
+      <text class="node-text-sm" x="180" y="382">冷启动 · 虚拟补足</text>
+
+      <!-- 右:R>=40 -->
+      <line class="edge" x1="750" y1="356" x2="920" y2="356" marker-end="url(#arrow1)"/>
+      <rect class="edge-label-bg" x="828" y="342" width="40" height="20"/>
+      <text class="edge-label" x="848" y="354">否</text>
+
+      <rect x="920" y="322" width="200" height="68" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="1020" y="342" font-weight="600">公式分支 B</text>
+      <text class="node-text-mono" x="1020" y="364">M = ceil(R × 1.2)</text>
+      <text class="node-text-sm" x="1020" y="382">成熟期 · 虚拟点缀</text>
+
+      <!-- 汇合 -->
+      <line class="edge" x1="180" y1="390" x2="180" y2="444"/>
+      <line class="edge" x1="1020" y1="390" x2="1020" y2="444"/>
+      <line class="edge" x1="180" y1="444" x2="500" y2="444"/>
+      <line class="edge" x1="1020" y1="444" x2="700" y2="444"/>
+      <line class="edge" x1="600" y1="444" x2="600" y2="468" marker-end="url(#arrow1)"/>
+
+      <!-- 计算 V -->
+      <rect x="450" y="468" width="300" height="50" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="488" font-weight="600">计算虚拟数 V</text>
+      <text class="node-text-mono" x="600" y="508">V = M − R_estimate</text>
+
+      <line class="edge" x1="600" y1="518" x2="600" y2="548" marker-end="url(#arrow1)"/>
+
+      <!-- 圈定 -->
+      <rect x="380" y="548" width="440" height="60" rx="6" ry="6" fill="#FFF7E6" stroke="#D87A16" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="568" font-weight="600">圈定 V 个虚拟号</text>
+      <text class="node-text-sm" x="600" y="590">从品类匹配池随机抽 + 随机出价顺序 → virtual_bid_binding</text>
+
+      <line class="edge" x1="600" y1="608" x2="600" y2="632" marker-end="url(#arrow1)"/>
+
+      <!-- 终态 -->
+      <rect x="400" y="632" width="400" height="24" rx="6" ry="6" fill="#F5F6F7" stroke="#C9CDD4" stroke-dasharray="4,2"/>
+      <text class="node-text-sm" x="600" y="644">M、V 锁死,等待真实报价进入触发 Step 02</text>
+    </svg>
+  </div>
+
+  <div class="annotation">
+    <strong>R_estimate 口径</strong>:派单的所有真实账号数 = <span class="role-tag role-appraiser">报价师</span> + <span class="role-tag role-merchant">商家</span>。<br>
+    <strong>断崖效应</strong>:<code>R_estimate=39</code> vs <code>R_estimate=40</code> 时 V 可能从 ~36 骤降到 8,这是设计意图(冷启动需补足,成熟期点缀即可)。
+  </div>
+</div>
+
+<!-- ============== 2. 运行时触发阶段(简化版) ============== -->
+<div class="flow-section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">运行时触发</span>
+    <span class="section-subtitle">每条真实报价进入时执行 · K 随机 [4, 10] · 分配完即停</span>
+  </div>
+
+  <div class="svg-container">
+    <svg width="1200" height="660" viewBox="0 0 1200 660">
+      <defs>
+        <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L8,5 L0,10 Z" fill="#86909C"/>
+        </marker>
+      </defs>
+
+      <!-- 起点 -->
+      <rect x="490" y="20" width="220" height="44" rx="6" ry="6" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="42" font-weight="600">真实报价进入</text>
+
+      <line class="edge" x1="600" y1="64" x2="600" y2="92" marker-end="url(#arrow2)"/>
+
+      <!-- 计算 V_remaining -->
+      <rect x="380" y="92" width="440" height="76" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="112" font-weight="600">计算剩余可分配虚拟价数</text>
+      <text class="node-text-mono" x="600" y="134">V_committed = V_executed + V_pending</text>
+      <text class="node-text-mono" x="600" y="154">V_remaining = V − V_committed</text>
+
+      <line class="edge" x1="600" y1="168" x2="600" y2="200" marker-end="url(#arrow2)"/>
+
+      <!-- 判断 V_remaining > 0 -->
+      <polygon points="600,200 770,248 600,296 430,248" fill="#FFF1E8" stroke="#FF7D00" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="240" font-weight="600">V_remaining &gt; 0?</text>
+      <text class="node-text-sm" x="600" y="260">是否还可继续分配</text>
+
+      <!-- 否:终止 -->
+      <line class="edge" x1="430" y1="248" x2="220" y2="248" marker-end="url(#arrow2)"/>
+      <rect class="edge-label-bg" x="298" y="234" width="40" height="20"/>
+      <text class="edge-label" x="318" y="246">否</text>
+
+      <rect x="30" y="216" width="190" height="64" rx="6" ry="6" fill="#FFECE8" stroke="#F53F3F" stroke-width="1.5"/>
+      <text class="node-text" x="125" y="236" font-weight="600">本次不触发</text>
+      <text class="node-text-sm" x="125" y="256">V 已分配完</text>
+      <text class="node-text-sm" x="125" y="272">直接 return</text>
+
+      <!-- 是:继续 -->
+      <line class="edge" x1="600" y1="296" x2="600" y2="324" marker-end="url(#arrow2)"/>
+      <rect class="edge-label-bg" x="617" y="298" width="40" height="20"/>
+      <text class="edge-label" x="637" y="310">是</text>
+
+      <!-- 决定 K -->
+      <rect x="380" y="324" width="440" height="76" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="344" font-weight="600">随机决定本次触发数 K</text>
+      <text class="node-text-mono" x="600" y="366">K = randInt(4, 10)</text>
+      <text class="node-text-mono" x="600" y="384">K = min(K, V_remaining)</text>
+
+      <line class="edge" x1="600" y1="400" x2="600" y2="428" marker-end="url(#arrow2)"/>
+
+      <!-- 循环 -->
+      <rect x="430" y="428" width="340" height="44" rx="6" ry="6" fill="#F2F3F5" stroke="#86909C" stroke-dasharray="4,2"/>
+      <text class="node-text" x="600" y="450" font-weight="600">for i in 1..K(每个虚拟价独立生成)</text>
+
+      <line class="edge" x1="600" y1="472" x2="600" y2="500" marker-end="url(#arrow2)"/>
+
+      <!-- 生成延迟 + 防扎堆校验 -->
+      <rect x="380" y="500" width="440" height="76" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="518" font-weight="600">独立随机延迟 + 防扎堆校验</text>
+      <text class="node-text-mono" x="600" y="540">delay = randomBetween(30s, 15min)</text>
+      <text class="node-text-mono" x="600" y="556">planned_time = real_bid_time + delay</text>
+      <text class="node-text-sm" x="600" y="572">校验:距已有出价 ≥ 60s,且不跨场次结束</text>
+
+      <line class="edge" x1="600" y1="576" x2="600" y2="604" marker-end="url(#arrow2)"/>
+
+      <!-- 校验通过 -->
+      <polygon points="600,604 740,632 600,660 460,632" fill="#FFF1E8" stroke="#FF7D00" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="626" font-weight="600">校验通过?</text>
+      <text class="node-text-sm" x="600" y="644">retry &lt; 3</text>
+
+      <!-- 通过:写入 -->
+      <line class="edge" x1="740" y1="632" x2="900" y2="632" marker-end="url(#arrow2)"/>
+      <rect class="edge-label-bg" x="780" y="618" width="50" height="20"/>
+      <text class="edge-label" x="805" y="630">通过</text>
+
+      <rect x="900" y="598" width="270" height="68" rx="6" ry="6" fill="#FFF7E6" stroke="#D87A16" stroke-width="1.5"/>
+      <text class="node-text" x="1035" y="618" font-weight="600">写入虚拟报价记录</text>
+      <text class="node-text-sm" x="1035" y="640">绑定 anchor_real_bid_id</text>
+      <text class="node-text-sm" x="1035" y="656">状态 = PENDING</text>
+
+      <!-- 冲突:重试 -->
+      <line class="edge" x1="460" y1="632" x2="340" y2="632"/>
+      <line class="edge" x1="340" y1="632" x2="340" y2="540" marker-end="url(#arrow2)"/>
+      <rect class="edge-label-bg" x="380" y="618" width="50" height="20"/>
+      <text class="edge-label" x="405" y="630">冲突</text>
+      <text class="edge-label" x="300" y="588">重试</text>
+    </svg>
+  </div>
+
+  <div class="annotation">
+    <strong>简化设计</strong>:本次触发数 <code>K = randInt(4, 10)</code>,不再依赖进度差距动态计算。<br>
+    <strong>分配完即停</strong>:<code>V_remaining ≤ 0</code> 时,后续真实报价不再触发任何虚拟价。<br>
+    <strong>已知副作用</strong>:真实价稀疏时(整场只有几条真实价),V 可能大量未出。简单可控优先。
+  </div>
+</div>
+
+<!-- ============== 3. 虚拟出价执行 ============== -->
+<div class="flow-section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">虚拟出价执行</span>
+    <span class="section-subtitle">延迟时间到达时异步触发 · 每条虚拟报价独立执行</span>
+  </div>
+
+  <div class="svg-container">
+    <svg width="1200" height="620" viewBox="0 0 1200 620">
+      <defs>
+        <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L8,5 L0,10 Z" fill="#86909C"/>
+        </marker>
+      </defs>
+
+      <!-- 起点 -->
+      <rect x="450" y="20" width="300" height="44" rx="6" ry="6" fill="#F2F3F5" stroke="#86909C" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text class="node-text" x="600" y="42" font-weight="600">planned_time 到达,异步触发</text>
+
+      <line class="edge" x1="600" y1="64" x2="600" y2="92" marker-end="url(#arrow3)"/>
+
+      <!-- 读数据 -->
+      <rect x="380" y="92" width="440" height="80" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="112" font-weight="600">读取虚拟账号 + 锚点真实价</text>
+      <text class="node-text-mono" x="600" y="134">account.discount_min / discount_max</text>
+      <text class="node-text-mono" x="600" y="152">anchor = read(anchor_real_bid_id)</text>
+      <text class="node-text-sm" x="600" y="168">锚点是触发时绑定的,延迟期间不变</text>
+
+      <line class="edge" x1="600" y1="172" x2="600" y2="200" marker-end="url(#arrow3)"/>
+
+      <!-- 算金额 -->
+      <rect x="380" y="200" width="440" height="70" rx="6" ry="6" fill="#E8F3FF" stroke="#3370FF" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="220" font-weight="600">计算虚拟金额</text>
+      <text class="node-text-mono" x="600" y="242">discount = randomBetween(min, max)</text>
+      <text class="node-text-mono" x="600" y="260">amount = round(anchor.amount × discount)</text>
+
+      <line class="edge" x1="600" y1="270" x2="600" y2="300" marker-end="url(#arrow3)"/>
+
+      <!-- 校验 -->
+      <polygon points="600,300 800,348 600,396 400,348" fill="#FFF1E8" stroke="#FF7D00" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="338" font-weight="600">金额校验</text>
+      <text class="node-text-mono" x="600" y="358">amount &lt; current_max_real?</text>
+
+      <!-- 通过 -->
+      <line class="edge" x1="800" y1="348" x2="920" y2="348" marker-end="url(#arrow3)"/>
+      <rect class="edge-label-bg" x="846" y="334" width="50" height="20"/>
+      <text class="edge-label" x="871" y="346">通过</text>
+
+      <rect x="920" y="314" width="250" height="68" rx="6" ry="6" fill="#FFF7E6" stroke="#D87A16" stroke-width="1.5"/>
+      <text class="node-text" x="1045" y="332" font-weight="600">出价成功</text>
+      <text class="node-text-sm" x="1045" y="354">状态 = EXECUTED</text>
+      <text class="node-text-sm" x="1045" y="370">写入实际 bid_time</text>
+
+      <line class="edge" x1="1045" y1="382" x2="1045" y2="430" marker-end="url(#arrow3)"/>
+
+      <rect x="920" y="430" width="250" height="44" rx="6" ry="6" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="1045" y="452" font-weight="600">虚拟报价对外可见</text>
+
+      <!-- 跳过 -->
+      <line class="edge" x1="400" y1="348" x2="280" y2="348" marker-end="url(#arrow3)"/>
+      <rect class="edge-label-bg" x="304" y="334" width="50" height="20"/>
+      <text class="edge-label" x="329" y="346">超额</text>
+
+      <rect x="30" y="314" width="250" height="68" rx="6" ry="6" fill="#FFECE8" stroke="#F53F3F" stroke-width="1.5"/>
+      <text class="node-text" x="155" y="332" font-weight="600">本次跳过</text>
+      <text class="node-text-sm" x="155" y="354">amount ≥ 当前最高真实价</text>
+      <text class="node-text-sm" x="155" y="370">(真实价已涨过虚拟可出范围)</text>
+
+      <line class="edge" x1="155" y1="382" x2="155" y2="430" marker-end="url(#arrow3)"/>
+
+      <rect x="30" y="430" width="250" height="44" rx="6" ry="6" fill="#F5F6F7" stroke="#86909C" stroke-width="1.5"/>
+      <text class="node-text" x="155" y="452">状态 = SKIPPED</text>
+
+      <!-- 终态汇合 -->
+      <line class="edge" x1="1045" y1="474" x2="1045" y2="530"/>
+      <line class="edge" x1="155" y1="474" x2="155" y2="530"/>
+      <line class="edge" x1="155" y1="530" x2="600" y2="530"/>
+      <line class="edge" x1="1045" y1="530" x2="600" y2="530"/>
+      <line class="edge" x1="600" y1="530" x2="600" y2="560" marker-end="url(#arrow3)"/>
+
+      <rect x="450" y="560" width="300" height="44" rx="6" ry="6" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="600" y="582" font-weight="600">本条虚拟报价处理完成</text>
+    </svg>
+  </div>
+
+  <div class="annotation">
+    <strong>锚点不变</strong>:延迟期间真实价可能涨跌,但虚拟价的锚点仍是触发时绑定的那条,保留可追溯性。<br>
+    <strong>跳过条件</strong>:只有当 <code>amount ≥ 当前最高真实价</code> 时才跳过,不要求低于锚点 — 允许虚拟价"跨越"早期低价真实价。
+  </div>
+</div>
+
+<!-- ============== 4. 虚拟报价状态机 ============== -->
+<div class="flow-section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">虚拟报价状态机</span>
+    <span class="section-subtitle">从创建到终态的完整生命周期</span>
+  </div>
+
+  <div class="svg-container">
+    <svg width="1100" height="280" viewBox="0 0 1100 280">
+      <defs>
+        <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L8,5 L0,10 Z" fill="#86909C"/>
+        </marker>
+      </defs>
+
+      <!-- 起点 -->
+      <ellipse cx="80" cy="140" rx="50" ry="30" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="80" y="140" font-weight="600">创建</text>
+
+      <line class="edge" x1="130" y1="140" x2="180" y2="140" marker-end="url(#arrow4)"/>
+
+      <!-- PENDING -->
+      <rect x="180" y="115" width="180" height="50" rx="6" ry="6" fill="#FFF1E8" stroke="#FF7D00" stroke-width="1.5"/>
+      <text class="node-text" x="270" y="135" font-weight="600">PENDING</text>
+      <text class="node-text-sm" x="270" y="155">待执行,planned_time 未到</text>
+
+      <!-- 三条分支 -->
+      <line class="edge" x1="360" y1="120" x2="500" y2="60" marker-end="url(#arrow4)"/>
+      <text class="edge-label" x="380" y="92">到达时金额合规</text>
+
+      <line class="edge" x1="360" y1="140" x2="500" y2="140" marker-end="url(#arrow4)"/>
+      <text class="edge-label" x="430" y="130">到达时金额超额</text>
+
+      <line class="edge" x1="360" y1="160" x2="500" y2="220" marker-end="url(#arrow4)"/>
+      <text class="edge-label" x="380" y="200">场次结束未到时</text>
+
+      <!-- EXECUTED -->
+      <rect x="500" y="35" width="180" height="50" rx="6" ry="6" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="590" y="55" font-weight="600">EXECUTED</text>
+      <text class="node-text-sm" x="590" y="75">已成功出价</text>
+
+      <!-- SKIPPED -->
+      <rect x="500" y="115" width="180" height="50" rx="6" ry="6" fill="#F5F6F7" stroke="#86909C" stroke-width="1.5"/>
+      <text class="node-text" x="590" y="135" font-weight="600">SKIPPED</text>
+      <text class="node-text-sm" x="590" y="155">校验失败,本次不出</text>
+
+      <!-- EXPIRED -->
+      <rect x="500" y="195" width="180" height="50" rx="6" ry="6" fill="#FFECE8" stroke="#F53F3F" stroke-width="1.5"/>
+      <text class="node-text" x="590" y="215" font-weight="600">EXPIRED</text>
+      <text class="node-text-sm" x="590" y="235">超过场次结束时间</text>
+
+      <!-- 终点 -->
+      <line class="edge" x1="680" y1="60" x2="900" y2="140" marker-end="url(#arrow4)"/>
+      <line class="edge" x1="680" y1="140" x2="900" y2="140" marker-end="url(#arrow4)"/>
+      <line class="edge" x1="680" y1="220" x2="900" y2="140" marker-end="url(#arrow4)"/>
+
+      <ellipse cx="950" cy="140" rx="50" ry="30" fill="#E6F7EC" stroke="#00B42A" stroke-width="1.5"/>
+      <text class="node-text" x="950" y="140" font-weight="600">终态</text>
+    </svg>
+  </div>
+
+  <table class="state-table">
+    <thead>
+      <tr>
+        <th style="width:120px;">状态</th>
+        <th style="width:240px;">触发条件</th>
+        <th>含义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="state-tag state-pending">PENDING</span></td>
+        <td>真实报价触发后写入</td>
+        <td>已计划但 planned_time 未到,异步任务调度中</td>
+      </tr>
+      <tr>
+        <td><span class="state-tag state-executed">EXECUTED</span></td>
+        <td>到期且金额校验通过</td>
+        <td>虚拟报价对外可见,is_virtual=true</td>
+      </tr>
+      <tr>
+        <td><span class="state-tag state-skipped">SKIPPED</span></td>
+        <td>到期但 amount ≥ 当前最高真实价</td>
+        <td>金额超过当前最高真实价,本次跳过不出</td>
+      </tr>
+      <tr>
+        <td><span class="state-tag state-expired">EXPIRED</span></td>
+        <td>场次结束时仍未到 planned_time</td>
+        <td>作废,不再触发</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============== 5. 数据维度速查 ============== -->
+<div class="flow-section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">关键数据维度</span>
+    <span class="section-subtitle">流程中涉及的所有变量</span>
+  </div>
+
+  <table class="state-table">
+    <thead>
+      <tr>
+        <th style="width:200px;">变量</th>
+        <th style="width:140px;">类型</th>
+        <th style="width:120px;">阶段</th>
+        <th>说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>R_estimate</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-pending">T0</span></td>
+        <td>预估真实报价数 = 调度系统派出的真实账号总数(报价师 + 商家)</td>
+      </tr>
+      <tr>
+        <td><code>M</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-pending">T0</span></td>
+        <td>总报价数 = 总账号数,T0 锁死</td>
+      </tr>
+      <tr>
+        <td><code>V</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-pending">T0</span></td>
+        <td>虚拟数 = M − R_estimate,T0 锁死</td>
+      </tr>
+      <tr>
+        <td><code>V_executed</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>已执行的虚拟价数(状态 = EXECUTED)</td>
+      </tr>
+      <tr>
+        <td><code>V_pending</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>待执行的虚拟价数(状态 = PENDING)</td>
+      </tr>
+      <tr>
+        <td><code>V_committed</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>= V_executed + V_pending</td>
+      </tr>
+      <tr>
+        <td><code>V_remaining</code></td>
+        <td>整数</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>= V − V_committed,还需生成的虚拟价数</td>
+      </tr>
+      <tr>
+        <td><code>K</code></td>
+        <td>整数 [4, 10]</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>单次真实价触发的虚拟价数,随机生成</td>
+      </tr>
+      <tr>
+        <td><code>delay</code></td>
+        <td>秒</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>每个虚拟价独立随机的延迟时间,范围 [30s, 15min]</td>
+      </tr>
+      <tr>
+        <td><code>planned_time</code></td>
+        <td>时间戳</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>= real_bid_time + delay,虚拟价计划出价时间</td>
+      </tr>
+      <tr>
+        <td><code>anchor_real_bid_id</code></td>
+        <td>外键</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>触发时绑定的真实价 ID,锚点不变</td>
+      </tr>
+      <tr>
+        <td><code>discount</code></td>
+        <td>浮点 [0.5, 1.0]</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>账号折扣,在 [account.discount_min, max] 内随机</td>
+      </tr>
+      <tr>
+        <td><code>current_max_real</code></td>
+        <td>金额</td>
+        <td><span class="state-tag state-executed">运行时</span></td>
+        <td>当前场次所有真实价的最大值,金额校验依据</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  竞价虚拟报价生成规则 · 数据分配流程图 · 配套文档:竞价虚拟报价生成规则.md
+</div>
+
+</body>
+</html>
