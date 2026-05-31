@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>中古优品 · 诚信保证金协议 v0.2</title>
+<style>
+  :root {
+    --brand-900: #B34700; --brand-700: #E65100; --brand-500: #FF8000;
+    --brand-400: #FFA526; --brand-300: #FFC300; --brand-200: #FFE082;
+    --brand-100: #FFF8E1; --brand-50: #FFFBF0;
+    --bg-page: #F4F5F6; --bg-card: #FFFFFF; --bg-subtle: #F8F8F6;
+    --border: rgba(0,0,0,0.04); --border-strong: rgba(0,0,0,0.07);
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-tertiary: #9A9A9A;
+    --success: #15803D; --success-bg: #DCFCE7;
+    --warning: #DD6B20; --warning-bg: #FFF8EF;
+    --danger: #DC2626; --danger-bg: #FEE2E2;
+    --info: #2B6CB0; --info-bg: #EFF6FF;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary); background: #EEE;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; justify-content: center; min-height: 100vh; }
+  .phone {
+    width: 375px; min-height: 812px;
+    background: var(--bg-page);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border-radius: 24px; overflow: hidden;
+    padding-bottom: 84px;
+  }
+
+  /* Status bar + Nav 透明叠 hero 上 */
+  .status-bar {
+    height: 44px; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+    color: white;
+    position: relative; z-index: 2;
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 13px; }
+  .navbar {
+    height: 44px; padding: 0 12px;
+    display: flex; align-items: center; gap: 8px;
+    color: white;
+    position: relative; z-index: 2;
+  }
+  .nav-back {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-back svg { width: 24px; height: 24px; }
+  .nav-title {
+    flex: 1; font-size: 17px; font-weight: 600; text-align: center;
+    margin-right: 32px;
+  }
+
+  /* Hero 橙金调 */
+  .hero {
+    position: relative;
+    margin-top: -88px;
+    padding: 88px 20px 28px;
+    background: linear-gradient(155deg, #FFC300 0%, #FF8000 50%, #E65100 100%);
+    color: white;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: ''; position: absolute;
+    right: -40px; top: -30px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .hero::before {
+    content: ''; position: absolute;
+    left: -30px; bottom: -50px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.32);
+    padding: 4px 11px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    position: relative; z-index: 1;
+    color: #FFFCEC;
+  }
+  .hero-tag svg { width: 12px; height: 12px; }
+  .hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    position: relative; z-index: 1;
+    letter-spacing: -0.3px;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.10);
+  }
+  .hero-sub {
+    font-size: 12.5px;
+    opacity: 0.95;
+    line-height: 1.55;
+    position: relative; z-index: 1;
+  }
+  .hero-stats {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    padding: 10px 0;
+    position: relative; z-index: 1;
+  }
+  .hs-item {
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.20);
+  }
+  .hs-item:last-child { border-right: none; }
+  .hs-v {
+    font-size: 17px; font-weight: 700;
+    line-height: 1.1;
+  }
+  .hs-l {
+    font-size: 10.5px;
+    opacity: 0.88;
+    margin-top: 3px;
+  }
+
+  /* 生效条 */
+  .effective-bar {
+    margin: 10px 12px 0;
+    background: var(--brand-50);
+    border: 1px solid var(--brand-100);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .effective-bar b { color: var(--brand-700); font-weight: 700; }
+
+  /* Section title */
+  .sec-title {
+    padding: 18px 14px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sec-title::before {
+    content: '';
+    width: 3px; height: 14px;
+    background: linear-gradient(180deg, var(--brand-300), var(--brand-500));
+    border-radius: 2px;
+  }
+  .sec-title .cn { color: var(--text-tertiary); font-weight: 600; font-size: 12px; }
+
+  /* Rules card */
+  .rules-card {
+    margin: 0 12px 0;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .rule {
+    display: flex; gap: 12px;
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule:last-child { border-bottom: none; }
+  .rule-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--brand-100);
+    color: var(--brand-700);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rule-icon svg { width: 19px; height: 19px; }
+  .rule-icon.warn    { background: var(--warning-bg); color: var(--warning); }
+  .rule-icon.info    { background: var(--info-bg); color: var(--info); }
+  .rule-icon.success { background: var(--success-bg); color: var(--success); }
+  .rule-icon.danger  { background: var(--danger-bg); color: var(--danger); }
+  .rule-body { flex: 1; min-width: 0; }
+  .rule-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .rule-title .pill {
+    background: var(--brand-100);
+    color: var(--brand-700);
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .rule-title .pill.danger { background: var(--danger-bg); color: var(--danger); }
+  .rule-desc {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .rule-desc b { color: var(--text-primary); font-weight: 600; }
+  .rule-desc .deep { color: var(--brand-700); font-weight: 700; }
+  .rule-desc .green { color: var(--success); font-weight: 700; }
+  .rule-desc .red { color: var(--danger); font-weight: 700; }
+
+  /* 权益清单 */
+  .rights {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .right-item {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--brand-50);
+    border: 1px solid var(--brand-100);
+    border-radius: 6px;
+    padding: 9px 10px;
+    font-size: 12px;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .right-item .dot {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--brand-500);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .right-item .dot svg { width: 10px; height: 10px; }
+
+  /* 违约金表 */
+  .fee-table {
+    margin: 0 12px;
+    width: calc(100% - 24px);
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .fee-table th, .fee-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .fee-table thead th {
+    background: var(--brand-100);
+    color: var(--brand-900);
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .fee-table td:first-child { color: var(--text-secondary); }
+  .fee-table td.fee {
+    font-weight: 700;
+    color: var(--brand-700);
+    white-space: nowrap;
+  }
+  .fee-table tr:last-child td { border-bottom: none; }
+  .fee-formula {
+    margin: 8px 12px 0;
+    padding: 8px 12px;
+    background: var(--brand-50);
+    border: 1px dashed var(--brand-200);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+  .fee-formula b { color: var(--brand-700); }
+  .fee-formula code {
+    background: #fff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Menlo, monospace;
+    color: var(--brand-700);
+  }
+
+  /* 示例 chips */
+  .examples {
+    margin: 8px 12px 0;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .ex-chip {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 5px 10px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+  .ex-chip b { color: var(--brand-700); font-weight: 700; }
+
+  /* 步骤列表 */
+  .steps {
+    margin-top: 6px;
+  }
+  .step-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--border-strong);
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-num {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    background: var(--brand-500);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .step-item b { color: var(--text-primary); font-weight: 600; }
+
+  /* 提示带 */
+  .tip-strip {
+    margin: 6px 12px 0;
+    padding: 8px 10px;
+    background: var(--info-bg);
+    border-left: 3px solid var(--info);
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: var(--info);
+    line-height: 1.5;
+  }
+  .tip-strip b { font-weight: 700; }
+  .tip-strip.warn {
+    background: var(--warning-bg);
+    border-left-color: var(--warning);
+    color: #8B5A1F;
+  }
+  .tip-strip.danger {
+    background: var(--danger-bg);
+    border-left-color: var(--danger);
+    color: var(--danger);
+  }
+
+  /* 尾注 */
+  .final-note {
+    margin: 16px 12px 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    line-height: 1.6;
+  }
+
+  /* Sticky footer */
+  .footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 22px;
+    z-index: 5;
+  }
+  .agree-row {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    margin-bottom: 9px;
+    line-height: 1.4;
+  }
+  .agree-row .cb {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--brand-500);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .agree-row .cb svg { width: 10px; height: 10px; }
+  .agree-row a { color: var(--brand-700); font-weight: 600; }
+  .footer-btns { display: flex; gap: 10px; }
+  .btn-ghost {
+    flex: 1;
+    padding: 12px 0;
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-strong);
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .btn-primary {
+    flex: 1.8;
+    padding: 12px 0;
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: white;
+    border: none;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(230,81,0,0.30);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Hero(橙金色调,对齐明拍主页主题)-->
+    <div style="background:linear-gradient(155deg, #FFC300 0%, #FF8000 50%, #E65100 100%);">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="icons"><span>●●●●●</span><span style="margin-left:6px;">📶</span><span>🔋</span></div>
+      </div>
+      <div class="navbar">
+        <div class="nav-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">诚信保证金协议</div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-tag">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        高效互利 · 安全省心
+      </div>
+      <div class="hero-title">诚信保证金<br>买家协议</div>
+      <div class="hero-sub">参与图文明拍 / 暗拍出价、直播拍卖、线下竞拍前,需缴纳 ¥5,000 诚信保证金。请在出价或加购前仔细阅读并确认知悉全部条款。</div>
+      <div class="hero-stats">
+        <div class="hs-item">
+          <div class="hs-v">¥5,000</div>
+          <div class="hs-l">起缴保证金</div>
+        </div>
+        <div class="hs-item">
+          <div class="hs-v">1%</div>
+          <div class="hs-l">违约金费率</div>
+        </div>
+        <div class="hs-item">
+          <div class="hs-v">¥100–2,000</div>
+          <div class="hs-l">违约金区间</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="effective-bar">
+      <b>生效日期</b>:2026 年 6 月 1 日起 &nbsp;·&nbsp; <b>适用范围</b>:商城图文明拍 / 暗拍出价、直播拍卖、线下竞拍活动。<br>
+      一经支付保证金,即视为您已充分理解并同意本协议。
+    </div>
+
+    <!-- 一、贸易须知 -->
+    <div class="sec-title">一、贸易须知</div>
+    <div class="rules-card">
+      <div class="rule">
+        <div class="rule-icon success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">1. 保证金权益</div>
+          <div class="rule-desc">缴纳 <b>¥5,000</b> 保证金后,您可获得:</div>
+          <div class="rights">
+            <div class="right-item"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>图文明拍出价权</div>
+            <div class="right-item"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>图文暗拍出价权</div>
+            <div class="right-item"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>直播间拍卖出价权</div>
+            <div class="right-item"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>线下竞拍参与权</div>
+          </div>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-icon warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">2. 出价即承诺 <span class="pill">采购模式</span></div>
+          <div class="rule-desc">
+            所有贸易方式均为采购模式。出价 / 加购一经成功落锤即视为成交,<b>不可随意取消</b>。中拍或加购成功后商品自动进入购物袋,须在规定时限内完成下单及支付。若您非最高出价人,则由其他最高出价人成交。
+          </div>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-icon info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">3. 平台属性与验货责任 <span class="pill">B2B 采购</span></div>
+          <div class="rule-desc">
+            中古优品系二手奢侈品 <b>B2B 商业贸易采购平台</b>,买卖双方均为行业商家,平台默认您已具备成色判定及鉴定能力。请于签收时<b>当快递员面录制开箱视频</b>,并在确认收货后 <b>24 小时内</b>检查成色、真伪、护理等问题,有疑问及时联系商家或客服;如无疑问,订单将在确认收货后自动完成交易。
+          </div>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-icon danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">4. 余额不足限制</div>
+          <div class="rule-desc">
+            保证金余额<b>低于 ¥5,000</b> 时,出价权与活动参与权将被<span class="red">冻结</span>,需<b>补足后</b>方可恢复。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 二、违约责任·买家 -->
+    <div class="sec-title">二、违约责任<span class="cn">· 买家</span></div>
+    <div class="tip-strip warn">
+      <b>⚠️ 仅以下两种情形</b>构成违约并扣收违约金:
+    </div>
+    <div class="rules-card" style="margin-top:6px;">
+      <div class="rule">
+        <div class="rule-icon danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">(一)加购未下单</div>
+          <div class="rule-desc">
+            中拍或加购成功后商品自动进入购物袋,购物袋内商品有<b>失效时间</b>。未在规定时间内下单的,系统自动使该笔成交失效并<span class="red">扣收违约金</span>。
+          </div>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-icon danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">(二)下单未支付</div>
+          <div class="rule-desc">
+            订单创建后有<b>失效时间</b>。未在规定时间内支付的,系统自动取消订单并<span class="red">扣收违约金</span>。违约金一经扣除<b>不予退还</b>,订单亦无法恢复或重新激活。
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-strip" style="margin-top:6px;">
+      <b>💡 主动取消</b>:经商品所属商家同意取消、并已告知客服的,可<b>免除违约金</b>;其余情形均须向商家支付违约金。失效倒计时以页面提示为准。
+    </div>
+
+    <!-- 违约金计算 -->
+    <div class="sec-title">违约金计算规则<span class="cn">· 按商品成交金额</span></div>
+    <div class="fee-formula">
+      <b>计算公式</b>:成交金额 <code>× 1%</code>,向下取整到元,<b>最低 ¥100、最高 ¥2,000</b>。
+    </div>
+    <table class="fee-table" style="margin-top:8px;">
+      <thead>
+        <tr><th>商品成交金额</th><th style="text-align:right;">违约金</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>≤ ¥10,000</td><td class="fee" style="text-align:right;">¥100</td></tr>
+        <tr><td>¥10,001 – ¥200,000</td><td class="fee" style="text-align:right;">成交额 × 1%<br><span style="font-size:11px;font-weight:600;color:var(--text-tertiary);">(¥100 – ¥2,000)</span></td></tr>
+        <tr><td>&gt; ¥200,000</td><td class="fee" style="text-align:right;">¥2,000</td></tr>
+      </tbody>
+    </table>
+    <div class="examples">
+      <span class="ex-chip">¥8,000 → <b>¥100</b></span>
+      <span class="ex-chip">¥10,001 → <b>¥100</b></span>
+      <span class="ex-chip">¥12,345 → <b>¥123</b></span>
+      <span class="ex-chip">¥199,999 → <b>¥1,999</b></span>
+      <span class="ex-chip">¥250,000 → <b>¥2,000</b></span>
+    </div>
+
+    <!-- 三、售后须知 -->
+    <div class="sec-title">三、售后须知</div>
+    <div class="rules-card">
+      <div class="rule">
+        <div class="rule-icon info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">分时效处理</div>
+          <div class="rule-desc">
+            中古优品系二手商品商业贸易采购平台,而非面向终端消费者的零售市场。请于收货时<b>当快递员面开箱验货</b>。
+          </div>
+          <div class="steps">
+            <div class="step-item"><span class="step-num">1</span><div>确认收货后 <b>24 小时内</b>:对成色、真伪有疑问的,请及时联系客服协助处理。</div></div>
+            <div class="step-item"><span class="step-num">2</span><div>确认收货 <b>24 小时后</b>:对商品的疑问由您自行与卖家协商,客服仅辅助。</div></div>
+          </div>
+          <div class="tip-strip" style="margin-left:0;margin-right:0;">
+            售后处理<b>不涉及</b>保证金违约金扣收。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 四、违约处理与申诉 -->
+    <div class="sec-title">四、违约处理与申诉</div>
+    <div class="rules-card">
+      <div class="rule">
+        <div class="rule-icon warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">扣收告知 & 申诉通道 <span class="pill">7 个自然日</span></div>
+          <div class="steps">
+            <div class="step-item"><span class="step-num">1</span><div>平台作出违约扣收后,将通过<b>站内信 / 订单页</b>告知扣收事由及金额。</div></div>
+            <div class="step-item"><span class="step-num">2</span><div>有异议的,可自违约处理通知发出之日起 <b>7 个自然日内</b>发起申诉并提交凭证,由平台运营介入核查。</div></div>
+            <div class="step-item"><span class="step-num">3</span><div>经核查确属平台过错或系统差错的误扣,<span class="green">全额撤销并返还</span>;因自身违约导致的扣收,<span class="red">不予撤销</span>。</div></div>
+            <div class="step-item"><span class="step-num">4</span><div>申诉核查结果为平台<b>最终处理意见</b>。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 五、合约期限与退还 -->
+    <div class="sec-title">五、合约期限与退还</div>
+    <div class="rules-card">
+      <div class="rule">
+        <div class="rule-icon success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">保证金退还</div>
+          <div class="rule-desc">
+            在<b>无待处理违约、无待结算货品、无服务体系账单</b>的情况下可随时申请退还(2 个工作日内到账)。一经发起退还申请,即<span class="red">丧失本协议项下全部权益</span>;平台审核通过后于 <b>7 个自然日内</b>退款到账。
+          </div>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-icon info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </div>
+        <div class="rule-body">
+          <div class="rule-title">合约续约</div>
+          <div class="rule-desc">
+            合约到期,服务期内<b>无违规记录</b>的买家<span class="green">自动续约,无需重缴</span>;<b>有违规记录</b>的,需补足保证金后方可续约。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="final-note">
+      本协议最终解释权归中古优品平台所有。
+    </div>
+
+    <!-- Sticky footer -->
+    <div class="footer">
+      <div class="agree-row">
+        <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+        我已阅读并同意<a>《诚信保证金协议》</a>全部条款
+      </div>
+      <div class="footer-btns">
+        <button class="btn-ghost">暂不缴纳</button>
+        <button class="btn-primary">同意并缴纳 ¥5,000</button>
+      </div>
+    </div>
+
+  </div>
+<script src="_shell-hook.js"></script>
+</body>
+</html>

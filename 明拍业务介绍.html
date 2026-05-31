@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明拍业务介绍 · 给业务方</title>
+<style>
+  :root{
+    --brand-primary:#3370FF; --brand-primary-bg:#E8F3FF; --brand-primary-border:#94BFFF;
+    --text-primary:#1F2329; --text-secondary:#4E5969; --text-tertiary:#86909C;
+    --bg-page:#F2F3F5; --bg-card:#FFFFFF; --bg-secondary:#FAFBFC;
+    --border-base:#E5E6EB; --border-light:#F2F3F5;
+    --success:#00B42A; --success-bg:#E6F7EC;
+    --warning:#FF7D00; --warning-bg:#FFF1E8;
+    --error:#F53F3F; --error-bg:#FFECE8;
+    --gold:#D87A16; --gold-bg:#FFF7E6;
+    --shadow-card:0 1px 4px rgba(0,21,41,0.04);
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.04);
+    --radius-sm:4px; --radius-md:6px; --radius-lg:8px;
+    --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',Arial,sans-serif;
+    --mono:'JetBrains Mono','SF Mono','Menlo',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg-page);font-family:var(--sans);color:var(--text-secondary);
+    line-height:1.6;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px 64px;}
+
+  /* Header */
+  .doc-head{background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-card);
+    padding:32px 32px 28px;margin-bottom:16px;border-top:3px solid var(--brand-primary);}
+  .doc-head .kicker{font-size:12px;color:var(--brand-primary);font-weight:600;letter-spacing:.5px;}
+  .doc-head h1{font-size:28px;font-weight:700;color:var(--text-primary);margin:8px 0 10px;line-height:1.3;}
+  .doc-head .sub{font-size:15px;color:var(--text-secondary);max-width:680px;}
+  .doc-head .meta{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:18px;padding-top:16px;
+    border-top:1px solid var(--border-light);font-size:12px;color:var(--text-tertiary);}
+  .doc-head .meta b{color:var(--text-secondary);font-weight:500;}
+
+  /* One-liner callout */
+  .oneliner{background:var(--brand-primary-bg);border:1px solid var(--brand-primary-border);
+    border-radius:var(--radius-md);padding:18px 22px;margin-bottom:24px;}
+  .oneliner .lbl{font-size:11px;color:var(--brand-primary);font-weight:600;margin-bottom:6px;}
+  .oneliner p{font-size:15px;color:var(--text-primary);font-weight:500;line-height:1.7;}
+
+  /* Section */
+  section{background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-card);
+    padding:26px 30px;margin-bottom:16px;}
+  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .sec-no{width:26px;height:26px;flex:none;border-radius:var(--radius-sm);background:var(--brand-primary);
+    color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);}
+  .sec-head h2{font-size:18px;font-weight:600;color:var(--text-primary);}
+  section > p{margin-bottom:12px;}
+  section > p:last-child{margin-bottom:0;}
+
+  .lead{font-size:14px;color:var(--text-secondary);}
+  strong{color:var(--text-primary);font-weight:600;}
+
+  /* Pain / value two-col */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+  .panel{border:1px solid var(--border-base);border-radius:var(--radius-md);padding:16px 18px;background:var(--bg-secondary);}
+  .panel h4{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+  .dot{width:7px;height:7px;border-radius:999px;display:inline-block;flex:none;}
+  .dot.r{background:var(--error);} .dot.g{background:var(--success);}
+  .panel ul{list-style:none;}
+  .panel li{font-size:13px;padding:5px 0 5px 16px;position:relative;color:var(--text-secondary);}
+  .panel li::before{content:"";position:absolute;left:2px;top:11px;width:4px;height:4px;border-radius:999px;background:var(--text-tertiary);}
+
+  /* Positioning cards */
+  .pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .pos-card{border:1px solid var(--border-base);border-radius:var(--radius-md);padding:16px;}
+  .pos-card.focus{border-color:var(--brand-primary-border);background:var(--brand-primary-bg);}
+  .pos-card .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--radius-sm);display:inline-block;margin-bottom:10px;}
+  .tag-blue{background:var(--brand-primary);color:#fff;}
+  .tag-gray{background:var(--bg-page);color:var(--text-secondary);}
+  .pos-card h4{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:6px;}
+  .pos-card p{font-size:12px;color:var(--text-secondary);line-height:1.6;margin:0;}
+
+  /* Mechanism blocks */
+  .mech{border:1px solid var(--border-base);border-radius:var(--radius-md);padding:18px 20px;margin-bottom:12px;}
+  .mech:last-child{margin-bottom:0;}
+  .mech-top{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .mech-idx{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--brand-primary);
+    background:var(--brand-primary-bg);padding:2px 7px;border-radius:var(--radius-sm);}
+  .mech h4{font-size:15px;font-weight:600;color:var(--text-primary);}
+  .mech p{font-size:13px;color:var(--text-secondary);margin:0;}
+  .mech .why{font-size:12px;color:var(--text-tertiary);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-base);}
+  .mech .why b{color:var(--brand-primary);font-weight:600;}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px;}
+  thead th{background:#F5F6F7;font-weight:600;color:var(--text-primary);text-align:left;
+    padding:9px 12px;border-bottom:1px solid var(--border-base);font-size:12px;}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--border-light);color:var(--text-secondary);vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  td.amt{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text-primary);font-weight:500;}
+  caption{caption-side:bottom;font-size:11px;color:var(--text-tertiary);text-align:left;padding-top:8px;}
+
+  /* Flow chain */
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 14px;}
+  .flow .node{background:var(--bg-secondary);border:1px solid var(--border-base);border-radius:var(--radius-sm);
+    padding:7px 12px;font-size:13px;color:var(--text-primary);font-weight:500;}
+  .flow .arr{color:var(--text-tertiary);font-size:13px;}
+  .flow .node.end{background:var(--brand-primary);color:#fff;border-color:var(--brand-primary);}
+
+  /* Timeline */
+  .tl{position:relative;padding-left:8px;}
+  .tl-row{display:grid;grid-template-columns:84px 1fr;gap:14px;padding:9px 0;align-items:start;
+    border-bottom:1px solid var(--border-light);}
+  .tl-row:last-child{border-bottom:none;}
+  .tl-t{font-family:var(--mono);font-size:12px;color:var(--text-tertiary);font-weight:500;padding-top:1px;}
+  .tl-c{font-size:13px;color:var(--text-secondary);}
+  .tl-c .st{font-size:11px;font-weight:600;padding:1px 7px;border-radius:var(--radius-sm);margin-left:8px;}
+  .st-up{background:var(--bg-page);color:var(--text-secondary);}
+  .st-live{background:var(--success-bg);color:var(--success);}
+  .st-delay{background:var(--error-bg);color:var(--error);}
+  .st-end{background:var(--brand-primary-bg);color:var(--brand-primary);}
+
+  /* Visibility matrix */
+  .vis-row{display:grid;grid-template-columns:160px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--border-light);}
+  .vis-row:last-child{border-bottom:none;}
+  .vis-role{font-size:13px;font-weight:600;color:var(--text-primary);}
+  .vis-role span{display:block;font-size:11px;color:var(--text-tertiary);font-weight:400;margin-top:2px;}
+  .vis-desc{font-size:13px;color:var(--text-secondary);}
+  .pill{font-size:11px;padding:1px 7px;border-radius:var(--radius-sm);margin-right:6px;display:inline-block;margin-bottom:4px;}
+  .pill-on{background:var(--success-bg);color:var(--success);}
+  .pill-off{background:var(--bg-page);color:var(--text-tertiary);}
+
+  /* Rules list */
+  .rules{counter-reset:r;}
+  .rule{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light);}
+  .rule:last-child{border-bottom:none;}
+  .rule .rid{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--brand-primary);flex:none;width:34px;}
+  .rule .rt{font-size:13px;color:var(--text-secondary);}
+  .rule .rt b{color:var(--text-primary);}
+
+  /* Scope */
+  .scope{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .scope .panel h4 .dot.b{background:var(--brand-primary);}
+  .scope .panel h4 .dot.t{background:var(--text-tertiary);}
+
+  /* Metrics */
+  .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .metric{border:1px solid var(--border-base);border-radius:var(--radius-md);padding:14px 16px;}
+  .metric .mh{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;}
+  .metric .md{font-size:12px;color:var(--text-tertiary);line-height:1.55;}
+
+  /* Open questions */
+  .oq{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-light);align-items:start;}
+  .oq:last-child{border-bottom:none;}
+  .oq .q{font-size:13px;color:var(--text-secondary);flex:1;}
+  .oq .q::before{content:"?";font-family:var(--mono);color:var(--warning);font-weight:700;margin-right:8px;}
+  .oq .owner{font-size:11px;color:var(--text-tertiary);background:var(--bg-page);padding:2px 8px;border-radius:var(--radius-sm);flex:none;}
+
+  .note{font-size:12px;color:var(--text-tertiary);margin-top:12px;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-sm);border-left:3px solid var(--border-base);}
+
+  .foot{text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:28px;}
+
+  @media (max-width:680px){
+    .twocol,.pos-grid,.scope,.metric-grid{grid-template-columns:1fr;}
+    .vis-row,.tl-row{grid-template-columns:1fr;}
+    .doc-head{padding:24px 20px;} section{padding:22px 18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="doc-head">
+    <div class="kicker">业务介绍 · 移动端交易渠道</div>
+    <h1>明拍业务介绍</h1>
+    <p class="sub">面向运营、商家运营、客服、业务负责人的业务说明。讲清楚明拍是什么、为平台创造什么价值、用户怎么玩、需要业务方配合什么 —— 不含接口与技术实现细节。</p>
+    <div class="meta">
+      <span>面向对象：<b>运营 / 商家运营 / 客服 / 业务负责人</b></span>
+      <span>客户端：<b>APP + 微信小程序</b></span>
+      <span>维护人：<b>PM</b></span>
+      <span>状态：<b>需求评审版</b></span>
+    </div>
+  </header>
+
+  <!-- ONE LINER -->
+  <div class="oneliner">
+    <div class="lbl">一句话理解</div>
+    <p>明拍是平台为高端货品提供的<strong>全程公开竞价</strong>渠道：当前价、出价记录、加价幅度全场可见，买家基于真实出价博弈，卖家以「市场出清价」成交。它是平台三大售卖渠道中<strong>用户最常用、节奏感最强、客单价最高</strong>的一条。</p>
+  </div>
+
+  <!-- 1. WHY -->
+  <section>
+    <div class="sec-head"><div class="sec-no">1</div><h2>我们为什么做明拍</h2></div>
+    <p class="lead">二手奢侈品市场长期存在两个核心痛点。明拍用「公开博弈、价高者得」的机制，把这两个痛点同时转化为平台的信任资产与成交效率。</p>
+    <div class="twocol">
+      <div class="panel">
+        <h4><span class="dot r"></span>行业痛点</h4>
+        <ul>
+          <li>标准价不可信 —— 同一款货品报价差异大，买家无参照</li>
+          <li>估值不透明 —— 卖家不知道「到底值多少」，平台难自证公允</li>
+          <li>非标品定价难 —— 成色、附件、年份差异让一口价失灵</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h4><span class="dot g"></span>明拍带来的价值</h4>
+        <ul>
+          <li>价格由公开竞价产生，天然可信、可追溯</li>
+          <li>以「市场出清价」成交，卖家放心、平台中立</li>
+          <li>竞价节奏带来即时决断与参与感，拉高活跃与客单</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. POSITIONING -->
+  <section>
+    <div class="sec-head"><div class="sec-no">2</div><h2>明拍在平台中的定位</h2></div>
+    <p class="lead">平台有三种售卖方式，共同构成主交易闭环。三者面向不同货品与用户心智，明拍是本次介绍的主角。</p>
+    <div class="pos-grid">
+      <div class="pos-card focus">
+        <span class="tag tag-blue">本期主角</span>
+        <h4>明拍</h4>
+        <p>价格全程公开，每件货品独立开拍、独立结拍。价高者得，节奏感强，适合高价、有话题的稀缺货品。</p>
+      </div>
+      <div class="pos-card">
+        <span class="tag tag-gray">已有渠道</span>
+        <h4>暗拍</h4>
+        <p>密封竞价（第二价格），整场统一截标，出价互不可见。适合需要保护出价心理、避免互相抬价的场景。</p>
+      </div>
+      <div class="pos-card">
+        <span class="tag tag-gray">已有渠道</span>
+        <h4>挂售（一口价）</h4>
+        <p>明码标价、即买即得。适合标准化、价格已稳定、追求即时成交的货品。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. MECHANISMS -->
+  <section>
+    <div class="sec-head"><div class="sec-no">3</div><h2>四个核心玩法机制</h2></div>
+    <p class="lead">明拍的所有体验都围绕这四个机制展开。理解了它们，就理解了明拍的全部玩法。</p>
+
+    <div class="mech">
+      <div class="mech-top"><span class="mech-idx">机制 1</span><h4>透明竞价</h4></div>
+      <p>全场公开「当前最高价 + 完整出价记录 + 加价幅度 + 出价人数」。买家可基于历史出价判断对手意图，理性博弈。</p>
+      <p class="why"><b>解决</b> 标准价不可信 —— 价格在所有人眼前生成，无暗箱。</p>
+    </div>
+
+    <div class="mech">
+      <div class="mech-top"><span class="mech-idx">机制 2</span><h4>固定加价幅度（7 档）</h4></div>
+      <p>每次出价以固定「一手」为单位递增。幅度按起拍价自动定档，<strong>整场固定不变</strong>，避免乱出价、防止小额骚扰。</p>
+      <p class="why"><b>价值</b> 出价节奏统一可预期，降低买家决策成本，也便于客服解释。</p>
+    </div>
+
+    <div class="mech">
+      <div class="mech-top"><span class="mech-idx">机制 3</span><h4>防狙击延时（2 → 5 分）</h4></div>
+      <p>结拍前 <strong>2 分钟内</strong>只要有新出价，结拍时间自动顺延 <strong>5 分钟</strong>，可无限叠加，直到真正无人加价为止。</p>
+      <p class="why"><b>解决</b> 「最后一秒狙击」—— 让每个买家都有公平的反应机会，价格充分博弈到位。</p>
+    </div>
+
+    <div class="mech">
+      <div class="mech-top"><span class="mech-idx">机制 4</span><h4>代理出价</h4></div>
+      <p>买家设定一个「能接受的最高价」，系统自动逐手代为出价，<strong>始终只比对手高一手</strong>，触顶才停。被对手超过时立即短信 + 站内通知。</p>
+      <p class="why"><b>价值</b> 不用全程盯到结拍，降低参与门槛与心智负担 —— 是提升中拍率的关键功能。</p>
+    </div>
+
+    <h4 style="font-size:14px;font-weight:600;color:var(--text-primary);margin:22px 0 4px;">加价幅度档位表（按起拍价定档）</h4>
+    <table>
+      <thead><tr><th>起拍价区间</th><th>每一手加价</th></tr></thead>
+      <tbody>
+        <tr><td>低于 ¥5,000</td><td class="amt">¥50</td></tr>
+        <tr><td>¥5,000 – ¥20,000</td><td class="amt">¥100</td></tr>
+        <tr><td>¥20,000 – ¥50,000</td><td class="amt">¥150</td></tr>
+        <tr><td>¥50,000 – ¥100,000</td><td class="amt">¥200</td></tr>
+        <tr><td>¥100,000 – ¥200,000</td><td class="amt">¥300</td></tr>
+        <tr><td>¥200,000 及以上</td><td class="amt">¥500</td></tr>
+      </tbody>
+      <caption>本期档位固定，暂不开放运营后台配置。</caption>
+    </table>
+  </section>
+
+  <!-- 4. BUSINESS LOOP -->
+  <section>
+    <div class="sec-head"><div class="sec-no">4</div><h2>从出价到成交的完整闭环</h2></div>
+    <p class="lead">明拍不只是「拍」，而是一条完整的交易链路，含中拍后支付与违约处理。</p>
+    <div class="flow">
+      <span class="node">出价</span><span class="arr">→</span>
+      <span class="node">结拍判定</span><span class="arr">→</span>
+      <span class="node">中拍进购物袋</span><span class="arr">→</span>
+      <span class="node">收银台支付</span><span class="arr">→</span>
+      <span class="node end">完成</span>
+    </div>
+
+    <table>
+      <thead><tr><th style="width:120px;">结拍三种结果</th><th>含义</th><th>用户看到</th></tr></thead>
+      <tbody>
+        <tr><td><strong>中拍</strong></td><td>有人出价且为最高 → 成交</td><td>恭喜中拍，货品自动进购物袋，<strong class="num">24h</strong> 内付款</td></tr>
+        <tr><td><strong>未中拍</strong></td><td>出过价但被他人超过</td><td>很遗憾未中拍，展示最高价与差额</td></tr>
+        <tr><td><strong>流拍</strong></td><td>全程无人出价</td><td>无人出价 · 货品流拍</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>违约处理：</strong>中拍后逾期未付 → 系统自动取消订单 + 扣减保证金；累计违约达 <span class="num">3</span> 次 → 永久封号。这是保障卖家与平台权益的核心约束，需客服在用户咨询时清晰告知。
+    </div>
+    <div class="note">
+      <strong>保证金校验（重要，常被问到）：</strong>用户出价前仅校验可用保证金 <span class="num">≥ ¥5,000</span>（白名单用户免校验）。<strong>校验不占用、不冻结、不扣减</strong>余额 —— 只有真正违约时才扣。余额不足会引导用户去充值，充值后可继续出价。
+    </div>
+  </section>
+
+  <!-- 5. TIMELINE -->
+  <section>
+    <div class="sec-head"><div class="sec-no">5</div><h2>一次典型竞拍的全过程</h2></div>
+    <p class="lead">以一件起拍价数十万的货品为例，感受买家从收到预告到付款的完整体验。</p>
+    <div class="tl">
+      <div class="tl-row"><div class="tl-t">T-24h</div><div class="tl-c">收到「明日 14:00 心愿明拍开始」推送<span class="st st-up">预告</span></div></div>
+      <div class="tl-row"><div class="tl-t">T-15min</div><div class="tl-c">进入明拍主页，收藏 3 件心仪货品<span class="st st-up">临近开拍</span></div></div>
+      <div class="tl-row"><div class="tl-t">T-0</div><div class="tl-c">开拍，详情页当前价开始实时跳动<span class="st st-live">竞价中</span></div></div>
+      <div class="tl-row"><div class="tl-t">T+10min</div><div class="tl-c">设置代理上限 <span class="num">¥260,000</span>，之后无需盯盘<span class="st st-live">代理中</span></div></div>
+      <div class="tl-row"><div class="tl-t">T+45min</div><div class="tl-c">对手追到 <span class="num">¥258,000</span>，系统自动替我加到 <span class="num">¥259,000</span><span class="st st-live">我领先</span></div></div>
+      <div class="tl-row"><div class="tl-t">T+1h</div><div class="tl-c">结拍前 1 分钟，对手追到 <span class="num">¥260,000</span> → 触发延时<span class="st st-delay">延时 +5min</span></div></div>
+      <div class="tl-row"><div class="tl-t">+5min</div><div class="tl-c">再无人出价，落槌成交 <span class="num">¥260,000</span><span class="st st-end">中拍</span></div></div>
+      <div class="tl-row"><div class="tl-t">+30min</div><div class="tl-c">购物袋下单 → 收银台 → 支付完成<span class="st st-end">已付款</span></div></div>
+    </div>
+  </section>
+
+  <!-- 6. VISIBILITY -->
+  <section>
+    <div class="sec-head"><div class="sec-no">6</div><h2>不同用户看到的内容不一样</h2></div>
+    <p class="lead">为保护出价数据、引导注册转化，不同身份的用户看到的价格信息有差异。客服处理「为什么我看不到当前价」类咨询时尤其要清楚这套规则。</p>
+    <div class="vis-row">
+      <div class="vis-role">游客（未登录）</div>
+      <div class="vis-desc">
+        <span class="pill pill-on">起拍价可见</span>
+        <span class="pill pill-off">当前价隐藏</span>
+        <span class="pill pill-off">出价记录隐藏</span>
+        <span class="pill pill-off">出价人数隐藏</span>
+        <br>引导文案：「登录后查看实时出价 / 立即出价」
+      </div>
+    </div>
+    <div class="vis-row">
+      <div class="vis-role">已登录 · 未出价</div>
+      <div class="vis-desc">
+        <span class="pill pill-on">价格可见</span>
+        <span class="pill pill-off">对手脱敏</span>
+        <br>对手统一显示为「用户****」，鼓励用户出价后查看完整记录
+      </div>
+    </div>
+    <div class="vis-row">
+      <div class="vis-role">已出价用户</div>
+      <div class="vis-desc">
+        <span class="pill pill-on">全部可见</span>
+        <br>当前价、完整出价记录、出价时间均可见，对手 ID 仅末 4 位掩码处理
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. RULES -->
+  <section>
+    <div class="sec-head"><div class="sec-no">7</div><h2>关键业务规则速查（对客口径）</h2></div>
+    <p class="lead">运营做活动文案、客服对客解释时直接引用，确保全平台口径一致。</p>
+    <div class="rules">
+      <div class="rule"><div class="rid">R1</div><div class="rt"><b>价格全公开：</b>当前最高价、出价记录、加价幅度、出价人数全场可见。</div></div>
+      <div class="rule"><div class="rid">R2</div><div class="rt"><b>每件独立：</b>每件货品单独开拍、单独结拍，无统一批次概念。</div></div>
+      <div class="rule"><div class="rid">R3</div><div class="rt"><b>固定加价：</b>按起拍价定 7 档加价幅度，整场不变（见上方档位表）。</div></div>
+      <div class="rule"><div class="rid">R4</div><div class="rt"><b>防狙击延时：</b>结拍前 2 分钟内有新出价，自动延 5 分钟，无次数上限。</div></div>
+      <div class="rule"><div class="rid">R5</div><div class="rt"><b>中拍判定：</b>落槌时的最高出价者中拍，成交价 = 该出价（全平台统一称「中拍价」）。</div></div>
+      <div class="rule"><div class="rid">R6</div><div class="rt"><b>出价门槛：</b>可用保证金 ≥ ¥5,000（或白名单）方可出价，仅校验不冻结。</div></div>
+      <div class="rule"><div class="rid">R7</div><div class="rt"><b>违约约束：</b>中拍逾期未付 → 取消订单 + 扣保证金；累计 3 次 → 永久封号。</div></div>
+      <div class="rule"><div class="rid">R8</div><div class="rt"><b>禁止刷单串拍：</b>同手机号 / 同收货地址跨账号互相抬价将冻结关联账户并扣保证金。</div></div>
+    </div>
+    <div class="note"><strong>文案统一：</strong>对外一律使用「中拍价」，不再使用「落槌价」「成交价」等旧称，避免用户混淆。</div>
+  </section>
+
+  <!-- 8. SUCCESS METRICS -->
+  <section>
+    <div class="sec-head"><div class="sec-no">8</div><h2>我们怎么衡量明拍做得好不好</h2></div>
+    <p class="lead">上线后将围绕以下视角持续观测，作为后续迭代与运营策略的依据。</p>
+    <div class="metric-grid">
+      <div class="metric"><div class="mh">转化漏斗</div><div class="md">列表浏览 → 详情 → 出价 → 成功 → 中拍 → 支付，逐层看流失在哪。</div></div>
+      <div class="metric"><div class="mh">代理出价价值</div><div class="md">对比代理 vs 手动出价的中拍率，验证代理功能对成交的拉动。</div></div>
+      <div class="metric"><div class="mh">延时分布</div><div class="md">单件平均延时次数与总时长，反映竞价激烈程度与长尾博弈。</div></div>
+      <div class="metric"><div class="mh">流拍率</div><div class="md">按起拍价档位拆分流拍率，判断起拍价定得是否合理。</div></div>
+    </div>
+  </section>
+
+  <!-- 9. SCOPE -->
+  <section>
+    <div class="sec-head"><div class="sec-no">9</div><h2>本期范围与边界</h2></div>
+    <div class="scope">
+      <div class="panel">
+        <h4><span class="dot b"></span>本期已覆盖</h4>
+        <ul>
+          <li>透明竞价：公开当前价 / 出价记录 / 加价幅度</li>
+          <li>防狙击延时（2 → 5 分，无上限）</li>
+          <li>代理出价（设上限自动代出价 + 取消）</li>
+          <li>中拍后支付闭环（购物袋 → 收银台 → 完成）</li>
+          <li>违约扣保证金、明拍规则页与介绍页</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h4><span class="dot t"></span>本期暂不开放</h4>
+        <ul>
+          <li>加价档位运营后台自配置（本期后端固定）</li>
+          <li>保留价机制（起拍价等同保留价，本期等价于无保留价行为）</li>
+          <li>单件延时的运营硬上限按钮（暂以人工介入兜底）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. OPEN QUESTIONS -->
+  <section>
+    <div class="sec-head"><div class="sec-no">10</div><h2>需要业务方一起确认的事项</h2></div>
+    <p class="lead">以下问题影响上线策略或对客规则，需对应责任方在评审中拍板。</p>
+    <div class="oq"><div class="q">真品申诉机制的 72 小时从哪个节点起算？</div><div class="owner">PM</div></div>
+    <div class="oq"><div class="q">加价档位是否需要提供给运营后台自行配置？</div><div class="owner">后端 + PM</div></div>
+    <div class="oq"><div class="q">单件延时是否需要「运营硬上限」按钮（当前 60 分钟后人工介入）？</div><div class="owner">运营</div></div>
+    <div class="oq"><div class="q">取消保证金占用后，违约率监控阈值定多少？</div><div class="owner">PM + 风控</div></div>
+    <div class="oq"><div class="q">分享卡片上是否显示拍品编号（便于客服核对）？</div><div class="owner">PM</div></div>
+  </section>
+
+  <div class="foot">中古优品 · 明拍业务介绍 · 维护人 PM · 详细技术规则以完整 PRD 为准</div>
+
+</div>
+</body>
+</html>
