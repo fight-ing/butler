@@ -97,15 +97,13 @@
       '.goods':     'anpai-detail_v0.2.html',
       '.quick-bid': 'anpai-detail_v0.2.html',
       '.star-corner': function () { toast('已切换收藏'); return null; },
-      '.anpai-rule': 'anpai-rules_v0.2.html',
       '.chip':      null,
       '.layout-toggle .lt-btn': null,
       '.sort-item': null
     },
 
-    // ─── 暗拍详情 ───
+    // ─── 暗拍详情 ───(v0.4:暗拍规则页已去掉)
     'anpai-detail_v0.2.html': {
-      'a[href*="rules"]':  'anpai-rules_v0.2.html'
     },
 
     // ─── 购物袋 ───

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>中古优品 · H5 原型画板</title>
+<style>
+  :root {
+    --canvas-bg: #E5E5E5;
+    --dot: #C8C8C8;
+    --panel-bg: #FFFFFF;
+    --panel-border: #D9D9D9;
+    --text: #1A1A1A;
+    --text-2: #6B6B6B;
+    --text-3: #9A9A9A;
+    --accent: #FF8000;
+    --accent-deep: #E65100;
+    --accent-soft: #FFF8E1;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    background: var(--canvas-bg);
+  }
+
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 10px;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .brand-logo {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #FFC300, #FF8000);
+    color: #B34700;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .brand-title { font-size: 14px; font-weight: 700; }
+  .brand-sub { font-size: 11px; color: var(--text-3); }
+  .divider { width: 1px; height: 24px; background: var(--panel-border); flex-shrink: 0; }
+
+  .group-pills {
+    display: flex;
+    background: #F0F0F0;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    overflow-x: auto;
+    flex: 1;
+    min-width: 0;
+    scrollbar-width: none;
+  }
+  .group-pills::-webkit-scrollbar { display: none; }
+  .group-pill {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-2);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .group-pill:hover { color: var(--text); background: rgba(255,255,255,0.5); }
+  .group-pill.active {
+    background: var(--panel-bg);
+    color: var(--accent-deep);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .group-pill .num {
+    font-size: 10px;
+    color: var(--text-3);
+    margin-left: 3px;
+  }
+  .group-pill.active .num { color: var(--accent); }
+
+  .count-info {
+    font-size: 12px;
+    color: var(--text-2);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .count-info strong { color: var(--accent-deep); }
+
+  /* topbar 操作按钮(可交互原型 / 失效归档)*/
+  .top-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    transition: filter .15s;
+    white-space: nowrap;
+  }
+  .top-btn:hover { filter: brightness(1.06); }
+  .top-btn svg { flex-shrink: 0; }
+  .top-btn.primary {
+    background: linear-gradient(135deg, #FF8000, #E65100);
+    color: white;
+    box-shadow: 0 2px 8px rgba(230,81,0,0.30);
+  }
+  .top-btn.ghost {
+    background: #F3F3F3;
+    color: var(--text-2);
+    border: 1px solid var(--panel-border);
+    box-shadow: none;
+  }
+  .top-btn.admin {
+    background: linear-gradient(135deg, #4B5DCC, #2E3B91);
+    color: white;
+    box-shadow: 0 2px 8px rgba(46,59,145,0.30);
+  }
+
+  .zoom-ctrl {
+    display: flex; align-items: center; gap: 4px;
+    background: #F0F0F0;
+    border-radius: 8px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .zoom-btn {
+    width: 26px; height: 26px;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    color: var(--text-2);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 600;
+  }
+  .zoom-btn:hover { background: rgba(255,255,255,0.7); color: var(--text); }
+  .zoom-level {
+    font-size: 12px;
+    min-width: 48px; text-align: center;
+    color: var(--text-2);
+    user-select: none;
+  }
+
+  /* 响应式:窄屏逐步隐藏次要元素 */
+  @media (max-width: 1280px) {
+    .brand-sub { display: none; }
+  }
+  @media (max-width: 1180px) {
+    .count-info { display: none; }
+    .top-btn .label { display: none; }
+    .top-btn { padding: 6px 10px; }
+  }
+  @media (max-width: 980px) {
+    .brand-text { display: none; }
+    .divider { display: none; }
+    .topbar { padding: 0 12px; gap: 8px; }
+  }
+  @media (max-width: 760px) {
+    .zoom-level { min-width: 36px; font-size: 11px; }
+    .zoom-btn { width: 22px; height: 22px; }
+  }
+
+  .canvas-wrap {
+    position: fixed;
+    top: 56px; left: 0; right: 0; bottom: 0;
+    overflow: auto;
+    background:
+      radial-gradient(circle, var(--dot) 1px, transparent 1px),
+      var(--canvas-bg);
+    background-size: 24px 24px;
+    cursor: grab;
+  }
+  .canvas-wrap.dragging { cursor: grabbing; }
+  .canvas-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+  .canvas-wrap::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.18);
+    border-radius: 6px;
+    border: 3px solid var(--canvas-bg);
+  }
+
+  .canvas {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 40px 80px;     /* 减小 padding,100% 时尽量让 artboard 顶部贴近窗口 */
+    gap: 40px;
+    transform-origin: 0 0;
+    transition: transform 0.2s;
+    width: max-content;
+  }
+
+  .row-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .row-label {
+    align-self: flex-start;
+    padding: 8px 16px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .row-label .badge {
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .row-label .badge.latest { background: var(--accent); color: white; }
+  .row-label .badge.gray { background: #F0F0F0; color: var(--text-2); }
+  .row-desc {
+    font-size: 12px;
+    color: var(--text-2);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  .row { display: inline-flex; align-items: flex-start; gap: 60px; }
+
+  .artboard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .artboard-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 4px;
+  }
+  .artboard-num {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    color: white;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .artboard-num.gray { background: var(--text-3); }
+  .artboard-title {
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+  }
+  .artboard-sub {
+    font-size: 11px;
+    color: var(--text-2);
+    margin-top: 1px;
+  }
+  .artboard-meta {
+    display: flex; flex-direction: column;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+  }
+  .artboard-actions { display: flex; gap: 4px; }
+  .art-btn {
+    width: 26px; height: 26px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 5px;
+    color: var(--text-2);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .art-btn:hover {
+    color: var(--accent-deep);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .art-btn svg { width: 13px; height: 13px; }
+
+  .artboard-frame {
+    width: 375px;
+    height: 812px;
+    background: var(--panel-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.04),
+      0 8px 24px rgba(0,0,0,0.1),
+      0 1px 3px rgba(0,0,0,0.06);
+    position: relative;
+  }
+  .artboard-frame.v0-1 { opacity: 0.55; filter: grayscale(0.3); }
+  .artboard-frame iframe {
+    width: 100%; height: 100%;
+    border: none;
+    display: block;
+  }
+  .artboard-frame.loading::before {
+    content: '加载中…';
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-3);
+    font-size: 13px;
+    background: var(--panel-bg);
+  }
+
+  .artboard-foot {
+    display: flex; gap: 5px;
+    flex-wrap: wrap;
+    padding: 0 4px;
+    max-width: 375px;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    color: var(--text-2);
+  }
+  .tag.hot {
+    background: var(--accent-soft);
+    border-color: #FFD54F;
+    color: var(--accent-deep);
+    font-weight: 600;
+  }
+  .tag.new {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+
+  /* 组切换 */
+  .canvas[data-group="all"] .row-section { display: flex; }
+  .canvas[data-group="main"] .row-section { display: none; }
+  .canvas[data-group="main"] .row-section[data-cat="main"] { display: flex; }
+  .canvas[data-group="detail"] .row-section { display: none; }
+  .canvas[data-group="detail"] .row-section[data-cat="detail"] { display: flex; }
+  .canvas[data-group="order"] .row-section { display: none; }
+  .canvas[data-group="order"] .row-section[data-cat="order"] { display: flex; }
+  .canvas[data-group="deposit"] .row-section { display: none; }
+  .canvas[data-group="deposit"] .row-section[data-cat="deposit"] { display: flex; }
+  .canvas[data-group="profile"] .row-section { display: none; }
+  .canvas[data-group="profile"] .row-section[data-cat="profile"] { display: flex; }
+  .minimap {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--text-2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 50;
+  }
+  .minimap strong { color: var(--accent-deep); }
+
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">中</div>
+      <div class="brand-text">
+        <span class="brand-title">中古优品 · H5 原型</span>
+        <span class="brand-sub">B2B 中古奢侈品交易平台</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="group-pills">
+      <div class="group-pill active" data-group="all">全部<span class="num">22</span></div>
+      <div class="group-pill" data-group="main">主框架<span class="num">4</span></div>
+      <div class="group-pill" data-group="detail">详情<span class="num">8</span></div>
+      <div class="group-pill" data-group="order">订单流<span class="num">3</span></div>
+      <div class="group-pill" data-group="deposit">保证金<span class="num">4</span></div>
+      <div class="group-pill" data-group="profile">个人中心<span class="num">3</span></div>
+    </div>
+    <a href="app-preview.html" target="_blank" class="top-btn primary" title="可交互原型">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span class="label">可交互原型</span>
+    </a>
+    <a href="admin-mingpai-simple_v0.3.html" target="_blank" class="top-btn admin" title="管理后台">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="label">管理后台</span>
+    </a>
+    <span class="count-info">v0.3 当前批次</span>
+    <div class="zoom-ctrl">
+      <button class="zoom-btn" id="zoomFit"  style="width:auto;padding:0 8px;font-size:11px;font-weight:500;" title="适应窗口宽度">适应</button>
+      <button class="zoom-btn" id="zoomOut">−</button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="zoom-btn" id="zoomIn">＋</button>
+      <button class="zoom-btn" id="zoomReset" style="width:auto;padding:0 8px;font-size:11px;font-weight:500;" title="单个视图真实尺寸 375 × 812">1:1</button>
+    </div>
+  </div>
+
+  <div class="canvas-wrap" id="canvasWrap">
+    <div class="canvas" id="canvas" data-group="all">
+
+      <!-- ① 主框架 -->
+      <div class="row-section" data-cat="main">
+        <div class="row-label">
+          <span>① 主框架（底部 4 Tab）</span>
+          <span class="badge latest">v0.2</span>
+          <span class="row-desc">首页 → 我的竞拍 → 购物车 → 个人中心</span>
+        </div>
+        <div class="row">
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">1</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">首页</span>
+                <span class="artboard-sub">home_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('home_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="home_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag hot">入口</span><span class="tag">Banner</span><span class="tag">公告</span><span class="tag">三大渠道</span><span class="tag">热门</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">2</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">我的竞拍</span>
+                <span class="artboard-sub">favorites_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('favorites_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="favorites_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag">3 子 Tab</span><span class="tag">暗拍隐价</span><span class="tag">12 卡示例</span></div>
+          </div>
+
+          <div class="artboard" style="width:auto;">
+            <div class="artboard-head">
+              <div class="artboard-num">2E</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">我的竞拍 · 空状态样例</span>
+                <span class="artboard-sub">favorites-empty_v0.2.html · 对比稿</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('favorites-empty_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading" style="width:820px;height:830px;"><iframe src="favorites-empty_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.3 新</span><span class="tag">明拍/暗拍 空状态</span><span class="tag">引导跳主页</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">3</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">购物车</span>
+                <span class="artboard-sub">cart_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('cart_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="cart_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag hot">4h 倒计时</span><span class="tag">一件一单</span><span class="tag">超时扣保证金</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">4</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">个人中心</span>
+                <span class="artboard-sub">profile_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('profile_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="profile_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag">商家身份</span><span class="tag">资产 2×2</span><span class="tag">订单中心</span><span class="tag">拍卖工作台</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ② 三大渠道 -->
+      <!-- ③ 明拍全流程 + 单品页(主页 → 详情 → 出价弹窗 → 规则 一行展示)-->
+      <div class="row-section" data-cat="detail">
+        <div class="row-label">
+          <span>③ 明拍全流程 + 单品页</span>
+          <span class="badge latest">v0.3</span>
+          <span class="row-desc">主页 → 详情 → 出价弹窗 → 规则(明拍核心 4 件套)</span>
+        </div>
+        <div class="row">
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">7</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 今日主页</span>
+                <span class="artboard-sub">mingpai_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag hot">主页入口</span><span class="tag">14:00 / 16:00</span><span class="tag">单品独立结拍</span><span class="tag">代理出价</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 单品</span>
+                <span class="artboard-sub">mingpai-detail_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-detail_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai-detail_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag hot">代理出价</span><span class="tag">个体延时</span><span class="tag">历史成交参考</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10B</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 出价弹窗</span>
+                <span class="artboard-sub">mingpai-bid_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-bid_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai-bid_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">半屏弹窗</span><span class="tag">估价+概率</span><span class="tag">+1/-1 手</span><span class="tag">加后预览</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10I</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 介绍</span>
+                <span class="artboard-sub">mingpai-intro_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-intro_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai-intro_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.3 新</span><span class="tag">独立 H5</span><span class="tag">5 大要点</span><span class="tag">跳规则 CTA</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10R</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 规则说明</span>
+                <span class="artboard-sub">mingpai-rules_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-rules_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai-rules_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">9 段规则</span><span class="tag">橙金调</span><span class="tag">vs 暗拍</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10C</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 出价记录(完整)</span>
+                <span class="artboard-sub">mingpai-bid-history_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-bid-history_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai-bid-history_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">时间倒序</span><span class="tag">脱敏</span><span class="tag">代理/手动标记</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10D</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 改代理价弹窗</span>
+                <span class="artboard-sub">mingpai-proxy_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-proxy_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="mingpai-proxy_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">紫色调</span><span class="tag">3 条规则</span><span class="tag">快捷价位</span></div>
+          </div>
+
+          <div class="artboard" style="width:auto;">
+            <div class="artboard-head">
+              <div class="artboard-num">10S</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍详情 · 4 状态样例</span>
+                <span class="artboard-sub">mingpai-detail-states_v0.2.html · 对比稿</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('mingpai-detail-states_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading" style="width:1640px;height:820px;"><iframe src="mingpai-detail-states_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.3 新</span><span class="tag">预告/拍卖中/已结拍·中拍/未中</span><span class="tag">印章标识</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">10X</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">明拍 · 生成分享封面</span>
+                <span class="artboard-sub">share-mingpai-cover_v0.2.html · APP sheet</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('share-mingpai-cover_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="share-mingpai-cover_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">新增</span><span class="tag hot">分享小程序</span><span class="tag">货品 + 整体两版</span><span class="tag">明拍 4 大亮点</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ④ 订单流 -->
+      <div class="row-section" data-cat="order">
+        <div class="row-label">
+          <span>④ 订单 / 支付流</span>
+          <span class="badge latest">v0.2 新</span>
+          <span class="row-desc">购物车 → 确认 → 支付 → 结果</span>
+        </div>
+        <div class="row">
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">11</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">订单确认</span>
+                <span class="artboard-sub">order-confirm_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('order-confirm_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="order-confirm_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">4h 倒计时</span><span class="tag">费用明细</span><span class="tag">地址/物流/发票</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">12</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">收银台</span>
+                <span class="artboard-sub">pay_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('pay_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="pay_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">微信/支付宝</span><span class="tag hot">UB 灰显</span><span class="tag">对公转账</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">13</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">支付结果</span>
+                <span class="artboard-sub">pay-result_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('pay-result_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="pay-result_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag hot">4 态切换</span><span class="tag">成功/失败/退款/超时</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ⑤ 保证金 -->
+      <div class="row-section" data-cat="deposit">
+        <div class="row-label">
+          <span>⑤ 保证金管理</span>
+          <span class="badge latest">v0.2</span>
+          <span class="row-desc">起缴 ¥5,000 · 违约扣 1%（¥100–2,000）</span>
+        </div>
+        <div class="row">
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">14</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">保证金账户</span>
+                <span class="artboard-sub">deposit_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('deposit_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="deposit_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag">余额/冻结</span><span class="tag">规则</span><span class="tag">流水 Tab</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">15</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">缴纳保证金</span>
+                <span class="artboard-sub">deposit-pay_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('deposit-pay_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="deposit-pay_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag">金额预设</span><span class="tag">参拍上限预览</span><span class="tag">3 种支付</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">16</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">申请提现</span>
+                <span class="artboard-sub">deposit-withdraw_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('deposit-withdraw_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="deposit-withdraw_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag hot">全额提现</span><span class="tag">底部 sheet</span><span class="tag">5-7 工作日</span><span class="tag">5 种原因</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">16P</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">保证金余额不足 弹窗</span>
+                <span class="artboard-sub">deposit-prompt_v0.2.html · 通用组件</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('deposit-prompt_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="deposit-prompt_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">通用组件</span><span class="tag hot">余额不足</span><span class="tag">出价/直播/加购/下单</span><span class="tag">不经主页</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ⑥ 个人中心二级页 -->
+      <div class="row-section" data-cat="profile">
+        <div class="row-label">
+          <span>⑥ 个人中心二级页</span>
+          <span class="badge latest">v0.2 新</span>
+          <span class="row-desc">出价 / 订单 / 消息 / 物流 / 地址 / 鉴定</span>
+        </div>
+        <div class="row">
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">16-A</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">我的竞拍 · 方案 A(原方案)</span>
+                <span class="artboard-sub">my-bids_v0.2.html · 截图现状</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('my-bids_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="my-bids_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag hot">原方案 A</span><span class="tag">正在参与/历史出价</span><span class="tag">印章徽章</span><span class="tag">截图现状</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">17</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">我的订单</span>
+                <span class="artboard-sub">my-orders_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('my-orders_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="my-orders_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">6 Tab</span><span class="tag">8 卡示例</span><span class="tag">5 种状态</span></div>
+          </div>
+
+          <div class="artboard">
+            <div class="artboard-head">
+              <div class="artboard-num">20</div>
+              <div class="artboard-meta">
+                <span class="artboard-title">收货地址</span>
+                <span class="artboard-sub">address_v0.2.html</span>
+              </div>
+              <div class="artboard-actions">
+                <button class="art-btn" onclick="window.open('address_v0.2.html', '_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+              </div>
+            </div>
+            <div class="artboard-frame loading"><iframe src="address_v0.2.html" loading="lazy" onload="this.parentElement.classList.remove('loading')"></iframe></div>
+            <div class="artboard-foot"><span class="tag new">v0.2 新</span><span class="tag">多分公司</span><span class="tag">新增表单</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="minimap" id="minimap">
+    显示：<strong id="miniGroup">全部</strong> · 缩放 <strong id="miniZoom">100%</strong>
+  </div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const wrap = document.getElementById('canvasWrap');
+  const zoomLevelEl = document.getElementById('zoomLevel');
+  const miniZoomEl = document.getElementById('miniZoom');
+  const miniGroupEl = document.getElementById('miniGroup');
+  let zoom = 1;
+  const MIN = 0.2, MAX = 2;
+
+  function applyZoom() {
+    canvas.style.transform = `scale(${zoom})`;
+    const pct = Math.round(zoom * 100) + '%';
+    zoomLevelEl.textContent = pct;
+    miniZoomEl.textContent = pct;
+  }
+  document.getElementById('zoomIn').addEventListener('click', () => { zoom = Math.min(MAX, zoom + 0.1); applyZoom(); });
+  document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math.max(MIN, zoom - 0.1); applyZoom(); });
+  document.getElementById('zoomReset').addEventListener('click', () => { zoom = 1; applyZoom(); wrap.scrollTo({ left: 0, top: 0, behavior: 'smooth' }); });
+
+  // 适应窗口宽度(按 canvas 自然宽度 / wrap 可见宽度 计算)
+  function fitToScreen() {
+    const prevZoom = zoom;
+    canvas.style.transform = 'scale(1)';   // 临时还原才能拿到真实 scrollWidth
+    const naturalW = canvas.scrollWidth;
+    canvas.style.transform = `scale(${prevZoom})`;
+    if (!naturalW) return;
+    const wrapW = wrap.clientWidth;
+    const next = Math.max(MIN, Math.min(MAX, wrapW / naturalW));
+    zoom = Math.round(next * 100) / 100;
+    applyZoom();
+    wrap.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+  }
+  document.getElementById('zoomFit').addEventListener('click', fitToScreen);
+
+  wrap.addEventListener('wheel', e => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.05 : -0.05;
+      zoom = Math.max(MIN, Math.min(MAX, zoom + delta));
+      applyZoom();
+    }
+  }, { passive: false });
+
+  let isDown = false, startX = 0, startY = 0, scrollLeft = 0, scrollTop = 0;
+  wrap.addEventListener('mousedown', e => {
+    if (e.target.closest('.artboard-frame, button, .art-btn, .group-pill')) return;
+    isDown = true;
+    wrap.classList.add('dragging');
+    startX = e.pageX - wrap.offsetLeft;
+    startY = e.pageY - wrap.offsetTop;
+    scrollLeft = wrap.scrollLeft;
+    scrollTop = wrap.scrollTop;
+  });
+  document.addEventListener('mouseup', () => { isDown = false; wrap.classList.remove('dragging'); });
+  document.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - wrap.offsetLeft;
+    const y = e.pageY - wrap.offsetTop;
+    wrap.scrollLeft = scrollLeft - (x - startX);
+    wrap.scrollTop = scrollTop - (y - startY);
+  });
+
+  document.querySelectorAll('.group-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.group-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      const g = p.getAttribute('data-group');
+      canvas.setAttribute('data-group', g);
+      miniGroupEl.textContent = p.firstChild.textContent.trim();
+      // 切换分组时,重新适应窗口宽度(分组下 canvas 自然宽度变化)
+      requestAnimationFrame(() => fitToScreen());
+    });
+  });
+
+  // ───── 默认进入:自动适应窗口宽度(全景视图,无需手动缩放)─────
+  function fitOnReady() {
+    // DOM 已就绪,且 transform-origin 是左上角,可直接计算
+    fitToScreen();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fitOnReady, { once: true });
+  } else {
+    fitOnReady();
+  }
+  // 窗口尺寸变化时,实时重适应
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitToScreen, 150);
+  });
+</script>
+</body>
+</html>
