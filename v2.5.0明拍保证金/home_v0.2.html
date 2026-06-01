@@ -972,6 +972,96 @@
   }
   .hot-load-more svg { width: 12px; height: 12px; vertical-align: -2px; margin-right: 4px; }
 
+  /* ===== 历史热门货品清单(v0.4)===== */
+  /* v0.4:历史热门改竖向 2 列 grid,与「全部」(.hot-scroll)一致 */
+  .sold-scroll {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 0 4px;
+  }
+  .sold-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .sold-thumb {
+    height: 140px; position: relative;
+    background: linear-gradient(135deg, #ECE6DD, #D9D0C4);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(0,0,0,0.18); font-size: 26px;
+  }
+  .sold-ch {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 10px; padding: 1px 6px; border-radius: 4px;
+    color: #fff; font-weight: 600;
+  }
+  .sold-ch.mp { background: var(--mingpai-deep, #B26B2E); }
+  .sold-ch.ap { background: var(--anpai-orange, #D98324); }
+  .sold-dealt {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.5));
+    color: #fff; font-size: 10px; padding: 8px 6px 4px; text-align: right;
+  }
+  .sold-info { padding: 7px 8px 9px; }
+  .sold-name {
+    font-size: 12px; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sold-price { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 3px; }
+  .sold-price .yen { font-size: 10px; font-weight: 500; }
+  .sold-date { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+  .sold-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .sold-tags span {
+    font-size: 9.5px; color: var(--text-secondary);
+    background: var(--bg-subtle, #F4F1EC); border-radius: 3px; padding: 1px 5px;
+  }
+
+  /* ===== 热门拍卖 + 历史热门 合并区 菜单层级(v0.4)===== */
+  .auc-tabs {
+    display: flex; gap: 18px; margin: 4px 0 8px;
+    border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none;
+  }
+  .auc-tabs::-webkit-scrollbar { display: none; }
+  .auc-tab {
+    flex-shrink: 0; background: none; border: none; cursor: pointer;
+    font-size: 14px; color: var(--text-2, #6B6B6B);
+    padding: 4px 0 9px; position: relative; white-space: nowrap;
+  }
+  .auc-tab.active { color: var(--accent-deep, #E65100); font-weight: 700; }
+  .auc-tab.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2.5px; background: var(--accent, #FF8000); border-radius: 2px;
+  }
+  .auc-sortrow { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .auc-sorts { display: flex; align-items: center; gap: 16px; }
+  .auc-sort {
+    display: inline-flex; align-items: center; gap: 2px;
+    background: none; border: none; cursor: pointer;
+    font-size: 13px; color: var(--text-2, #6B6B6B); padding: 2px 0; white-space: nowrap;
+  }
+  .auc-sort.active { color: var(--text, #1A1A1A); font-weight: 700; }
+  .auc-sort .sortdir, .auc-filter svg { width: 11px; height: 13px; color: var(--text-3, #9A9A9A); }
+  .auc-filter {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: none; border: none; cursor: pointer;
+    font-size: 13px; color: var(--text-2, #6B6B6B);
+  }
+  .auc-filter svg { width: 13px; height: 13px; }
+
+  /* v0.4 回顶部按钮(右下角,tabbar 上方)*/
+  .to-top-btn {
+    position: absolute;
+    right: 14px; bottom: 72px;  /* 60px tabbar + 12 间距 */
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--panel-bg, #fff); border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--text-primary, #1A1A1A); cursor: pointer; z-index: 5;
+  }
+  .to-top-btn svg { width: 18px; height: 18px; }
+  .to-top-btn span { font-size: 9px; margin-top: 1px; color: var(--text-secondary, #6B6B6B); }
+
   /* ===== Tab bar ===== */
   .tabbar {
     position: absolute;
@@ -1066,7 +1156,7 @@
       <svg class="announce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
       <div class="announce-list">
         <div class="announce-item"><span class="tag">公告</span>5/16 春拍图录将于 5/15 19:00 发布，敬请关注</div>
-        <div class="announce-item"><span class="tag warn">规则</span>本期暗拍保证金调整为 ¥5000，5/15 生效</div>
+        <div class="announce-item"><span class="tag warn">规则</span>保证金标准额调整为 ¥3,000，6/5 生效</div>
         <div class="announce-item"><span class="tag info">新场</span>张鉴定师爱马仕专场 19:30 开播，已加入提醒</div>
       </div>
       <span style="color:var(--text-tertiary); font-size:11px;">查看全部 ›</span>
@@ -1100,7 +1190,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
         </div>
         <span class="quick-label">保证金</span>
-        <span class="quick-num gold">¥5,000</span>
+        <span class="quick-num gold">¥3,000</span>
       </div>
     </div>
 
@@ -1142,6 +1232,15 @@
             <span><strong>32</strong>正在出价</span>
             <span class="sep">·</span>
             <span class="urgent"><strong>12</strong>即将截拍</span>
+          </div>
+
+          <!-- v0.4 状态分类 + 筛选(轻量;切换过滤本卡预览,点筛选跳明拍主页带入条件)-->
+          <div style="display:flex;gap:6px;align-items:center;margin:8px 0 2px;overflow-x:auto;scrollbar-width:none;">
+            <span style="font-size:11px;padding:3px 10px;border-radius:11px;background:var(--mingpai-deep,#B26B2E);color:#fff;font-weight:600;flex-shrink:0;">竞拍中 32</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:11px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);flex-shrink:0;">预告 2</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:11px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);flex-shrink:0;">已结束 18</span>
+            <span style="flex:1;"></span>
+            <span style="font-size:11px;color:var(--brand-700);flex-shrink:0;white-space:nowrap;font-weight:500;">品牌·品类·起拍价 筛选 ›</span>
           </div>
 
           <!-- 即将截拍 商品列表 -->
@@ -1373,12 +1472,32 @@
       数据空时显示 .hot-empty 占位
     -->
     <div class="section">
-      <div class="section-head">
-        <div class="section-title">
-          热门拍卖
-          <span class="hot-rule">即将截拍 · 高热度 · 优质标的</span>
-        </div>
+      <!-- v0.4 菜单层级:行1 状态 + 历史热门 tab / 行2 排序 + 筛选(去掉区块标题)-->
+      <div class="auc-tabs">
+        <button class="auc-tab active" data-auc="live">推荐</button>
+        <button class="auc-tab" data-auc="live">竞拍中</button>
+        <button class="auc-tab" data-auc="live">待开拍</button>
+        <button class="auc-tab" data-auc="sold">历史热门</button>
       </div>
+      <div class="auc-sortrow">
+        <div class="auc-sorts">
+          <button class="auc-sort active">默认排序</button>
+          <button class="auc-sort">起拍价
+            <svg class="sortdir" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 9 8 5 12 9"/><polyline points="4 15 8 19 12 15"/></svg>
+          </button>
+          <button class="auc-sort">出价次数
+            <svg class="sortdir" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 9 8 5 12 9"/><polyline points="4 15 8 19 12 15"/></svg>
+          </button>
+        </div>
+        <span style="flex:1;"></span>
+        <button class="auc-filter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          筛选
+        </button>
+      </div>
+
+      <!-- 面板 A:全部 / 竞拍中 / 待开拍(在拍热门)-->
+      <div class="auc-panel" id="aucLive">
       <div class="hot-scroll">
 
         <!-- ① 明拍·竞价中 + 延时(临近结拍)-->
@@ -1519,22 +1638,86 @@
 
       </div>
 
-      <!-- 分页加载 -->
+      <!-- 分页加载(仅"在拍"面板)-->
       <div class="hot-load-more">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         加载更多热门拍品(已加载 8 / 共 36)
       </div>
+      </div><!-- /auc-panel #aucLive -->
 
-      <!-- 空状态占位（默认隐藏，无热门数据时显示）：
-      <div class="hot-empty">
-        <div class="ico">◆</div>
-        <div>暂无热门拍卖</div>
-        <div class="links">
-          <a>去明拍 ›</a>
-          <a>去暗拍 ›</a>
+      <!-- 面板 B:历史热门(明拍/暗拍 已成交货品,样式与「全部」一致;成交价 + 成交日期)默认隐藏 -->
+      <!-- 后台按利润率选品 + 日期倒序;利润率/成本脱敏,前台不展示 -->
+      <div class="auc-panel" id="aucSold" style="display:none;">
+      <div class="hot-scroll">
+
+        <div class="hot-item">
+          <div class="hot-thumb">
+            ◆
+            <span class="hot-stage mingpai-upcoming">明拍 · 已成交</span>
+          </div>
+          <div class="hot-info">
+            <div class="hot-name">Birkin 25 Gold Togo PHW</div>
+            <div class="hot-price-line">
+              <span class="hot-price-tag">成交价</span>
+              <span class="hot-price-num">92,500</span>
+            </div>
+            <div class="hot-bids">成交日期 2026-06-01</div>
+          </div>
         </div>
-      </div>
-      -->
+
+        <div class="hot-item">
+          <div class="hot-thumb">
+            ◆
+            <span class="hot-stage anpai-upcoming">暗拍 · 已成交</span>
+          </div>
+          <div class="hot-info">
+            <div class="hot-name">Daytona 116500LN 熊猫盘</div>
+            <div class="hot-price-line">
+              <span class="hot-price-tag">成交价</span>
+              <span class="hot-price-num">258,000</span>
+            </div>
+            <div class="hot-bids">成交日期 2026-05-31</div>
+          </div>
+        </div>
+
+        <div class="hot-item">
+          <div class="hot-thumb">
+            ◆
+            <span class="hot-stage mingpai-upcoming">明拍 · 已成交</span>
+          </div>
+          <div class="hot-info">
+            <div class="hot-name">CHANEL CF 中号黑金</div>
+            <div class="hot-price-line">
+              <span class="hot-price-tag">成交价</span>
+              <span class="hot-price-num">63,000</span>
+            </div>
+            <div class="hot-bids">成交日期 2026-05-31</div>
+          </div>
+        </div>
+
+        <div class="hot-item">
+          <div class="hot-thumb">
+            ◆
+            <span class="hot-stage anpai-upcoming">暗拍 · 已成交</span>
+          </div>
+          <div class="hot-info">
+            <div class="hot-name">卡地亚 Love 手镯 18K</div>
+            <div class="hot-price-line">
+              <span class="hot-price-tag">成交价</span>
+              <span class="hot-price-num">41,800</span>
+            </div>
+            <div class="hot-bids">成交日期 2026-05-30</div>
+          </div>
+        </div>
+
+      </div><!-- /hot-scroll -->
+      </div><!-- /auc-panel #aucSold -->
+    </div><!-- /section 热门拍卖 + 历史热门(合并)-->
+
+    <!-- v0.4:回顶部 -->
+    <div class="to-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="18 15 12 9 6 15"/></svg>
+      <span>顶部</span>
     </div>
 
     <!-- Tab bar -->
@@ -1584,6 +1767,19 @@
       const s = String(total%60).padStart(2,'0');
       el.textContent = `${h}:${m}:${s}`;
     }, 1000);
+  })();
+  // v0.4 热门拍卖 + 历史热门 合并区:tab 切换面板
+  (function(){
+    const tabs = document.querySelectorAll('.auc-tab');
+    const live = document.getElementById('aucLive');
+    const sold = document.getElementById('aucSold');
+    if(!tabs.length || !live || !sold) return;
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.toggle('active', x === t));
+      const isSold = t.getAttribute('data-auc') === 'sold';
+      live.style.display = isSold ? 'none' : '';
+      sold.style.display = isSold ? '' : 'none';
+    }));
   })();
 </script>
 <script src="_shell-hook.js"></script>

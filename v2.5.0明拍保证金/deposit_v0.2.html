@@ -675,7 +675,7 @@
     <div class="hero">
       <div class="hero-label">
         <span>可用保证金 <span class="qmark-small" title="账户余额 − 提现处理中">?</span></span>
-        <span class="std">标准额 ¥5,000</span>
+        <span class="std">标准额 ¥3,000</span>
       </div>
       <div class="hero-amount">2,500.00</div>
       <div class="hero-sub">账户余额 ¥4,500 · 提现冻结 ¥2,000</div>
@@ -721,16 +721,21 @@
       <button class="si-action">立即补缴</button>
     </div>
 
-    <!-- 备用：充足态 / 已扣完态（隐藏，文档参考用）-->
+    <!-- 备用：充足态 / 已扣完态 / 提现打款失败态(v0.4)（隐藏，文档参考用）-->
     <!--
     <div class="status-banner">
       <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <span>保证金充足 ¥5,000 · 可正常参与所有渠道拍卖</span>
+      <span>保证金充足 ¥3,000 · 可正常参与所有渠道拍卖</span>
     </div>
     <div class="status-banner danger">
       <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-      <span>保证金已扣完 · 需充值 <strong>¥5,000</strong> 才能继续参拍</span>
+      <span>保证金已扣完 · 需充值 <strong>¥3,000</strong> 才能继续参拍</span>
       <button class="si-action">立即充值</button>
+    </div>
+    <div class="status-banner danger">
+      <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span>提现打款失败:卡号有误 · 余额未变动,可重试或改打款方式</span>
+      <button class="si-action">联系客服</button>
     </div>
     -->
 
@@ -742,10 +747,10 @@
         <span class="toggle">展开/收起 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
       <div class="rule-body">
-        <div class="item"><span class="k">标准额度</span><span class="v">¥5,000 <span style="color:var(--text-tertiary);">· 固定金额，不可多缴</span></span></div>
+        <div class="item"><span class="k">标准额度</span><span class="v">¥3,000 <span style="color:var(--text-tertiary);">· 固定金额，不可多缴</span></span></div>
         <div class="item"><span class="k">违约扣款</span><span class="v">商品金额 1%（最低 ¥100 / 最高 ¥2,000）</span></div>
         <div class="item"><span class="k">应扣 vs 实扣</span><span class="v">扣款记录区分<b>应扣</b>(规则计算值)与<b>实扣</b>(实际划扣值);命中 VIP / 白名单等规则时实扣可减免</span></div>
-        <div class="item"><span class="k">违约处置</span><span class="v warn">旧单不再追，新拍前必须补足至 ¥5,000</span></div>
+        <div class="item"><span class="k">违约处置</span><span class="v warn">旧单不再追，新拍前必须补足至 ¥3,000</span></div>
         <div class="item"><span class="k">扣款下限</span><span class="v">最多扣至 ¥0，扣完后须充值才能继续参拍</span></div>
         <div class="item"><span class="k">提现到账</span><span class="v">提现申请 <b>5–7 个工作日</b>内到账,期间可主动取消申请</span></div>
       </div>

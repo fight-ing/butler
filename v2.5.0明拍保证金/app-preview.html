@@ -383,7 +383,6 @@
     <div class="group-title">暗拍流</div>
     <button class="nav-btn" data-page="anpai_v0.2.html">暗拍主页</button>
     <button class="nav-btn" data-page="anpai-detail_v0.2.html">暗拍详情</button>
-    <button class="nav-btn" data-page="anpai-rules_v0.2.html">暗拍规则</button>
 
     <div class="group-title">订单 / 支付</div>
     <button class="nav-btn" data-page="my-orders_v0.2.html">我的订单</button>
@@ -526,7 +525,6 @@
     'mingpai-detail-states_v0.2.html':'明拍详情 状态样例',
     'anpai_v0.2.html':               '暗拍主页',
     'anpai-detail_v0.2.html':        '暗拍详情',
-    'anpai-rules_v0.2.html':         '暗拍规则',
     'my-orders_v0.2.html':           '我的订单',
     'order-confirm_v0.2.html':       '订单确认',
     'pay_v0.2.html':                 '收银台',
@@ -790,15 +788,13 @@
         '.goods':      'anpai-detail_v0.2.html',
         '.quick-bid':  'anpai-detail_v0.2.html', // 暗拍出价进详情
         '.star-corner':() => { toast('已切换收藏'); return null; },
-        '.anpai-rule, .anpai-rule strong': 'anpai-rules_v0.2.html',
         '.chip':       null, // iframe 自有 chip 切换
         '.layout-toggle .lt-btn': null,
         '.sort-item':  null,
       },
 
-      // ─────────── 暗拍详情 ───────────
+      // ─────────── 暗拍详情 ───────────(v0.4:暗拍规则页已去掉)
       'anpai-detail_v0.2.html': {
-        'a[href*="rules"]':  'anpai-rules_v0.2.html',
         '.btn-bid, .submit-bid, .anpai-bid-btn': () => { toast('暗拍出价弹窗 v0.4'); return null; },
       },
 

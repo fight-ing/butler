@@ -79,6 +79,16 @@
   }
   .hero-nav .btn svg { width: 18px; height: 18px; }
   .hero-spacer { flex: 1; }
+  /* v0.4 右上角「明拍规则」入口 */
+  .rules-entry {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 32px; padding: 0 12px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.25);
+    color: #fff; font-size: 12.5px; font-weight: 600;
+    text-decoration: none;
+  }
+  .rules-entry svg { width: 15px; height: 15px; }
   .hero-content {
     padding: 4px 20px 0;
     position: relative; z-index: 2;
@@ -404,7 +414,7 @@
   /* 二级 sticky 容器(批次筛选 + 视图切换) */
   .sub-bar {
     position: sticky;
-    top: 80px;  /* today-bar (32) + tabs-row (~46) ≈ 78 + 安全 */
+    top: 34px;  /* v0.4 去掉 tabs-row 后,仅 today-bar (~34) 高度 */
     z-index: 6;
     background: var(--bg-page);
     padding-top: 8px;
@@ -471,6 +481,69 @@
     background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
     color: var(--brand-900);
     border-color: var(--brand-500);
+  }
+
+  /* v0.4 品类分类 tab */
+  .cat-tabs {
+    padding: 2px 12px 0;
+    display: flex; gap: 16px;
+    overflow-x: auto; scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    flex-shrink: 0; font-size: 13px;
+    padding: 6px 0 9px; color: var(--text-secondary);
+    position: relative; white-space: nowrap;
+  }
+  .cat-tab.active { color: var(--brand-700); font-weight: 700; }
+  .cat-tab.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2.5px; background: var(--brand-500); border-radius: 2px;
+  }
+  /* v0.4 排序(展开)+ 筛选 + 视图切换 同行 */
+  .sort-filter-row {
+    margin: 2px 12px 2px; display: flex; align-items: center; gap: 6px;
+  }
+  .sort-filter-row .spacer { flex: 1; }
+  /* 展开的排序项(平铺,非下拉)*/
+  .sort-opts { display: flex; align-items: center; gap: 16px; }
+  .sort-opt {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-size: 13px; color: var(--text-secondary);
+    background: none; border: none; padding: 3px 0; cursor: pointer;
+    white-space: nowrap;
+  }
+  .sort-opt.active { color: var(--text-primary); font-weight: 700; }
+  .sort-opt .sortdir { width: 11px; height: 13px; color: var(--text-tertiary); }
+  /* 选中方向时高亮对应箭头 */
+  .sort-opt.active.asc .sortdir .up,
+  .sort-opt.active.desc .sortdir .dn { stroke: var(--brand-700); stroke-width: 2.6; }
+  /* 筛选(平铺文字 + 漏斗 + 计数)*/
+  .filter-opt {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 13px; color: var(--text-secondary);
+    background: none; border: none; padding: 3px 0; cursor: pointer;
+  }
+  .filter-opt svg { width: 13px; height: 13px; }
+  .filter-opt .badge {
+    background: var(--brand-500); color: #fff; font-size: 9px;
+    border-radius: 8px; padding: 0 4px; margin-left: 1px;
+  }
+  /* 视图切换按钮(现位于 sort-filter-row 内)*/
+  .sort-filter-row .vt-btn {
+    width: 30px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-card); border: 1px solid var(--border-strong);
+    color: var(--text-secondary); cursor: pointer;
+  }
+  .sort-filter-row .vt-btn svg { width: 14px; height: 14px; }
+  .sort-filter-row #vtList { border-radius: 6px 0 0 6px; border-right: 0; }
+  .sort-filter-row #vtGrid { border-radius: 0 6px 6px 0; }
+  .sort-filter-row .vt-btn.active {
+    background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+    color: var(--brand-900); border-color: var(--brand-500);
   }
 
   /* Lot list - 单品独立 */
@@ -1070,9 +1143,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"/></svg>
         </div>
         <div class="hero-spacer"></div>
-        <div class="btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
+        <!-- v0.4:明拍介绍 + 拍卖规则 统一为「明拍规则」,置于右上角 -->
+        <a class="rules-entry" href="mingpai-rules_v0.2.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          明拍规则
+        </a>
       </div>
 
       <div class="hero-content">
@@ -1114,7 +1189,7 @@
       </div>
     </div>
 
-    <!-- sticky 公共头(日期带 + Tabs)-->
+    <!-- sticky 公共头(日期带;v0.4 去掉图录/介绍/规则三 Tab,规则入口移至右上角)-->
     <div class="sticky-head mingpai">
       <div class="today-bar">
         <span class="day">2026 / 5 / <span class="num">13</span></span>
@@ -1122,20 +1197,14 @@
         <span class="label">周三</span>
         <span class="badge">每件独立结拍</span>
       </div>
-      <!-- Tabs -->
-      <div class="tabs-row">
-        <div class="tab-link active" data-tab="catalog">拍品图录<span class="count">60</span></div>
-        <div class="tab-link" data-tab="intro">明拍介绍</div>
-        <div class="tab-link" data-tab="rules">拍卖规则</div>
-      </div>
     </div>
 
-    <!-- Tab 1: 拍品图录 -->
-    <div class="tab-panel active" data-panel="catalog">
+    <!-- 拍品图录(v0.4:无 Tab 包裹,直接作为主体内容)-->
+    <div class="catalog-body">
 
-    <!-- 二级 sticky:筛选 + 视图切换 -->
+    <!-- 二级 sticky:状态分行(v0.4)—— 行1 状态 / 行2 品类 / 行3 排序+筛选 -->
     <div class="sub-bar">
-      <!-- Batch filter -->
+      <!-- 行1:状态 chip -->
       <div class="batch-filter">
         <div class="bf-chip active">全部 60</div>
         <div class="bf-chip">竞价中 28</div>
@@ -1144,14 +1213,35 @@
         <div class="bf-chip">已结束 18</div>
       </div>
 
-      <!-- 视图切换 -->
-      <div class="view-toggle">
-        <span class="vt-label">视图</span>
+      <!-- 行2:品类(当前在拍品类动态聚合)-->
+      <div class="cat-tabs">
+        <div class="cat-tab active">全部</div>
+        <div class="cat-tab">箱包</div>
+        <div class="cat-tab">腕表</div>
+        <div class="cat-tab">首饰</div>
+      </div>
+
+      <!-- 行3:排序(展开平铺)+ 视图切换 + 筛选(同行)-->
+      <div class="sort-filter-row">
+        <div class="sort-opts">
+          <button class="sort-opt active">综合排序</button>
+          <button class="sort-opt">起拍价
+            <svg class="sortdir" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2"><polyline class="up" points="4 9 8 5 12 9"/><polyline class="dn" points="4 15 8 19 12 15"/></svg>
+          </button>
+          <button class="sort-opt">出价次数
+            <svg class="sortdir" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2"><polyline class="up" points="4 9 8 5 12 9"/><polyline class="dn" points="4 15 8 19 12 15"/></svg>
+          </button>
+        </div>
+        <span class="spacer"></span>
         <button class="vt-btn active" id="vtList" title="通栏列表">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <button class="vt-btn" id="vtGrid" title="Grid 网格">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="filter-opt" id="filterBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          筛选<span class="badge">2</span>
         </button>
       </div>
     </div>
@@ -1527,152 +1617,6 @@
     </div>
     <!-- /tab-panel catalog -->
 
-    <!-- Tab 2: 明拍介绍 -->
-    <div class="tab-panel" data-panel="intro">
-      <div class="doc-section">
-        <div class="doc-hero">
-          <span class="doc-hero-tag">明拍 · MINGPAI</span>
-          <div class="doc-hero-title">透明竞价 · 价高者得</div>
-          <div class="doc-hero-sub">所有人可见当前最高价与加价记录，结拍时间统一，竞争充分。适合判断行情、抢稀缺好货。</div>
-        </div>
-
-        <div class="doc-card">
-          <div class="doc-block">
-            <div class="doc-block-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <div class="doc-block-body">
-              <div class="doc-block-title">什么是明拍</div>
-              <div class="doc-block-desc">公开透明的竞价模式。所有商家在同一时间窗口内对同一件拍品出价，<strong>当前最高价、出价者代号、加价记录全部公开可见</strong>。</div>
-            </div>
-          </div>
-
-          <div class="doc-block">
-            <div class="doc-block-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
-            </div>
-            <div class="doc-block-body">
-              <div class="doc-block-title">明拍 vs 暗拍</div>
-              <div class="doc-block-desc">暗拍是封闭出价，仅看自己；<strong>明拍可见全场动态</strong>：当前价、出价手数、加价幅度都透明。出价节奏快、需实时跟进。</div>
-            </div>
-          </div>
-
-          <div class="doc-block">
-            <div class="doc-block-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div class="doc-block-body">
-              <div class="doc-block-title">上新与结拍 <span class="pill">每件独立</span></div>
-              <div class="doc-block-desc">每件商品<strong>独立开拍与结拍时间</strong>,无统一批次。预告期可看货 + 收藏 + 设代理上限,到开拍时间正式进入竞价,到结拍时间(含延时)自动落槌。</div>
-            </div>
-          </div>
-
-          <div class="doc-block">
-            <div class="doc-block-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </div>
-            <div class="doc-block-body">
-              <div class="doc-block-title">代理出价机制</div>
-              <div class="doc-block-desc">设置一个 <strong>最高心理价</strong>（仅自己可见），系统按平台加价幅度 <strong>逐手</strong>替您出价 —— 始终只比当前对手高 1 手，<strong>未触及上限不会一次报出</strong>。</div>
-            </div>
-          </div>
-
-          <div class="doc-block">
-            <div class="doc-block-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 13 10 21 10"/><path d="M21 13.1A8.5 8.5 0 1 1 10.9 3"/></svg>
-            </div>
-            <div class="doc-block-body">
-              <div class="doc-block-title">2 → 5 分延时机制</div>
-              <div class="doc-block-desc">单品结拍前 <strong>2 分钟内</strong>有新出价，结拍时间自动<strong>顺延 5 分钟</strong>，给所有人公平响应空间；无新出价则按时结拍。</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="doc-tip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          <span>建议商家先看历史成交参考，<strong>设代理上限</strong>更省心，不必盯到结拍。</span>
-        </div>
-      </div>
-    </div>
-    <!-- /tab-panel intro -->
-
-    <!-- Tab 3: 拍卖规则 -->
-    <div class="tab-panel" data-panel="rules">
-      <div class="doc-section">
-        <div class="doc-hero">
-          <span class="doc-hero-tag">RULES · 7 条核心</span>
-          <div class="doc-hero-title">参拍前请阅读完整规则</div>
-          <div class="doc-hero-sub">所有中拍订单即视为已同意以下条款，违约将按规则扣除保证金并记录信用。</div>
-        </div>
-
-        <div class="doc-section-head">竞价规则</div>
-        <div class="doc-rules-card">
-          <div class="doc-rule">
-            <div class="doc-rule-num">1</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">加价幅度</div>
-              <div class="doc-rule-desc">由平台按价位段统一设定（如基础加价 <strong>¥500 / ¥1,000 / ¥2,000</strong>），不同档位拍品对应不同加价幅度，单品页明示。</div>
-            </div>
-          </div>
-          <div class="doc-rule">
-            <div class="doc-rule-num">2</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">代理出价</div>
-              <div class="doc-rule-desc">设置上限后系统自动应战，<strong>仅比当前对手高 1 手</strong>。代理上限平台不公开，未达上限前不会一次报出。</div>
-            </div>
-          </div>
-          <div class="doc-rule">
-            <div class="doc-rule-num">3</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">5 分钟延时</div>
-              <div class="doc-rule-desc">结拍前 <strong>2 分钟内</strong>有新出价，本件自动延时 <strong>5 分钟</strong>；无新出价则按时结拍。</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="doc-section-head">付款与违约</div>
-        <div class="doc-rules-card">
-          <div class="doc-rule">
-            <div class="doc-rule-num">4</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">付款时限</div>
-              <div class="doc-rule-desc">中拍后 <strong>4 小时</strong>内付款（购物车独立倒计时），同一会话可合并支付保证金一次性结算。</div>
-            </div>
-          </div>
-          <div class="doc-rule">
-            <div class="doc-rule-num">5</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">超时违约</div>
-              <div class="doc-rule-desc">逾期未付按商品金额 <strong>1%</strong> 扣除保证金（最低 <strong>¥100</strong>，最高 <strong>¥2,000</strong>），并记录信用 1 次。</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="doc-section-head">售后与流拍</div>
-        <div class="doc-rules-card">
-          <div class="doc-rule">
-            <div class="doc-rule-num">6</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">7 天质保 · 鉴定保障</div>
-              <div class="doc-rule-desc">商品支持 <strong>7 天质保</strong>，鉴定结论不符可申请退货，运费由平台承担。</div>
-            </div>
-          </div>
-          <div class="doc-rule">
-            <div class="doc-rule-num">7</div>
-            <div class="doc-rule-body">
-              <div class="doc-rule-title">流拍处理</div>
-              <div class="doc-rule-desc">未达起拍价或无人出价的商品，平台保留<strong>转入下一批 / 下调起拍 / 转销售渠道</strong>等处理权。</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="doc-tip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          <span>完整版本及最新调整以平台公告为准，发生争议时以平台仲裁为最终判定。</span>
-        </div>
-      </div>
-    </div>
-    <!-- /tab-panel rules -->
 
     <!-- 右下角浮动按钮组 -->
     <div class="fab-stack">
@@ -1681,9 +1625,15 @@
         <span class="lbl">我的竞拍</span>
         <span class="badge">3</span>
       </div>
-      <div class="fab">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <div class="fab" style="color:#07C160;">
+        <!-- v0.4:分享改微信图标 -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.2 4C5.22 4 2 6.74 2 10.12c0 1.92 1.04 3.64 2.66 4.78L4 17.4l2.86-1.43c.74.2 1.53.31 2.34.31.2 0 .4-.01.6-.02a5.3 5.3 0 0 1-.2-1.43c0-2.96 2.84-5.32 6.34-5.32.22 0 .44.01.65.03C16.32 6.34 13.06 4 9.2 4zm-2.4 4.1a.95.95 0 1 1 0-1.9.95.95 0 0 1 0 1.9zm4.9 0a.95.95 0 1 1 0-1.9.95.95 0 0 1 0 1.9z"/><path d="M22 14.9c0-2.55-2.42-4.62-5.4-4.62s-5.4 2.07-5.4 4.62 2.42 4.62 5.4 4.62c.66 0 1.3-.1 1.88-.28L20.4 21l-.46-1.8c1.27-.84 2.06-2.1 2.06-3.5zm-7.1-.78a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6zm3.4 0a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6z"/></svg>
         <span class="lbl">分享</span>
+      </div>
+      <!-- v0.4:回顶部 -->
+      <div class="fab to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="18 15 12 9 6 15"/></svg>
+        <span class="lbl">顶部</span>
       </div>
     </div>
 
@@ -1709,20 +1659,7 @@
   </div>
 
 <script>
-  // Tab 切换
-  (function() {
-    const tabs = document.querySelectorAll('.tab-link[data-tab]');
-    const panels = document.querySelectorAll('.tab-panel[data-panel]');
-    tabs.forEach(t => {
-      t.addEventListener('click', () => {
-        const key = t.getAttribute('data-tab');
-        tabs.forEach(x => x.classList.toggle('active', x === t));
-        panels.forEach(p => p.classList.toggle('active', p.getAttribute('data-panel') === key));
-        // 切换 Tab 时滚到顶部
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-  })();
+  // (v0.4 已去掉图录/介绍/规则三 Tab,原 Tab 切换逻辑移除)
   // 个体倒计时（示意）
   (function() {
     let t1 = 4*60 + 12;
